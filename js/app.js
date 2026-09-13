@@ -567,9 +567,10 @@ Para abordar <em>"${userText}"</em> desde la innovación educativa:<br>
         renderVideoPlayer: (videoUrl, title = "Video Formativo", posterImg = "assets/educator.png") => {
             if (!videoUrl) return '';
             
-            // Garantizar el dominio oficial de embebido para prevenir bloqueos de cookies de terceros
+            const isShort = videoUrl.includes('shorts/');
             let cleanUrl = videoUrl.replace('youtube-nocookie.com', 'youtube.com');
             let videoId = '';
+            
             if (cleanUrl.includes('shorts/')) {
                 videoId = cleanUrl.split('shorts/')[1].split('?')[0];
             } else if (cleanUrl.includes('embed/')) {
@@ -578,7 +579,10 @@ Para abordar <em>"${userText}"</em> desde la innovación educativa:<br>
                 videoId = cleanUrl.split('v=')[1].split('&')[0];
             }
 
-            const watchUrl = videoId ? `https://www.youtube.com/watch?v=${videoId}` : cleanUrl;
+            const watchUrl = isShort 
+                ? (videoId ? `https://www.youtube.com/shorts/${videoId}` : cleanUrl)
+                : (videoId ? `https://www.youtube.com/watch?v=${videoId}` : cleanUrl);
+                
             const embedSrc = videoId ? `https://www.youtube.com/embed/${videoId}?rel=0` : cleanUrl;
             const isLocalFile = window.location.protocol === 'file:';
 
@@ -590,11 +594,30 @@ Para abordar <em>"${userText}"</em> desde la innovación educativa:<br>
                         </div>
                         <h3 style="color: white; font-size: 20px; margin-bottom: 10px;">${title}</h3>
                         <p style="color: var(--text-secondary); font-size: 14px; max-width: 500px; margin: 0 auto 20px; line-height: 1.5;">
-                            Estás ejecutando la aplicación directamente desde archivos locales (protocolo <code>file://</code>). Los navegadores bloquean la previsualización de YouTube en este modo por seguridad. En <strong>GitHub Pages</strong> se previsualiza y reproduce automáticamente.
+                            ${isShort ? 'Video en formato YouTube Short.' : 'Video formativo.'} Estás en modo local (<code>file://</code>). Haz clic abajo para reproducir directamente en YouTube.
                         </p>
                         <a href="${watchUrl}" target="_blank" class="hero-btn" style="background: #FF0000; color: white; display: inline-flex; align-items: center; gap: 8px; text-decoration: none; padding: 12px 24px;">
-                            <i class="ph-bold ph-youtube-logo" style="font-size: 22px;"></i> Ver Video en YouTube.com
+                            <i class="ph-bold ph-youtube-logo" style="font-size: 22px;"></i> Abrir ${isShort ? 'Short' : 'Video'} en YouTube
                         </a>
+                    </div>
+                `;
+            }
+
+            if (isShort) {
+                return `
+                    <div style="display: flex; flex-direction: column; align-items: center; margin-bottom: 30px;">
+                        <div style="position: relative; width: 100%; max-width: 350px; aspect-ratio: 9/16; border-radius: 24px; overflow: hidden; box-shadow: 0 15px 35px rgba(0,0,0,0.6); border: 2px solid rgba(255,255,255,0.15); background: #000;">
+                            <iframe style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;" 
+                                    src="${embedSrc}" 
+                                    title="${title}"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                                    allowfullscreen></iframe>
+                        </div>
+                        <div style="margin-top: 15px; text-align: center;">
+                            <a href="${watchUrl}" target="_blank" class="hero-btn" style="background: #FF0000; color: white; font-size: 13px; padding: 10px 20px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; border-radius: 12px;">
+                                <i class="ph-bold ph-youtube-logo" style="font-size: 18px;"></i> Abrir Short en YouTube (Pantalla Completa)
+                            </a>
+                        </div>
                     </div>
                 `;
             }
@@ -1419,7 +1442,7 @@ Para abordar <em>"${userText}"</em> desde la innovación educativa:<br>
                 <h2 style="font-size: 28px; color: var(--primary); margin-bottom: 12px;">Evolución e Historia de la Educación</h2>
                 <p style="color: var(--text-secondary); max-width: 600px; margin-bottom: 25px; line-height: 1.5;">Explora las grandes transformaciones pedagógicas a lo largo de la historia en este video introductorio.</p>
                 <div style="width: 100%; max-width: 680px;">
-                    ${window.app.renderVideoPlayer('https://www.youtube.com/embed/mO9YQlKCako', 'Evolución e Historia de la Educación', 'assets/history_greece.png')}
+                    ${window.app.renderVideoPlayer('https://youtube.com/shorts/mO9YQlKCako', 'Evolución e Historia de la Educación', 'assets/history_greece.png')}
                 </div>
             </div>
             <div class="history-timeline">
