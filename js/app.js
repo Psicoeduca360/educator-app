@@ -203,9 +203,9 @@ const coursesData = {
         image: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&q=80",
         progress: 0,
         modules: [
-            { id: 1, title: "1. Fundamentos de LXD y Carga Cognitiva", videoUrl: "https://www.youtube-nocookie.com/embed/f20-u7mP-g0", content: "<b>El Diseño de Experiencias de Aprendizaje (LXD)</b> va más allá del diseño instruccional tradicional. Integra principios de la Experiencia de Usuario (UX) con la neurociencia del aprendizaje.", completed: false },
-            { id: 2, title: "2. Mapeo del Viaje del Estudiante", videoUrl: "https://www.youtube-nocookie.com/embed/b-60jY9_cK8", content: "Antes de diseñar la primera diapositiva de tu clase, debes entender el 'Learner Journey' (El viaje del aprendiz).", completed: false },
-            { id: 3, title: "3. Diseño de Interacciones Significativas", videoUrl: "https://www.youtube-nocookie.com/embed/Hz3p5sYt3eE", content: "La pasividad es el enemigo del aprendizaje moderno. El LXD exige que el alumno sea un agente activo.", completed: false },
+            { id: 1, title: "1. Fundamentos de LXD y Carga Cognitiva", videoUrl: "https://www.youtube.com/embed/f20-u7mP-g0", content: "<b>El Diseño de Experiencias de Aprendizaje (LXD)</b> va más allá del diseño instruccional tradicional. Integra principios de la Experiencia de Usuario (UX) con la neurociencia del aprendizaje.", completed: false },
+            { id: 2, title: "2. Mapeo del Viaje del Estudiante", videoUrl: "https://www.youtube.com/embed/b-60jY9_cK8", content: "Antes de diseñar la primera diapositiva de tu clase, debes entender el 'Learner Journey' (El viaje del aprendiz).", completed: false },
+            { id: 3, title: "3. Diseño de Interacciones Significativas", videoUrl: "https://www.youtube.com/embed/Hz3p5sYt3eE", content: "La pasividad es el enemigo del aprendizaje moderno. El LXD exige que el alumno sea un agente activo.", completed: false },
             { id: 4, title: "4. Prototipado Rápido en el Aula", videoUrl: "", content: "Tomando inspiración de las metodologías ágiles (Agile), los educadores modernos no esperan al final del semestre para saber si su método funciona.", completed: false },
             { id: 5, title: "5. Evaluación Iterativa (Data-Driven)", videoUrl: "", content: "El LXD no termina cuando se entrega la clase. Debes medir el impacto real de la experiencia que diseñaste.", completed: false }
         ]
@@ -233,7 +233,7 @@ const coursesData = {
             { id: 2, title: "2. Principio 1: Compromiso (Engagement)", videoUrl: "", content: "<b>El 'Por qué' del aprendizaje.</b> Diseña estrategias que capten el interés, mantengan el esfuerzo y promuevan la autorregulación ofreciendo autonomía y relevancia.<br><br><div id='dua-interactive-1' style='background: var(--bg-surface); padding: 20px; border-radius: 12px; border-left: 4px solid var(--accent); margin-top: 20px;'><b>Escenario de Aula interactivo:</b> Un estudiante está totalmente desconectado de la lección magistral. ¿Qué haces?<br><div style='display:flex; gap:10px; margin-top:15px;'><button class='hero-btn' style='font-size:12px; padding:8px 12px;' onclick='alert(\"Enfoque Tradicional: El engagement baja porque usas el miedo y limitas la autonomía.\")'>1. Llamarle la atención frente a todos</button><button class='hero-btn' style='font-size:12px; padding:8px 12px; background:var(--success);' onclick='alert(\"Enfoque DUA: Al darle opciones y relevancia a sus intereses, activas su Red Afectiva. ¡Excelente!\")'>2. Acercarte y preguntarle cómo conectar el tema con sus intereses</button></div></div>", completed: false },
             { id: 3, title: "3. Principio 2: Representación", videoUrl: "", content: "<b>El 'Qué' del aprendizaje.</b> Proveer alternativas para la información auditiva y visual. Clarificar el vocabulario y usar múltiples medios interactivos garantiza que la información sea accesible para cualquier red de reconocimiento.", completed: false },
             { id: 4, title: "4. Principio 3: Acción y Expresión", videoUrl: "", content: "<b>El 'Cómo' del aprendizaje.</b> Proveer opciones para la interacción física y la expresión. En lugar de un examen estandarizado único, permite a tus alumnos grabar audios, hacer presentaciones visuales o construir maquetas.", completed: false },
-            { id: 5, title: "5. Evaluación Auténtica e Implementación", videoUrl: "https://www.youtube-nocookie.com/embed/f20-u7mP-g0", content: "Aprende a diferenciar el DUA de las adaptaciones curriculares tardías. Evalúa el desempeño práctico minimizando amenazas. Aquí llevamos la teoría a tu propia aula real.", completed: false }
+            { id: 5, title: "5. Evaluación Auténtica e Implementación", videoUrl: "https://www.youtube.com/embed/f20-u7mP-g0", content: "Aprende a diferenciar el DUA de las adaptaciones curriculares tardías. Evalúa el desempeño práctico minimizando amenazas. Aquí llevamos la teoría a tu propia aula real.", completed: false }
         ]
     },
     miniserie: {
@@ -566,9 +566,19 @@ Para abordar <em>"${userText}"</em> desde la innovación educativa:<br>
         },
         renderVideoPlayer: (videoUrl, title = "Video Formativo", posterImg = "assets/educator.png") => {
             if (!videoUrl) return '';
+            
+            // Garantizar el dominio oficial de embebido para prevenir bloqueos de cookies de terceros
+            let cleanUrl = videoUrl.replace('youtube-nocookie.com', 'youtube.com');
+            let videoId = '';
+            if (cleanUrl.includes('embed/')) {
+                videoId = cleanUrl.split('embed/')[1].split('?')[0];
+            } else if (cleanUrl.includes('v=')) {
+                videoId = cleanUrl.split('v=')[1].split('&')[0];
+            }
+
+            const watchUrl = videoId ? `https://www.youtube.com/watch?v=${videoId}` : cleanUrl;
+            const embedSrc = videoId ? `https://www.youtube.com/embed/${videoId}?rel=0` : cleanUrl;
             const isLocalFile = window.location.protocol === 'file:';
-            const videoId = videoUrl.includes('embed/') ? videoUrl.split('embed/')[1].split('?')[0] : '';
-            const watchUrl = videoId ? `https://www.youtube.com/watch?v=${videoId}` : videoUrl;
 
             if (isLocalFile) {
                 return `
@@ -578,21 +588,21 @@ Para abordar <em>"${userText}"</em> desde la innovación educativa:<br>
                         </div>
                         <h3 style="color: white; font-size: 20px; margin-bottom: 10px;">${title}</h3>
                         <p style="color: var(--text-secondary); font-size: 14px; max-width: 500px; margin: 0 auto 20px; line-height: 1.5;">
-                            Estás ejecutando la aplicación localmente (protocolo <code>file://</code>). Los navegadores bloquean reproductores embebidos de YouTube en archivos locales por seguridad. Al desplegar en <strong>GitHub Pages</strong> se reproducirá automáticamente.
+                            Estás ejecutando la aplicación directamente desde archivos locales (protocolo <code>file://</code>). Los navegadores bloquean la previsualización de YouTube en este modo por seguridad. En <strong>GitHub Pages</strong> se previsualiza y reproduce automáticamente.
                         </p>
                         <a href="${watchUrl}" target="_blank" class="hero-btn" style="background: #FF0000; color: white; display: inline-flex; align-items: center; gap: 8px; text-decoration: none; padding: 12px 24px;">
-                            <i class="ph-bold ph-youtube-logo" style="font-size: 22px;"></i> Abrir Video en YouTube.com
+                            <i class="ph-bold ph-youtube-logo" style="font-size: 22px;"></i> Ver Video en YouTube.com
                         </a>
                     </div>
                 `;
             }
 
             return `
-                <div style="position: relative; width: 100%; max-width: 680px; aspect-ratio: 16/9; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5); margin: 0 auto 15px; border: 1px solid rgba(255,255,255,0.1);">
+                <div style="position: relative; width: 100%; max-width: 680px; aspect-ratio: 16/9; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5); margin: 0 auto 15px; border: 1px solid rgba(255,255,255,0.1); background: #000;">
                     <iframe style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;" 
-                            src="${videoUrl}?rel=0&modestbranding=1" 
+                            src="${embedSrc}" 
+                            title="${title}"
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-                            referrerpolicy="strict-origin-when-cross-origin" 
                             allowfullscreen></iframe>
                 </div>
                 <div style="margin-bottom: 25px; text-align: center;">
@@ -1407,7 +1417,7 @@ Para abordar <em>"${userText}"</em> desde la innovación educativa:<br>
                 <h2 style="font-size: 28px; color: var(--primary); margin-bottom: 12px;">Evolución e Historia de la Educación</h2>
                 <p style="color: var(--text-secondary); max-width: 600px; margin-bottom: 25px; line-height: 1.5;">Explora las grandes transformaciones pedagógicas a lo largo de la historia en este video introductorio.</p>
                 <div style="width: 100%; max-width: 680px;">
-                    ${window.app.renderVideoPlayer('https://www.youtube-nocookie.com/embed/Hz3p5sYt3eE', 'Evolución e Historia de la Educación', 'assets/history_greece.png')}
+                    ${window.app.renderVideoPlayer('https://www.youtube.com/embed/Hz3p5sYt3eE', 'Evolución e Historia de la Educación', 'assets/history_greece.png')}
                 </div>
             </div>
             <div class="history-timeline">
