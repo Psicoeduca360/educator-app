@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consultor Vocacional 360 - Psicoeduca Academy</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --bg-card: rgba(30, 41, 59, 0.7);
+            --bg-surface: rgba(15, 23, 42, 0.6);
+            --primary: #38bdf8;
+            --primary-glow: rgba(56, 189, 248, 0.3);
+            --secondary: #818cf8;
+            --accent: #c084fc;
+            --success: #34d399;
+            --warning: #fbbf24;
+            --error: #f87171;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-light: rgba(255, 255, 255, 0.1);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(56, 189, 248, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(192, 132, 252, 0.15) 0%, transparent 40%);
+            background-attachment: fixed;
+        }
+
+        header {
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-light);
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(12px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 22px;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .logo-area i {
+            -webkit-text-fill-color: initial;
+            color: var(--primary);
+            font-size: 28px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 12px;
+            border: none;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #0284c7, #0369a1);
+            color: white;
+            box-shadow: 0 4px 15px var(--primary-glow);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(56, 189, 248, 0.5);
+        }
+
+        .btn-outline {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-main);
+            border: 1px solid var(--border-light);
+        }
+
+        .btn-outline:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        main {
+            flex: 1;
+            max-width: 1100px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .hero-consultant {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .hero-consultant h1 {
+            font-size: 38px;
+            font-weight: 800;
+            margin-bottom: 12px;
+            letter-spacing: -0.5px;
+        }
+
+        .hero-consultant p {
+            color: var(--text-muted);
+            font-size: 18px;
+            max-width: 700px;
+            margin: 0 auto 30px;
+            line-height: 1.6;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-light);
+            border-radius: 24px;
+            padding: 35px;
+            backdrop-filter: blur(16px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            margin-bottom: 30px;
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 30px;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            transition: width 0.4s ease;
+        }
+
+        .step-indicator {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-bottom: 25px;
+            font-weight: 600;
+        }
+
+        .question-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 25px;
+            line-height: 1.4;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+
+        .option-card {
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid var(--border-light);
+            border-radius: 16px;
+            padding: 20px 24px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .option-card:hover {
+            border-color: var(--primary);
+            background: rgba(56, 189, 248, 0.1);
+            transform: translateX(5px);
+        }
+
+        .option-card i {
+            font-size: 20px;
+            color: var(--text-muted);
+            transition: var(--transition);
+        }
+
+        .option-card:hover i {
+            color: var(--primary);
+        }
+
+        /* Results view */
+        .results-container {
+            display: none;
+            text-align: center;
+        }
+
+        .result-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(52, 211, 153, 0.15);
+            color: var(--success);
+            border: 1px solid rgba(52, 211, 153, 0.3);
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 20px;
+        }
+
+        .profile-title {
+            font-size: 32px;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 15px;
+        }
+
+        .profile-desc {
+            color: var(--text-muted);
+            font-size: 16px;
+            line-height: 1.7;
+            max-width: 800px;
+            margin: 0 auto 30px;
+        }
+
+        .careers-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+            text-align: left;
+        }
+
+        .career-item {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--border-light);
+            border-radius: 16px;
+            padding: 24px;
+            transition: var(--transition);
+        }
+
+        .career-item:hover {
+            border-color: var(--accent);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(192, 132, 252, 0.2);
+        }
+
+        .career-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            background: rgba(192, 132, 252, 0.15);
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            margin-bottom: 15px;
+        }
+
+        .career-item h4 {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .career-item p {
+            color: var(--text-muted);
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        footer {
+            text-align: center;
+            padding: 30px;
+            color: var(--text-muted);
+            font-size: 14px;
+            border-top: 1px solid var(--border-light);
+        }
+
+        @media (max-width: 768px) {
+            header { padding: 15px 20px; }
+            .hero-consultant h1 { font-size: 28px; }
+            .card { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo-area">
+            <i class="ph-bold ph-compass"></i>
+            <span>Consultor Vocacional 360</span>
+        </div>
+        <div class="header-actions">
+            <button class="btn btn-outline" onclick="window.close()"><i class="ph-bold ph-x"></i> Cerrar</button>
+        </div>
+    </header>
+
+    <main>
+        <div class="hero-consultant">
+            <div style="background: rgba(56, 189, 248, 0.1); color: var(--primary); font-size: 12px; font-weight: 800; text-transform: uppercase; padding: 6px 16px; border-radius: 20px; display: inline-block; margin-bottom: 15px; border: 1px solid rgba(56, 189, 248, 0.3);">
+                Orientación Pedagógica y Profesional
+            </div>
+            <h1>Descubre tu Perfil Vocacional y Especialización Educativa</h1>
+            <p>Responde a este diagnóstico inteligente para analizar tu afinidad didáctica, áreas de fortalezas docentes y rutas de carrera con mayor impacto.</p>
+        </div>
+
+        <div class="card" id="quiz-card">
+            <div class="step-indicator">
+                <span id="step-count">Pregunta 1 de 6</span>
+                <span id="category-tag" style="color: var(--primary);">Dimensión: Intereses Pedagógicos</span>
+            </div>
+
+            <div class="progress-bar-container">
+                <div class="progress-bar-fill" id="progress-fill"></div>
+            </div>
+
+            <h2 class="question-title" id="question-text">¿Qué tipo de actividades disfrutas más realizar en tu entorno profesional o de aprendizaje?</h2>
+
+            <div class="options-grid" id="options-container">
+                <!-- Se llena dinámicamente -->
+            </div>
+        </div>
+
+        <!-- Vista de Resultados -->
+        <div class="card results-container" id="results-card">
+            <div class="result-badge"><i class="ph-bold ph-check-circle"></i> Diagnóstico Completado</div>
+            <h2 class="profile-title" id="profile-name">Diseñador Instruccional e Innovador Digital</h2>
+            <p class="profile-desc" id="profile-description">Tienes una alta afinidad por la estructuración de contenidos, la incorporación de herramientas tecnológicas y el diseño de experiencias interactivas centradas en el estudiante.</p>
+
+            <h3 style="font-size: 22px; font-weight: 700; margin-bottom: 20px; text-align: left;"><i class="ph-bold ph-lightbulb" style="color: var(--warning);"></i> Rutas Profesionales y Especializaciones Recomendadas:</h3>
+
+            <div class="careers-grid" id="careers-container">
+                <!-- Se llena dinámicamente -->
+            </div>
+
+            <div style="margin-top: 40px; display: flex; justify-content: center; gap: 15px; flex-wrap: wrap;">
+                <button class="btn btn-primary" onclick="window.print()"><i class="ph-bold ph-printer"></i> Imprimir / Guardar PDF</button>
+                <button class="btn btn-outline" onclick="restartQuiz()"><i class="ph-bold ph-arrow-counter-clockwise"></i> Repetir Evaluación</button>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        Psicoeduca Academy &copy; 2026 - Consultor Vocacional de Orientación Educativa
+    </footer>
+
+    <script>
+        const questions = [
+            {
+                q: "¿Qué tipo de actividades disfrutas más realizar en tu entorno educativo o profesional?",
+                cat: "Intereses Didácticos",
+                options: [
+                    { text: "Diseñar presentaciones, videos, infografías y materiales visuales interactivos.", type: "tech" },
+                    { text: "Escuchar a los estudiantes, brindar asesoría personalizada y apoyo emocional.", type: "social" },
+                    { text: "Investigar teorías cognitivas, datos pedagógicos y analizar resultados de evaluación.", type: "analytic" },
+                    { text: "Liderar proyectos, coordinar equipos de trabajo y organizar eventos o talleres.", type: "leader" }
+                ]
+            },
+            {
+                q: "Cuando enfrentas un desafío en el aula o ambiente laboral, ¿cuál es tu enfoque principal?",
+                cat: "Resolución de Problemas",
+                options: [
+                    { text: "Buscar una herramienta tecnológica nueva que automatice o dinamice la solución.", type: "tech" },
+                    { text: "Promover un debate abierto o círculo de conversación para resolverlo en comunidad.", type: "social" },
+                    { text: "Analizar las causas raíz mediante encuestas o datos objetivos antes de actuar.", type: "analytic" },
+                    { text: "Tomar la iniciativa, definir un plan de acción rápido y delegar tareas claras.", type: "leader" }
+                ]
+            },
+            {
+                q: "¿En qué área te gustaría seguir capacitándote o especializándote a futuro?",
+                cat: "Desarrollo Profesional",
+                options: [
+                    { text: "Diseño de Experiencias de Aprendizaje (LXD), Inteligencia Artificial y Multimedia.", type: "tech" },
+                    { text: "Diseño Universal para el Aprendizaje (DUA), Inclusión Educativa y Orientación.", type: "social" },
+                    { text: "Neuroeducación, Psicología Cognitiva y Evaluación Auténtica Data-Driven.", type: "analytic" },
+                    { text: "Gestión Educativa, Dirección de Instituciones y Liderazgo Instruccional.", type: "leader" }
+                ]
+            },
+            {
+                q: "¿Cómo prefieres que tus alumnos o colaboradores demuestren lo aprendido?",
+                cat: "Evaluación y Desempeño",
+                options: [
+                    { text: "Creando maquetas digitales, páginas web, videos o podcasts explicativos.", type: "tech" },
+                    { text: "A través de diarios reflexivos, dramatizaciones y autoevaluación guiada.", type: "social" },
+                    { text: "Resolviendo casos prácticos complejos y análisis crítico de problemas reales.", type: "analytic" },
+                    { text: "Presentando proyectos transversales frente a un público o jurado.", type: "leader" }
+                ]
+            },
+            {
+                q: "¿Cuál de estos roles te genera mayor satisfacción personal?",
+                cat: "Rol Profesional",
+                options: [
+                    { text: "El Arquitecto Tecnológico que transforma la forma de presentar los contenidos.", type: "tech" },
+                    { text: "El Mentor Empático que acompaña el crecimiento personal y vocacional del alumno.", type: "social" },
+                    { text: "El Investigador Pedagógico que descubre mejores métodos de aprendizaje.", type: "analytic" },
+                    { text: "El Estratega Institucional que impulsa cambios y transformaciones educativas.", type: "leader" }
+                ]
+            },
+            {
+                q: "¿Qué ambiente de trabajo te inspira mayor entusiasmo?",
+                cat: "Entorno Ideal",
+                options: [
+                    { text: "Un laboratorio de innovación digital con software, pantallas y herramientas creativas.", type: "tech" },
+                    { text: "Un espacio de orientación inclusivo, colaborativo y con enfoque humano.", type: "social" },
+                    { text: "Un centro de investigación o biblioteca donde analizar datos y diseñar metodologías.", type: "analytic" },
+                    { text: "Un auditorio o sala de conferencias liderando iniciativas de alto impacto.", type: "leader" }
+                ]
+            }
+        ];
+
+        const profiles = {
+            tech: {
+                title: "Diseñador Instruccional y Tecnólogo Educativo (LXD)",
+                desc: "Destacas por tu creatividad visual y capacidad para integrar herramientas digitales en el aprendizaje. Tu vocación está en transformar conceptos complejos en experiencias interactivas memorables.",
+                careers: [
+                    { title: "Especialista LXD / Diseñador Instruccional", desc: "Crea rutas de aprendizaje inmersivas combinando pedagogía y experiencia de usuario.", icon: "ph-laptop" },
+                    { title: "Creador de Contenidos EdTech", desc: "Desarrolla recursos interactivos, simuladores y videos educativos de alto nivel.", icon: "ph-film-strip" },
+                    { title: "Consultor de Tecnología Educativa", desc: "Asesora a instituciones en la implementación de entornos virtuales e IA en el aula.", icon: "ph-cpu" }
+                ]
+            },
+            social: {
+                title: "Orientador Inclusivo y Especialista en DUA",
+                desc: "Tu mayor fortaleza radica en la empatía, el desarrollo humano y la atención a la diversidad. Tu vocación se enfoca en eliminar barreras y asegurar que cada estudiante encuentre su camino de crecimiento.",
+                careers: [
+                    { title: "Especialista en DUA e Inclusión", desc: "Diseña entornos accesibles y flexibles adaptados a la neurodiversidad.", icon: "ph-heart" },
+                    { title: "Consultor de Orientación Vocacional", desc: "Acompaña a jóvenes y adultos a descubrir sus talentos y vocaciones de vida.", icon: "ph-compass" },
+                    { title: "Mentor y Facilitador Socioemocional", desc: "Desarrolla programas de clima educativo, autorregulación y empatía escolar.", icon: "ph-users" }
+                ]
+            },
+            analytic: {
+                title: "Neuroeducador y Analista de Aprendizaje",
+                desc: "Te apasiona la ciencia del aprendizaje, el rigor de los datos y la neurociencia cognitiva. Tu vocación destaca en fundamentar científicamente cada intervención pedagógica.",
+                careers: [
+                    { title: "Especialista en Neuroeducación", desc: "Aplica los avances del cerebro y la memoria para optimizar los procesos de enseñanza.", icon: "ph-brain" },
+                    { title: "Analista de Evaluación y Aprendizaje", desc: "Diseña sistemas de evaluación auténtica y retroalimentación basada en datos.", icon: "ph-chart-line-up" },
+                    { title: "Investigador Educativo", desc: "Produce conocimiento científico sobre nuevas metodologías y su impacto real.", icon: "ph-microscope" }
+                ]
+            },
+            leader: {
+                title: "Líder de Innovación Educativa y Gestión",
+                desc: "Posees una visión estratégica, capacidad de convocatoria e impulso para liderar cambios. Tu vocación radica en dirigir instituciones y proyectos hacia la excelencia.",
+                careers: [
+                    { title: "Director de Innovación Educativa", desc: "Lidera la transformación de modelos pedagógicos e institucionales.", icon: "ph-rocket-launch" },
+                    { title: "Coordinador Académico / Curriculum Lead", desc: "Diseña planes de estudio modernos orientados a competencias globales.", icon: "ph-briefcase" },
+                    { title: "Conferencista y Formador de Formadores", desc: "Inspira a comunidades de docentes compartiendo metodologías disruptivas.", icon: "ph-presentation-chart" }
+                ]
+            }
+        };
+
+        let currentQuestion = 0;
+        let scores = { tech: 0, social: 0, analytic: 0, leader: 0 };
+
+        function renderQuestion() {
+            const q = questions[currentQuestion];
+            document.getElementById('step-count').innerText = `Pregunta ${currentQuestion + 1} de ${questions.length}`;
+            document.getElementById('category-tag').innerText = `Dimensión: ${q.cat}`;
+            document.getElementById('question-text').innerText = q.q;
+            document.getElementById('progress-fill').style.width = `${((currentQuestion) / questions.length) * 100}%`;
+
+            const container = document.getElementById('options-container');
+            container.innerHTML = q.options.map(opt => `
+                <div class="option-card" onclick="selectOption('${opt.type}')">
+                    <span>${opt.text}</span>
+                    <i class="ph-bold ph-arrow-right"></i>
+                </div>
+            `).join('');
+        }
+
+        function selectOption(type) {
+            scores[type]++;
+            currentQuestion++;
+            if (currentQuestion < questions.length) {
+                renderQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function showResults() {
+            document.getElementById('quiz-card').style.display = 'none';
+            document.getElementById('results-card').style.display = 'block';
+
+            // Determinar el tipo con mayor puntuación
+            let winner = 'tech';
+            let maxScore = -1;
+            Object.keys(scores).forEach(key => {
+                if (scores[key] > maxScore) {
+                    maxScore = scores[key];
+                    winner = key;
+                }
+            });
+
+            const profile = profiles[winner];
+            document.getElementById('profile-name').innerText = profile.title;
+            document.getElementById('profile-description').innerText = profile.desc;
+
+            const container = document.getElementById('careers-container');
+            container.innerHTML = profile.careers.map(c => `
+                <div class="career-item">
+                    <div class="career-icon"><i class="ph-bold ${c.icon}"></i></div>
+                    <h4>${c.title}</h4>
+                    <p>${c.desc}</p>
+                </div>
+            `).join('');
+        }
+
+        function restartQuiz() {
+            currentQuestion = 0;
+            scores = { tech: 0, social: 0, analytic: 0, leader: 0 };
+            document.getElementById('results-card').style.display = 'none';
+            document.getElementById('quiz-card').style.display = 'block';
+            renderQuestion();
+        }
+
+        // Inicializar primera pregunta
+        renderQuestion();
+    </script>
+</body>
+</html>
