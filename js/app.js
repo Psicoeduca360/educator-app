@@ -1188,7 +1188,7 @@ Para abordar <em>"${userText}"</em> desde la innovación educativa:<br>
                     <p style="font-size: 16px; margin-bottom: 20px; opacity: 0.9;">${motivationalSubtitle}</p>
                     <div style="display: flex; gap: 15px; margin-top: 15px; flex-wrap: wrap;">
                         <button class="hero-btn" onclick="app.navigate('news')">Ver Novedades</button>
-                        <button class="hero-btn" style="background: var(--accent); color: white;" onclick="window.open('modules/consultor_vocacional.html', '_blank')"><i class="ph-bold ph-compass"></i> Consultor Vocacional</button>
+                        <button class="hero-btn" style="background: var(--accent); color: white;" onclick="window.open('./modules/consultor_vocacional.html', '_blank')"><i class="ph-bold ph-compass"></i> Consultor Vocacional</button>
                         <button class="hero-btn" style="background: rgba(255,255,255,0.1); color: white;" onclick="app.navigate('courses')">Catálogo de Cursos</button>
                     </div>
                 </div>
