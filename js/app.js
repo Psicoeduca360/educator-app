@@ -570,7 +570,9 @@ Para abordar <em>"${userText}"</em> desde la innovación educativa:<br>
             // Garantizar el dominio oficial de embebido para prevenir bloqueos de cookies de terceros
             let cleanUrl = videoUrl.replace('youtube-nocookie.com', 'youtube.com');
             let videoId = '';
-            if (cleanUrl.includes('embed/')) {
+            if (cleanUrl.includes('shorts/')) {
+                videoId = cleanUrl.split('shorts/')[1].split('?')[0];
+            } else if (cleanUrl.includes('embed/')) {
                 videoId = cleanUrl.split('embed/')[1].split('?')[0];
             } else if (cleanUrl.includes('v=')) {
                 videoId = cleanUrl.split('v=')[1].split('&')[0];
@@ -1417,7 +1419,7 @@ Para abordar <em>"${userText}"</em> desde la innovación educativa:<br>
                 <h2 style="font-size: 28px; color: var(--primary); margin-bottom: 12px;">Evolución e Historia de la Educación</h2>
                 <p style="color: var(--text-secondary); max-width: 600px; margin-bottom: 25px; line-height: 1.5;">Explora las grandes transformaciones pedagógicas a lo largo de la historia en este video introductorio.</p>
                 <div style="width: 100%; max-width: 680px;">
-                    ${window.app.renderVideoPlayer('https://www.youtube.com/embed/Hz3p5sYt3eE', 'Evolución e Historia de la Educación', 'assets/history_greece.png')}
+                    ${window.app.renderVideoPlayer('https://www.youtube.com/embed/mO9YQlKCako', 'Evolución e Historia de la Educación', 'assets/history_greece.png')}
                 </div>
             </div>
             <div class="history-timeline">
