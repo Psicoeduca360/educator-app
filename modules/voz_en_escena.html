@@ -385,11 +385,24 @@
 
             <div class="controls-area">
                 <button class="btn btn-primary" onclick="speakText()"><i class="ph-bold ph-speaker-high"></i> Escuchar Modulación Vocal</button>
-                <button class="btn btn-outline" id="mic-btn" onclick="toggleMicTesting()"><i class="ph-bold ph-microphone"></i> Probar con Tu Micrófono</button>
+                <button class="btn btn-outline" id="mic-btn" onclick="toggleMicTesting()"><i class="ph-bold ph-microphone"></i> Probar / Grabar con Tu Micrófono</button>
             </div>
 
             <div class="audio-meter" id="meter-container" style="display: none;">
                 <div class="audio-meter-fill" id="meter-fill"></div>
+            </div>
+
+            <div id="recording-box" style="display: none; background: rgba(0,0,0,0.35); border: 1px solid rgba(192, 132, 252, 0.3); border-radius: 18px; padding: 20px; margin-top: 20px; text-align: center;">
+                <div style="display: flex; align-items: center; justify-content: center; gap: 8px; color: var(--primary); font-weight: 700; margin-bottom: 8px;">
+                    <i class="ph-bold ph-waveform" style="font-size: 22px;"></i> Grabación de Ensayo Guardada
+                </div>
+                <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 12px;">Escucha tu ensayo o descárgalo para analizar tu tono y proyección vocal.</p>
+                <audio id="recorded-audio-player" controls style="width: 100%; max-width: 520px; margin: 0 auto 15px; border-radius: 12px; outline: none; display: block;"></audio>
+                <div>
+                    <a id="download-audio-link" download="ensayo_voz_en_escena.webm" class="btn btn-primary" style="font-size: 13px; padding: 10px 20px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
+                        <i class="ph-bold ph-download-simple" style="font-size: 18px;"></i> Descargar Archivo de Audio (.webm)
+                    </a>
+                </div>
             </div>
 
             <h4 style="margin: 25px 0 15px; font-size: 16px; color: var(--text-main);">Selecciona la estrategia de modulación adecuada:</h4>
@@ -470,6 +483,9 @@
         let totalPoints = 0;
         let isMicActive = false;
         let audioCtx, analyser, micStream;
+        let mediaRecorder = null;
+        let audioChunks = [];
+        let recordedAudioUrl = null;
 
         function updateSliders() {
             const pitch = document.getElementById('slider-pitch').value;
@@ -499,6 +515,7 @@
         async function toggleMicTesting() {
             const meterContainer = document.getElementById('meter-container');
             const micBtn = document.getElementById('mic-btn');
+            const recordingBox = document.getElementById('recording-box');
 
             if (!isMicActive) {
                 try {
@@ -509,19 +526,57 @@
                     source.connect(analyser);
                     analyser.fftSize = 256;
 
+                    // Iniciar Grabador MediaRecorder
+                    audioChunks = [];
+                    if (window.MediaRecorder) {
+                        try {
+                            mediaRecorder = new MediaRecorder(micStream);
+                            mediaRecorder.ondataavailable = (event) => {
+                                if (event.data && event.data.size > 0) {
+                                    audioChunks.push(event.data);
+                                }
+                            };
+                            mediaRecorder.start();
+                        } catch (recErr) {
+                            console.warn("MediaRecorder fallback stream", recErr);
+                        }
+                    }
+
                     isMicActive = true;
-                    micBtn.innerHTML = `<i class="ph-bold ph-stop-circle" style="color:var(--error);"></i> Detener Micrófono`;
+                    micBtn.innerHTML = `<i class="ph-bold ph-stop-circle" style="color:var(--error);"></i> Detener Grabación y Micrófono`;
                     meterContainer.style.display = 'block';
+                    if (recordingBox) recordingBox.style.display = 'none';
 
                     updateAudioMeter();
                 } catch (err) {
                     alert("No se pudo acceder al micrófono o la función no está disponible en este dispositivo.");
                 }
             } else {
+                if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                    mediaRecorder.stop();
+                    mediaRecorder.onstop = () => {
+                        const audioBlob = new Blob(audioChunks, { type: mediaRecorder.mimeType || 'audio/webm' });
+                        if (recordedAudioUrl) {
+                            URL.revokeObjectURL(recordedAudioUrl);
+                        }
+                        recordedAudioUrl = URL.createObjectURL(audioBlob);
+
+                        const audioPlayer = document.getElementById('recorded-audio-player');
+                        const downloadLink = document.getElementById('download-audio-link');
+
+                        if (audioPlayer) audioPlayer.src = recordedAudioUrl;
+                        if (downloadLink) {
+                            downloadLink.href = recordedAudioUrl;
+                            downloadLink.download = `ensayo_voz_escena_${currentScenario + 1}.webm`;
+                        }
+                        if (recordingBox) recordingBox.style.display = 'block';
+                    };
+                }
+
                 if (micStream) micStream.getTracks().forEach(track => track.stop());
                 if (audioCtx) audioCtx.close();
                 isMicActive = false;
-                micBtn.innerHTML = `<i class="ph-bold ph-microphone"></i> Probar con Tu Micrófono`;
+                micBtn.innerHTML = `<i class="ph-bold ph-microphone"></i> Probar / Grabar con Tu Micrófono`;
                 meterContainer.style.display = 'none';
             }
         }
@@ -541,6 +596,9 @@
 
         function renderScenario() {
             const sc = scenarios[currentScenario];
+            const recordingBox = document.getElementById('recording-box');
+            if (recordingBox) recordingBox.style.display = 'none';
+
             document.getElementById('step-count').innerText = `Escenario ${currentScenario + 1} de ${scenarios.length}`;
             document.getElementById('progress-fill').style.width = `${(currentScenario / scenarios.length) * 100}%`;
 
