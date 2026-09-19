@@ -216,11 +216,9 @@ const coursesData = {
         desc: "Aprende a diseñar presentaciones e infografías de altísima calidad usando Canva para cautivar a tus alumnos.",
         image: "https://images.unsplash.com/photo-1611162617474-5b21e879e113?auto=format&fit=crop&q=80",
         progress: 0,
-        modules: [
-            { id: 1, title: "1. Psicología del Color y Tipografía", videoUrl: "", content: "Antes de arrastrar plantillas en Canva, debes entender cómo los colores afectan el estado de ánimo de la clase.", completed: false },
-            { id: 2, title: "2. Jerarquía Visual en Presentaciones", videoUrl: "", content: "Tus alumnos no leen las diapositivas de forma lineal, las escanean.", completed: false },
-            { id: 3, title: "3. Creación de Infografías", videoUrl: "", content: "El texto plano aburre. Usa los elementos gráficos de Canva para transformar resúmenes de historia.", completed: false }
-        ]
+        isExternal: true,
+        url: "modules/curso_canva_educacion.html",
+        modules: []
     },
     dua: {
         id: 'dua',

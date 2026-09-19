@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Curso Práctico: Creación de Contenido con Canva para Docentes</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --bg-card: rgba(30, 41, 59, 0.75);
+            --bg-surface: rgba(15, 23, 42, 0.6);
+            --primary: #00c4cc;
+            --primary-glow: rgba(0, 196, 204, 0.35);
+            --secondary: #7d2ae8;
+            --accent: #ff66c4;
+            --success: #34d399;
+            --warning: #fbbf24;
+            --error: #f87171;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-light: rgba(255, 255, 255, 0.12);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(0, 196, 204, 0.15) 0%, transparent 45%),
+                radial-gradient(circle at 90% 80%, rgba(125, 42, 232, 0.15) 0%, transparent 45%);
+            background-attachment: fixed;
+        }
+
+        header {
+            padding: 18px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-light);
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(12px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 22px;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .logo-area i {
+            -webkit-text-fill-color: initial;
+            color: var(--primary);
+            font-size: 28px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 10px 22px;
+            border-radius: 12px;
+            border: none;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            box-shadow: 0 4px 15px var(--primary-glow);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 196, 204, 0.5);
+        }
+
+        .btn-outline {
+            background: rgba(255, 255, 255, 0.06);
+            color: var(--text-main);
+            border: 1px solid var(--border-light);
+        }
+
+        .btn-outline:hover {
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        main {
+            flex: 1;
+            max-width: 1150px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+
+        .hero-banner {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .badge-tag {
+            background: rgba(0, 196, 204, 0.15);
+            color: var(--primary);
+            font-size: 12px;
+            font-weight: 800;
+            text-transform: uppercase;
+            padding: 6px 16px;
+            border-radius: 20px;
+            display: inline-block;
+            margin-bottom: 12px;
+            border: 1px solid rgba(0, 196, 204, 0.3);
+        }
+
+        .hero-banner h1 {
+            font-size: 36px;
+            font-weight: 800;
+            margin-bottom: 10px;
+            letter-spacing: -0.5px;
+        }
+
+        .hero-banner p {
+            color: var(--text-muted);
+            font-size: 16px;
+            max-width: 700px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        .course-layout {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .modules-sidebar {
+            background: var(--bg-card);
+            border: 1px solid var(--border-light);
+            border-radius: 20px;
+            padding: 20px;
+            backdrop-filter: blur(16px);
+            height: fit-content;
+        }
+
+        .module-item {
+            padding: 14px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: var(--transition);
+            background: rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .module-item:hover, .module-item.active {
+            background: rgba(0, 196, 204, 0.15);
+            border-color: var(--primary);
+        }
+
+        .module-item.completed {
+            border-color: var(--success);
+        }
+
+        .workspace-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-light);
+            border-radius: 24px;
+            padding: 30px;
+            backdrop-filter: blur(16px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        /* Simulador Canva */
+        .canva-editor {
+            background: #1e293b;
+            border-radius: 18px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+            margin-top: 20px;
+        }
+
+        .editor-toolbar {
+            background: #0f172a;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .tool-btn {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #fff;
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: var(--transition);
+        }
+
+        .tool-btn:hover {
+            background: var(--primary);
+            color: #000;
+        }
+
+        .canvas-preview {
+            height: 320px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+            transition: background 0.4s ease;
+        }
+
+        .canvas-title {
+            font-size: 28px;
+            font-weight: 800;
+            margin-bottom: 12px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+        }
+
+        .canvas-subtitle {
+            font-size: 16px;
+            opacity: 0.9;
+            max-width: 500px;
+            line-height: 1.5;
+        }
+
+        .sticker-badge {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(8px);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .quiz-option {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-light);
+            border-radius: 14px;
+            padding: 16px 20px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .quiz-option:hover {
+            background: rgba(0, 196, 204, 0.1);
+            border-color: var(--primary);
+        }
+
+        footer {
+            text-align: center;
+            padding: 25px;
+            color: var(--text-muted);
+            font-size: 13px;
+            border-top: 1px solid var(--border-light);
+        }
+
+        @media (max-width: 850px) {
+            .course-layout { grid-template-columns: 1fr; }
+            header { padding: 15px 20px; }
+            .hero-banner h1 { font-size: 26px; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo-area">
+            <i class="ph-bold ph-palette"></i>
+            <span>Canva para Docentes 360</span>
+        </div>
+        <div class="header-actions">
+            <button class="btn btn-outline" onclick="if(window.parent !== window && window.parent.app){ window.parent.app.navigate('courses'); } else { location.href='../index.html'; }">
+                <i class="ph-bold ph-arrow-left"></i> Volver al Catálogo
+            </button>
+        </div>
+    </header>
+
+    <main>
+        <div class="hero-banner">
+            <div class="badge-tag"><i class="ph-bold ph-sparkle"></i> Curso Práctico e Interactivo</div>
+            <h1>Creación de Contenido Audiovisual y Gráfico con Canva</h1>
+            <p>Aprende a diseñar infografías, presentaciones interactivas y recursos educativos visuales de altísima calidad para cautivar a tus estudiantes.</p>
+        </div>
+
+        <div class="course-layout">
+            <div class="modules-sidebar">
+                <h3 style="font-size: 16px; margin-bottom: 15px; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px;">Módulos del Curso</h3>
+                <div id="modules-list">
+                    <!-- Se llena dinámicamente -->
+                </div>
+            </div>
+
+            <div class="workspace-card" id="workspace-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <span id="module-tag" style="color: var(--primary); font-weight: 700; font-size: 13px; text-transform: uppercase;">Módulo 1</span>
+                    <span id="xp-tag" style="color: var(--warning); font-weight: 800; font-size: 13px;"><i class="ph-bold ph-lightning"></i> +150 XP</span>
+                </div>
+
+                <h2 id="module-title" style="font-size: 26px; margin-bottom: 12px;">1. Psicología del Color y Tipografía Didáctica</h2>
+                <p id="module-desc" style="color: var(--text-muted); font-size: 15px; line-height: 1.6; margin-bottom: 25px;">
+                    El color no es solo decoración en la enseñanza: desencadena respuestas emocionales y guía la atención cognitiva del estudiante.
+                </p>
+
+                <!-- Editor interactivo de Canva -->
+                <div class="canva-editor">
+                    <div class="editor-toolbar">
+                        <div style="display: flex; gap: 8px;">
+                            <button class="tool-btn" onclick="changeBg('#1e293b', '#fff')"><i class="ph-bold ph-paint-bucket"></i> Azul Oscuro</button>
+                            <button class="tool-btn" onclick="changeBg('linear-gradient(135deg, #7d2ae8, #ff66c4)', '#fff')"><i class="ph-bold ph-gradient"></i> Neón Edu</button>
+                            <button class="tool-btn" onclick="changeBg('#f8fafc', '#0f172a')"><i class="ph-bold ph-sun"></i> Claro DUA</button>
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <button class="tool-btn" onclick="changeFont('Outfit')"><i class="ph-bold ph-text-h"></i> Modern Sans</button>
+                            <button class="tool-btn" onclick="changeFont('Georgia')"><i class="ph-bold ph-text-t"></i> Editorial</button>
+                            <button class="tool-btn" onclick="toggleSticker()"><i class="ph-bold ph-sticker"></i> Alternar Sticker</button>
+                        </div>
+                    </div>
+                    <div class="canvas-preview" id="canvas-preview" style="background: linear-gradient(135deg, #00c4cc, #7d2ae8); color: white;">
+                        <div class="sticker-badge" id="sticker-badge"><i class="ph-bold ph-sparkle"></i> Recursos DUA Canva</div>
+                        <h3 class="canvas-title" id="canvas-title">Revolución en la Didáctica Visual</h3>
+                        <p class="canvas-subtitle" id="canvas-subtitle">El 80% de la información procesada por el cerebro humano es de naturaleza visual. Utiliza contrastes altos para mejorar la legibilidad.</p>
+                    </div>
+                </div>
+
+                <div style="margin-top: 30px;">
+                    <h3 style="font-size: 18px; margin-bottom: 15px; color: var(--text-main);">Desafío Práctico del Módulo:</h3>
+                    <div id="quiz-container">
+                        <!-- Se llena dinámicamente -->
+                    </div>
+                </div>
+
+                <div style="margin-top: 25px; display: flex; justify-content: space-between; align-items: center;">
+                    <button class="btn btn-outline" id="prev-btn" onclick="navigateModule(-1)"><i class="ph-bold ph-arrow-left"></i> Anterior</button>
+                    <button class="btn btn-primary" id="next-btn" onclick="navigateModule(1)">Siguiente Módulo <i class="ph-bold ph-arrow-right"></i></button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        Psicoeduca Academy &copy; 2026 - Curso Canva para Docentes
+    </footer>
+
+    <script>
+        const modulesData = [
+            {
+                id: 1,
+                title: "1. Psicología del Color y Tipografía Didáctica",
+                desc: "Descubre cómo los contrastes, las paletas armónicas y las fuentes sin remate (Sans-Serif) mejoran la carga cognitiva de tus alumnos según la neuroeducación.",
+                bg: "linear-gradient(135deg, #00c4cc, #7d2ae8)",
+                color: "#ffffff",
+                canvasTitle: "Psicología del Color en el Aula",
+                canvasSubtitle: "Usa tonos fríos (azul/verde) para la concentración y cálidos (amarillo/naranja) para captar atención inmediata.",
+                q: "¿Por qué se recomienda usar tipografías limpias y alto contraste en Canva?",
+                options: [
+                    { text: "Para reducir la carga cognitiva y asegurar accesibilidad (DUA) en todos los estudiantes.", correct: true, exp: "¡Correcto! El alto contraste y las fuentes legibles benefician tanto a alumnos neurotípicos como con baja visión." },
+                    { text: "Porque se ve más bonito sin importar la lectura.", correct: false, exp: "Incorrecto. El objetivo no es solo estético, sino facilitar la asimilación cognitiva del mensaje." }
+                ]
+            },
+            {
+                id: 2,
+                title: "2. Jerarquía Visual y Escanabilidad",
+                desc: "Los estudiantes modernos no leen diapositivas densas; las escanean. Aprende a usar tamaños, negritas y espacios en blanco estratégicamente.",
+                bg: "linear-gradient(135deg, #0f172a, #1e293b)",
+                color: "#ffffff",
+                canvasTitle: "Regla del Punto Focal",
+                canvasSubtitle: "1 Título Principal (Grande) + 1 Subtítulo Destacado + Máximo 3 Puntos Clave. Evita bloques gigantescos de texto.",
+                q: "En una diapositiva didáctica efectiva, ¿cuál debe ser el elemento predominante?",
+                options: [
+                    { text: "El concepto o imagen principal (Punto Focal) bien delimitado.", correct: true, exp: "¡Excelente! El cerebro fija primero la atención en el punto focal principal antes de explorar el resto." },
+                    { text: "Copiar todo el párrafo del libro de texto en letra pequeña.", correct: false, exp: "Incorrecto. Saturar de texto genera fatiga visual y desconexión inmediata." }
+                ]
+            },
+            {
+                id: 3,
+                title: "3. Diseño de Infografías y Esquemas Sintéticos",
+                desc: "Transforma temas complejos de historia, ciencias o literatura en infografías paso a paso usando las plantillas educativas de Canva.",
+                bg: "linear-gradient(135deg, #ff66c4, #7d2ae8)",
+                color: "#ffffff",
+                canvasTitle: "Infografías de Alto Impacto",
+                canvasSubtitle: "Organiza el conocimiento en secuencia vertical u horizontal usando iconos universales de Phosphor/Canva.",
+                q: "¿Cuál es la ventaja didáctica de usar una infografía interactiva?",
+                options: [
+                    { text: "Permite sintetizar relaciones causa-efecto de forma visual y memorable.", correct: true, exp: "¡Exacto! Las infografías facilitan el pensamiento de orden superior y la memoria a largo plazo." },
+                    { text: "Sustituir por completo la lectura crítica de textos.", correct: false, exp: "Incorrecto. La infografía sintetiza y motiva, no reemplaza la lectura profunda." }
+                ]
+            },
+            {
+                id: 4,
+                title: "4. Presentaciones Animadas y Recursos Gamificados",
+                desc: "Integra animaciones suaves, código QR interactivo y cuestionarios en vivo creando experiencias donde la clase participa activamente.",
+                bg: "linear-gradient(135deg, #34d399, #059669)",
+                color: "#ffffff",
+                canvasTitle: "Presentaciones Interactivas 360",
+                canvasSubtitle: "Crea experiencias donde los alumnos escanean códigos QR o responden preguntas en tiempo real desde la pantalla.",
+                q: "¿Qué efecto generan las transiciones y preguntas interactivas en clase?",
+                options: [
+                    { text: "Aumentan la dopamina y la participación activa (Engagement) del grupo.", correct: true, exp: "¡Brillante! La interacción en tiempo real transforma a los oyentes pasivos en creadores activos." },
+                    { text: "Distraen sin ningún propósito educativo.", correct: false, exp: "Incorrecto. Bien planificadas, las preguntas interactivas refuerzan la evaluación formativa." }
+                ]
+            }
+        ];
+
+        let currentModIndex = 0;
+        let completedModules = new Set();
+
+        function renderModulesList() {
+            const list = document.getElementById('modules-list');
+            list.innerHTML = modulesData.map((m, index) => {
+                const isActive = index === currentModIndex;
+                const isComp = completedModules.has(m.id);
+                return `
+                    <div class="module-item ${isActive ? 'active' : ''} ${isComp ? 'completed' : ''}" onclick="selectModule(${index})">
+                        <div style="font-size: 13px; font-weight: 600;">
+                            ${m.title}
+                            ${isComp ? '<br><small style="color:var(--success)">Completado</small>' : ''}
+                        </div>
+                        ${isComp ? '<i class="ph-fill ph-check-circle" style="color:var(--success)"></i>' : '<i class="ph ph-play-circle"></i>'}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function selectModule(index) {
+            currentModIndex = index;
+            const m = modulesData[currentModIndex];
+
+            document.getElementById('module-tag').innerText = `Módulo ${m.id} de ${modulesData.length}`;
+            document.getElementById('module-title').innerText = m.title;
+            document.getElementById('module-desc').innerText = m.desc;
+
+            const preview = document.getElementById('canvas-preview');
+            preview.style.background = m.bg;
+            preview.style.color = m.color;
+
+            document.getElementById('canvas-title').innerText = m.canvasTitle;
+            document.getElementById('canvas-subtitle').innerText = m.canvasSubtitle;
+
+            // Render Quiz
+            const quizContainer = document.getElementById('quiz-container');
+            quizContainer.innerHTML = `
+                <p style="font-size: 15px; margin-bottom: 12px; font-weight: 600; color: var(--primary);">${m.q}</p>
+                ${m.options.map((opt, i) => `
+                    <div class="quiz-option" onclick="answerQuiz(${m.id}, ${opt.correct}, '${opt.exp.replace(/'/g, "\\'")}')">
+                        <span>${opt.text}</span>
+                        <i class="ph ph-circle"></i>
+                    </div>
+                `).join('')}
+            `;
+
+            renderModulesList();
+        }
+
+        function answerQuiz(modId, isCorrect, exp) {
+            alert(exp);
+            if (isCorrect) {
+                completedModules.add(modId);
+                renderModulesList();
+
+                if (window.parent && window.parent.gameState) {
+                    window.parent.gameState.xp += 150;
+                    if (window.parent.saveGameState) window.parent.saveGameState();
+                }
+
+                if (completedModules.size === modulesData.length) {
+                    setTimeout(() => {
+                        alert("🎉 ¡Felicidades! Has completado exitosamente todos los módulos del Curso de Canva para Docentes (+600 XP).");
+                    }, 500);
+                }
+            }
+        }
+
+        function changeBg(bg, textColor) {
+            const preview = document.getElementById('canvas-preview');
+            preview.style.background = bg;
+            preview.style.color = textColor;
+        }
+
+        function changeFont(fontFamily) {
+            document.getElementById('canvas-title').style.fontFamily = fontFamily;
+            document.getElementById('canvas-subtitle').style.fontFamily = fontFamily;
+        }
+
+        function toggleSticker() {
+            const badge = document.getElementById('sticker-badge');
+            badge.style.display = badge.style.display === 'none' ? 'flex' : 'none';
+        }
+
+        function navigateModule(direction) {
+            const newIndex = currentModIndex + direction;
+            if (newIndex >= 0 && newIndex < modulesData.length) {
+                selectModule(newIndex);
+            }
+        }
+
+        // Inicializar
+        selectModule(0);
+    </script>
+</body>
+</html>
