@@ -44,9 +44,7 @@ input{font:inherit;padding:10px 12px;border-radius:10px;border:1px solid var(--l
 .cert{border:3px double var(--v);border-radius:6px;padding:44px 20px;text-align:center;background:var(--card)}
 .cert h2{font-size:clamp(28px,6vw,44px);color:var(--v)}
 </style></head><body>
-<header>
-<button class="btn g" onclick="if(window.parent!==window&&window.parent.app){window.parent.app.navigate('courses');}else{location.href='../index.html';}">← Volver</button>
-<button class="brand" onclick="S.v='home';render()">Canva para cursos</button>
+<header><button class="brand" onclick="S.v='home';render()">Canva para cursos</button>
 <div class="prog"><span id="pct"></span><div class="track"><div id="bar"></div></div></div>
 <button class="btn g" onclick="S.v='cert';render()">Certificado</button></header>
 <main class="wrap" id="app"></main>

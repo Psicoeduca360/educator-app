@@ -213,7 +213,7 @@ const coursesData = {
     canva: {
         id: 'canva',
         title: "Creación de Contenido con Canva",
-        desc: "Aprende a diseñar presentaciones e infografías de altísima calidad usando Canva para cautivar a tus alumnos.",
+        desc: "Aprende a diseñar, producir y publicar tu propio curso digital paso a paso sin experiencia previa en diseño.",
         image: "https://images.unsplash.com/photo-1611162617474-5b21e879e113?auto=format&fit=crop&q=80",
         progress: 0,
         isExternal: true,
@@ -748,7 +748,7 @@ Para abordar <em>"${userText}"</em> desde la innovación educativa:<br>
                             <h2 style="font-size: 28px; margin-bottom: 15px;">${currentModule.title}</h2>
                             ${duaUxElements}
                             ${videoElement}
-                            <div style="font-size: 18px; line-height: 1.6; color: var(--text-secondary); margin-bottom: 40px;">${currentModule.content}</div>
+                            <div style="font-size: 18px; line-height: 1.6; color: var(--text-secondary); margin-bottom: 20px;">${currentModule.content}</div>
                             ${actionBtn}
                             ${course.progress === 100 ? `<button class="hero-btn" style="background: #FBBF24; color: #111; margin-top: 20px;" onclick="app.showCertificate('${course.id}')"><i class="ph-bold ph-certificate"></i> Descargar Certificado Oficial</button>` : ''}
                         </div>
