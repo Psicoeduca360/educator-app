@@ -397,6 +397,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if("constructivista diagnostico situacional".includes(query)) addResult('ph-brain', 'Perfil Constructivista', 'Diagnóstico', 'tests');
             if("innovacion educativa scanner disruptivo".includes(query)) addResult('ph-scan', 'Scanner de Innovación', 'Diagnóstico Avanzado', 'tests');
             if("pedagogico pedagogia habilidades".includes(query)) addResult('ph-chalkboard-teacher', 'Habilidades Pedagógicas', 'Diagnóstico Avanzado', 'tests');
+            if("consultor vocacional orientacion carrera perfil".includes(query)) addResult('ph-compass', 'Consultor Vocacional 360', 'Orientación Profesional', 'consultor');
+            if("voz escena oratoria modulacion tono habla".includes(query)) addResult('ph-microphone-stage', 'Voz en Escena', 'Simulador de Oratoria', 'gamification');
 
             if(resultsHtml) { resultsContainer.innerHTML = resultsHtml; resultsContainer.style.display = 'block'; } 
             else { resultsContainer.innerHTML = `<div style="padding: 15px; color: var(--text-secondary); text-align: center;">No se encontraron resultados para "${query}"</div>`; resultsContainer.style.display = 'block'; }
@@ -1533,18 +1535,38 @@ Para abordar <em>"${userText}"</em> desde la innovación educativa:<br>
     };
 
     const renderConsultor = () => {
-        window.app.openExternalModule('modules/consultor_vocacional.html');
-        return '';
+        return `
+            <div class="view-animate" style="height: calc(100vh - 100px); display: flex; flex-direction: column;">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-shrink: 0;">
+                    <div style="display: flex; align-items: center; gap: 12px; cursor: pointer; color: var(--text-secondary); background: rgba(255,255,255,0.05); padding: 10px 20px; border-radius: 12px;" onclick="app.navigate('home')">
+                        <i class="ph-bold ph-arrow-left"></i> Volver al Dashboard
+                    </div>
+                </div>
+                <div style="flex: 1; border-radius: 20px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 10px 30px rgba(0,0,0,0.5); position: relative;">
+                    <iframe src="modules/consultor_vocacional.html" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; background: #0f172a;"></iframe>
+                </div>
+            </div>
+        `;
     };
 
     const renderGamification = () => `
         <div class="view-animate">
             <div class="view-header"><h1 class="view-title">Aprende Jugando</h1></div>
             <div class="grid-container">
+                <div class="hero-banner avatar-card" style="background: linear-gradient(135deg, rgba(168, 85, 247, 0.9), rgba(236, 72, 153, 0.9)); padding: 0; flex-direction: column; height: 280px; grid-column: span 2;">
+                    <div class="hero-content" style="z-index: 2; padding: 30px;">
+                        <span style="background: rgba(255,255,255,0.2); color: #fff; padding: 4px 12px; border-radius: 8px; font-size: 11px; font-weight: bold; text-transform: uppercase;"><i class="ph-bold ph-microphone-stage"></i> ¡Nuevo Simulador!</span>
+                        <h2 style="color: #fff; font-size: 26px; margin: 10px 0 6px;">Voz en Escena</h2>
+                        <p style="color: #fff; margin-bottom: 20px; opacity: 0.95; font-size: 15px; max-width: 650px;">Simulador interactivo de oratoria pedagógica, modulación de tono, volumen y modulación vocal para el aula de clase.</p>
+                        <button class="hero-btn" style="background: #fff; color: #9333EA; font-weight: 700;" onclick="app.openExternalModule('modules/voz_en_escena.html')"><i class="ph-bold ph-microphone"></i> Iniciar Voz en Escena (+300 XP)</button>
+                    </div>
+                </div>
+
                 <div class="hero-banner avatar-card" style="background: url('assets/myth.png') center/cover; padding: 0; flex-direction: column; height: 280px;">
                     <div style="background: rgba(15,23,42,0.8); width: 100%; height: 100%; position: absolute; z-index: 1;"></div>
                     <div class="hero-content" style="z-index: 2; padding: 30px;"><h2 style="color: var(--error);">Verdadero o Falso</h2><p style="color: #fff; margin-bottom: 15px; opacity: 0.9; font-size: 14px;">Pon a prueba tus conocimientos sobre mitos en la educación.</p><button class="hero-btn" style="background: var(--error); color: #fff;" onclick="app.startMythGame()">Jugar</button></div>
                 </div>
+
                 <div class="hero-banner avatar-card" style="background: url('assets/whiteboard.png') center/cover; padding: 0; flex-direction: column; height: 280px;">
                     <div style="background: rgba(15,23,42,0.8); width: 100%; height: 100%; position: absolute; z-index: 1;"></div>
                     <div class="hero-content" style="z-index: 2; padding: 30px;"><h2 style="color: var(--primary);">Rompecabezas de Clase</h2><p style="color: #fff; margin-bottom: 15px; opacity: 0.9; font-size: 14px;">Ordena los pasos para crear una lección perfecta.</p><button class="hero-btn" onclick="app.startWhiteboardGame()">Ir a la Pizarra</button></div>
