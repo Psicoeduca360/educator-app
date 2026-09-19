@@ -128,7 +128,40 @@ const playSound = (type) => {
     osc.connect(gain);
     gain.connect(audioCtx.destination);
 
-    if (type.startsWith('nav-')) {
+    if (type === 'techWelcome') {
+        const now = audioCtx.currentTime;
+        // Acorde futurista tecnológico arpegiado (C5, E5, G5, C6, E6)
+        const freqs = [523.25, 659.25, 783.99, 1046.50, 1318.51];
+        freqs.forEach((freq, i) => {
+            const osc = audioCtx.createOscillator();
+            const g = audioCtx.createGain();
+            osc.type = i % 2 === 0 ? 'sine' : 'triangle';
+            osc.frequency.setValueAtTime(freq * 0.5, now + (i * 0.07));
+            osc.frequency.exponentialRampToValueAtTime(freq, now + (i * 0.07) + 0.12);
+            
+            g.gain.setValueAtTime(0, now + (i * 0.07));
+            g.gain.linearRampToValueAtTime(0.08, now + (i * 0.07) + 0.04);
+            g.gain.exponentialRampToValueAtTime(0.001, now + (i * 0.07) + 0.7);
+            
+            osc.connect(g);
+            g.connect(audioCtx.destination);
+            osc.start(now + (i * 0.07));
+            osc.stop(now + (i * 0.07) + 0.7);
+        });
+
+        // Pulso Sub-Bass de Arranque Tecnológico
+        const subOsc = audioCtx.createOscillator();
+        const subGain = audioCtx.createGain();
+        subOsc.type = 'sine';
+        subOsc.frequency.setValueAtTime(140, now);
+        subOsc.frequency.exponentialRampToValueAtTime(50, now + 0.6);
+        subGain.gain.setValueAtTime(0.12, now);
+        subGain.gain.exponentialRampToValueAtTime(0.001, now + 0.65);
+        subOsc.connect(subGain);
+        subGain.connect(audioCtx.destination);
+        subOsc.start(now);
+        subOsc.stop(now + 0.65);
+    } else if (type.startsWith('nav-')) {
         let freq = 600;
         if(type === 'nav-history') freq = 400;
         else if(type === 'nav-courses') freq = 500;
@@ -145,6 +178,14 @@ const playSound = (type) => {
         gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
         osc.start();
         osc.stop(audioCtx.currentTime + 0.1);
+    } else if (type === 'cardFlip') {
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(850, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(320, audioCtx.currentTime + 0.14);
+        gain.gain.setValueAtTime(0.07, audioCtx.currentTime); 
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.14);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.14);
     } else if (type === 'click') {
         osc.type = 'sine';
         osc.frequency.setValueAtTime(600, audioCtx.currentTime);
@@ -1446,12 +1487,133 @@ Para abordar <em>"${userText}"</em> desde la innovación educativa:<br>
                     ${window.app.renderVideoPlayer('https://youtube.com/shorts/mO9YQlKCako', 'Evolución e Historia de la Educación', 'assets/history_greece.png')}
                 </div>
             </div>
-            <div class="history-timeline">
-                <div class="history-card avatar-card" onclick="app.openHistoryModal(0)"><div class="history-img-wrapper"><div class="history-img" style="background-image: url('assets/history_greece.png');"></div></div><div class="history-overlay"><h2>Antigüedad Clásica</h2><p>En la Antigua Grecia y Roma, filósofos como Sócrates y Platón sentaron las bases del pensamiento crítico.</p></div></div>
-                <div class="history-card avatar-card" onclick="app.openHistoryModal(1)"><div class="history-img-wrapper"><div class="history-img" style="background-image: url('assets/history_medieval.png'); animation-direction: alternate-reverse;"></div></div><div class="history-overlay"><h2>Edad Media y Monasterios</h2><p>El conocimiento se preservó casi exclusivamente en los monasterios bajo el método escolástico.</p></div></div>
-                <div class="history-card avatar-card" onclick="app.openHistoryModal(2)"><div class="history-img-wrapper"><div class="history-img" style="background-image: url('assets/history_industrial.png');"></div></div><div class="history-overlay"><h2>Revolución Industrial</h2><p>Surgieron las aulas estandarizadas y la enseñanza simultánea.</p></div></div>
-                <div class="history-card avatar-card" onclick="app.openHistoryModal(3)"><div class="history-img-wrapper"><div class="history-img" style="background-image: url('assets/myth.png'); animation-direction: alternate-reverse;"></div></div><div class="history-overlay"><h2>Escuela Nueva (Constructivismo)</h2><p>El alumno se convierte en el centro activo de su propio aprendizaje.</p></div></div>
-                <div class="history-card avatar-card" onclick="app.openHistoryModal(4)"><div class="history-img-wrapper"><div class="history-img" style="background-image: url('assets/whiteboard.png');"></div></div><div class="history-overlay"><h2>Era Digital e IA</h2><p>La información es libre y el profesor se transforma en diseñador de experiencias.</p></div></div>
+            <div class="history-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 24px; margin-bottom: 40px;">
+                
+                <!-- Tarjeta 1: Antigüedad Clásica -->
+                <div class="history-flip-card" onmouseenter="playSound('cardFlip')" onclick="playSound('cardFlip'); this.classList.toggle('flipped')">
+                    <div class="history-flip-inner">
+                        <div class="history-flip-front" style="background-image: url('assets/history_greece.png');">
+                            <div class="history-overlay-front">
+                                <span class="history-badge">Siglos V a.C. - IV d.C.</span>
+                                <h2>Antigüedad Clásica</h2>
+                                <p><i class="ph-bold ph-arrows-clockwise"></i> Pasa el cursor o toca para girar</p>
+                            </div>
+                        </div>
+                        <div class="history-flip-back">
+                            <div class="history-back-header">
+                                <span class="history-badge" style="background: var(--primary); color: #000;">Grecia y Roma</span>
+                                <h3>Mayéutica y Diálogo Filosófico</h3>
+                            </div>
+                            <p class="history-back-desc">
+                                En la Antigua Grecia, Sócrates y Platón sentaron las bases del pensamiento crítico mediante la Mayéutica: formular preguntas estratégicas para que el alumno descubra el conocimiento por sí mismo en lugar de memorizar pasivamente.
+                            </p>
+                            <button class="hero-btn history-back-btn" onclick="event.stopPropagation(); app.openHistoryModal(0)">
+                                <i class="ph-bold ph-magnifying-glass-plus"></i> Ver Análisis Completo
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tarjeta 2: Escolástica Medieval -->
+                <div class="history-flip-card" onmouseenter="playSound('cardFlip')" onclick="playSound('cardFlip'); this.classList.toggle('flipped')">
+                    <div class="history-flip-inner">
+                        <div class="history-flip-front" style="background-image: url('assets/history_medieval.png');">
+                            <div class="history-overlay-front">
+                                <span class="history-badge">Siglos V - XV</span>
+                                <h2>Escolástica Medieval</h2>
+                                <p><i class="ph-bold ph-arrows-clockwise"></i> Pasa el cursor o toca para girar</p>
+                            </div>
+                        </div>
+                        <div class="history-flip-back">
+                            <div class="history-back-header">
+                                <span class="history-badge" style="background: #A855F7; color: #fff;">Monasterios & Universidades</span>
+                                <h3>La Disputatio y el Saber</h3>
+                            </div>
+                            <p class="history-back-desc">
+                                El conocimiento se preservó en los scriptoriums monásticos y nacieron las primeras Universidades (Bolonia, París, Oxford) con el método Escolástico y la <em>Disputatio</em>: debate riguroso entre fe y lógica aristotélica.
+                            </p>
+                            <button class="hero-btn history-back-btn" onclick="event.stopPropagation(); app.openHistoryModal(1)">
+                                <i class="ph-bold ph-magnifying-glass-plus"></i> Ver Análisis Completo
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tarjeta 3: Revolución Industrial -->
+                <div class="history-flip-card" onmouseenter="playSound('cardFlip')" onclick="playSound('cardFlip'); this.classList.toggle('flipped')">
+                    <div class="history-flip-inner">
+                        <div class="history-flip-front" style="background-image: url('assets/history_industrial.png');">
+                            <div class="history-overlay-front">
+                                <span class="history-badge">Siglos XIX - XX</span>
+                                <h2>Revolución Industrial</h2>
+                                <p><i class="ph-bold ph-arrows-clockwise"></i> Pasa el cursor o toca para girar</p>
+                            </div>
+                        </div>
+                        <div class="history-flip-back">
+                            <div class="history-back-header">
+                                <span class="history-badge" style="background: var(--warning); color: #000;">Modelo Prusiano</span>
+                                <h3>Escuelas Estandarizadas</h3>
+                            </div>
+                            <p class="history-back-desc">
+                                La educación se masificó a imagen de las fábricas. Se introdujeron timbres por turnos, filas de pupitres e instrucción frontal simultánea con el fin de formar trabajadores disciplinados y capacitados para acatar reglas.
+                            </p>
+                            <button class="hero-btn history-back-btn" onclick="event.stopPropagation(); app.openHistoryModal(2)">
+                                <i class="ph-bold ph-magnifying-glass-plus"></i> Ver Análisis Completo
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tarjeta 4: Escuela Nueva / Constructivismo -->
+                <div class="history-flip-card" onmouseenter="playSound('cardFlip')" onclick="playSound('cardFlip'); this.classList.toggle('flipped')">
+                    <div class="history-flip-inner">
+                        <div class="history-flip-front" style="background-image: url('assets/myth.png');">
+                            <div class="history-overlay-front">
+                                <span class="history-badge">Siglo XX</span>
+                                <h2>Escuela Nueva (Constructivismo)</h2>
+                                <p><i class="ph-bold ph-arrows-clockwise"></i> Pasa el cursor o toca para girar</p>
+                            </div>
+                        </div>
+                        <div class="history-flip-back">
+                            <div class="history-back-header">
+                                <span class="history-badge" style="background: var(--success); color: #000;">Revolución Pedagógica</span>
+                                <h3>El Alumno al Centro</h3>
+                            </div>
+                            <p class="history-back-desc">
+                                Piaget, Vygotsky, Montessori y Dewey demostraron que el alumno no es un receptor pasivo sino un sujeto activo que construye su saber mediante la experiencia práctica, el juego didáctico y la interacción social.
+                            </p>
+                            <button class="hero-btn history-back-btn" onclick="event.stopPropagation(); app.openHistoryModal(3)">
+                                <i class="ph-bold ph-magnifying-glass-plus"></i> Ver Análisis Completo
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tarjeta 5: Era Digital e IA -->
+                <div class="history-flip-card" onmouseenter="playSound('cardFlip')" onclick="playSound('cardFlip'); this.classList.toggle('flipped')">
+                    <div class="history-flip-inner">
+                        <div class="history-flip-front" style="background-image: url('assets/whiteboard.png');">
+                            <div class="history-overlay-front">
+                                <span class="history-badge">Siglo XXI</span>
+                                <h2>Era Digital e IA</h2>
+                                <p><i class="ph-bold ph-arrows-clockwise"></i> Pasa el cursor o toca para girar</p>
+                            </div>
+                        </div>
+                        <div class="history-flip-back">
+                            <div class="history-back-header">
+                                <span class="history-badge" style="background: #EC4899; color: #fff;">Educación Inmersiva</span>
+                                <h3>Docente Diseñador (LXD)</h3>
+                            </div>
+                            <p class="history-back-desc">
+                                Con internet y la IA, la información es instantánea. El profesor evoluciona de expositor a Arquitecto de Experiencias de Aprendizaje (LXD), enfocándose en pensamiento crítico, diseño DUA y problemas reales.
+                            </p>
+                            <button class="hero-btn history-back-btn" onclick="event.stopPropagation(); app.openHistoryModal(4)">
+                                <i class="ph-bold ph-magnifying-glass-plus"></i> Ver Análisis Completo
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </div>
     `;
@@ -1591,9 +1753,18 @@ Para abordar <em>"${userText}"</em> desde la innovación educativa:<br>
 
     const views = { home: renderHome, history: renderHistory, tests: renderTests, gamification: renderGamification, courses: renderCoursesCatalog, profile: renderProfile, community: renderCommunity, news: renderNews, consultor: renderConsultor };
 
-    // Gestor de limpieza del Overlay de Bienvenida Animado
+    // Gestor de limpieza del Overlay de Bienvenida Animado con Sonido Tecnológico
     const welcomeOverlay = document.getElementById('welcome-overlay');
     if (welcomeOverlay) {
+        try { playSound('techWelcome'); } catch(e) {}
+        
+        // Listener de respaldo si el navegador requiere una primera interacción para el Web Audio API
+        const playOnFirstInteraction = () => {
+            try { playSound('techWelcome'); } catch(e) {}
+            document.removeEventListener('pointerdown', playOnFirstInteraction);
+        };
+        document.addEventListener('pointerdown', playOnFirstInteraction, { once: true });
+
         setTimeout(() => {
             if (welcomeOverlay && welcomeOverlay.parentNode) {
                 welcomeOverlay.remove();
