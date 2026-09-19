@@ -1188,7 +1188,7 @@ Para abordar <em>"${userText}"</em> desde la innovación educativa:<br>
                     <p style="font-size: 16px; margin-bottom: 20px; opacity: 0.9;">${motivationalSubtitle}</p>
                     <div style="display: flex; gap: 15px; margin-top: 15px; flex-wrap: wrap;">
                         <button class="hero-btn" onclick="app.navigate('news')">Ver Novedades</button>
-                        <button class="hero-btn" style="background: var(--accent); color: white;" onclick="window.open('./modules/consultor_vocacional.html', '_blank')"><i class="ph-bold ph-compass"></i> Consultor Vocacional</button>
+                        <button class="hero-btn" style="background: var(--accent); color: white;" onclick="app.navigate('consultor')"><i class="ph-bold ph-compass"></i> Consultor Vocacional</button>
                         <button class="hero-btn" style="background: rgba(255,255,255,0.1); color: white;" onclick="app.navigate('courses')">Catálogo de Cursos</button>
                     </div>
                 </div>
@@ -1516,7 +1516,10 @@ Para abordar <em>"${userText}"</em> desde la innovación educativa:<br>
     };
 
     const renderCoursesCatalog = () => {
-        let html = Object.values(coursesData).map(c => `
+        const sortedCourses = Object.values(coursesData).sort((a, b) => 
+            a.title.localeCompare(b.title, 'es', { sensitivity: 'base' })
+        );
+        let html = sortedCourses.map(c => `
             <div class="card avatar-card" onclick="app.startCourse('${c.id}')" style="padding: 0;">
                 <div style="height: 180px; background: url('${c.image}') center/cover; position: relative;"></div>
                 <div style="padding: 24px;">
@@ -1526,7 +1529,12 @@ Para abordar <em>"${userText}"</em> desde la innovación educativa:<br>
                     <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: ${c.progress}%;"></div></div>
                 </div>
             </div>`).join('');
-        return `<div class="view-animate"><div class="view-header"><h1 class="view-title">Micro-Cursos</h1></div><div class="grid-container">${html}</div></div>`;
+        return `<div class="view-animate"><div class="view-header"><h1 class="view-title">Micro-Cursos</h1><p class="view-subtitle">Catálogo de formación continua organizado alfabéticamente (A-Z).</p></div><div class="grid-container">${html}</div></div>`;
+    };
+
+    const renderConsultor = () => {
+        window.app.openExternalModule('modules/consultor_vocacional.html');
+        return '';
     };
 
     const renderGamification = () => `
@@ -1561,7 +1569,17 @@ Para abordar <em>"${userText}"</em> desde la innovación educativa:<br>
         </div>
     `;
 
-    const views = { home: renderHome, history: renderHistory, tests: renderTests, gamification: renderGamification, courses: renderCoursesCatalog, profile: renderProfile, community: renderCommunity, news: renderNews };
+    const views = { home: renderHome, history: renderHistory, tests: renderTests, gamification: renderGamification, courses: renderCoursesCatalog, profile: renderProfile, community: renderCommunity, news: renderNews, consultor: renderConsultor };
+
+    // Gestor de limpieza del Overlay de Bienvenida Animado
+    const welcomeOverlay = document.getElementById('welcome-overlay');
+    if (welcomeOverlay) {
+        setTimeout(() => {
+            if (welcomeOverlay && welcomeOverlay.parentNode) {
+                welcomeOverlay.remove();
+            }
+        }, 3200);
+    }
 
     app.navigate('home');
     navLinks.forEach(link => { link.addEventListener('click', (e) => { e.preventDefault(); app.navigate(e.currentTarget.getAttribute('data-target')); }); });

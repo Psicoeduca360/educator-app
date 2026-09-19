@@ -326,7 +326,7 @@
             <span>Consultor Vocacional 360</span>
         </div>
         <div class="header-actions">
-            <button class="btn btn-outline" onclick="window.close()"><i class="ph-bold ph-x"></i> Cerrar</button>
+            <button class="btn btn-outline" onclick="if(window.parent !== window && window.parent.app){ window.parent.app.navigate('home'); } else if(window.history.length > 1){ window.history.back(); } else { location.href='../index.html'; }"><i class="ph-bold ph-arrow-left"></i> Volver a la Academia</button>
         </div>
     </header>
 
