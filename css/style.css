@@ -552,4 +552,364 @@ a, button, .card, .nav-link, .search-item, .user-profile, .module-item, .quiz-op
     color: #000;
 }
 
+/* ==========================================================================
+   PSICOEDUCA ACADEMY - SISTEMA VISUAL EXTENDIDO & COMPONENTES EDUCATIVOS
+   ========================================================================== */
+
+/* --- Target Audiences Grid ("¿Qué quieres desarrollar?") --- */
+.audiences-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+    margin-bottom: 40px;
+}
+
+.audience-card {
+    background: linear-gradient(145deg, rgba(30, 41, 59, 0.7), rgba(15, 23, 42, 0.9));
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 20px;
+    padding: 24px 20px;
+    text-align: left;
+    transition: var(--transition);
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.audience-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary), var(--success));
+    opacity: 0;
+    transition: var(--transition);
+}
+
+.audience-card:hover {
+    transform: translateY(-5px);
+    border-color: rgba(56, 189, 248, 0.4);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5), 0 0 20px rgba(56, 189, 248, 0.15);
+}
+
+.audience-card:hover::before {
+    opacity: 1;
+}
+
+.audience-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    background: rgba(56, 189, 248, 0.1);
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    margin-bottom: 16px;
+}
+
+.audience-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 8px;
+    line-height: 1.3;
+}
+
+.audience-desc {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    margin-bottom: 16px;
+}
+
+.audience-action {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* --- Rutas de Aprendizaje Hierarchy & Cards --- */
+.route-card {
+    background: var(--bg-card);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 20px;
+    padding: 28px;
+    margin-bottom: 24px;
+    transition: var(--transition);
+    position: relative;
+}
+
+.route-card:hover {
+    border-color: rgba(56, 189, 248, 0.3);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+.route-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.route-badge {
+    background: rgba(56, 189, 248, 0.12);
+    color: var(--primary);
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    font-size: 11px;
+    font-weight: 800;
+    padding: 4px 12px;
+    border-radius: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.route-meta-pills {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+}
+
+.meta-pill {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-secondary);
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.route-steps-timeline {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.route-step-node {
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 14px;
+    padding: 16px;
+    font-size: 13px;
+}
+
+.step-number {
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--primary);
+    text-transform: uppercase;
+    margin-bottom: 4px;
+    display: block;
+}
+
+.step-title {
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 6px;
+}
+
+/* --- Diagnostic Map Card ("Tu Mapa de Desarrollo") --- */
+.dev-map-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 20px;
+    margin: 24px 0;
+}
+
+.dev-map-box {
+    background: rgba(15, 23, 42, 0.8);
+    border-radius: 16px;
+    padding: 20px;
+    border-left: 4px solid var(--primary);
+}
+
+.dev-map-box.strengths { border-left-color: var(--success); }
+.dev-map-box.areas { border-left-color: var(--warning); }
+.dev-map-box.routes { border-left-color: var(--primary); }
+.dev-map-box.nextstep { border-left-color: #ec4899; }
+
+/* --- Insignias / Badge Grid --- */
+.badge-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 16px;
+    margin: 20px 0;
+}
+
+.badge-card {
+    background: var(--bg-card);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    padding: 20px 15px;
+    text-align: center;
+    transition: var(--transition);
+}
+
+.badge-card.unlocked {
+    border-color: rgba(52, 211, 153, 0.4);
+    box-shadow: 0 0 15px rgba(52, 211, 153, 0.15);
+}
+
+.badge-card.locked {
+    opacity: 0.5;
+    filter: grayscale(0.8);
+}
+
+.badge-icon-box {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    margin: 0 auto 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--primary);
+}
+
+.badge-card.unlocked .badge-icon-box {
+    background: rgba(52, 211, 153, 0.15);
+    color: var(--success);
+}
+
+.badge-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 4px;
+}
+
+.badge-status {
+    font-size: 11px;
+    color: var(--text-secondary);
+}
+
+/* --- Filter Pills (Biblioteca & Explora) --- */
+.filter-pills-row {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    padding-bottom: 10px;
+    margin-bottom: 24px;
+    scrollbar-width: none;
+}
+
+.filter-pills-row::-webkit-scrollbar { display: none; }
+
+.filter-pill {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-secondary);
+    padding: 8px 18px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.filter-pill:hover, .filter-pill.active {
+    background: var(--primary);
+    color: #000;
+    border-color: var(--primary);
+}
+
+/* --- Steppers para Orientación Vocacional (4 Etapas) --- */
+.stepper-nav {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 30px;
+    position: relative;
+    gap: 10px;
+}
+
+.stepper-nav::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: rgba(255, 255, 255, 0.1);
+    z-index: 0;
+}
+
+.stepper-item {
+    position: relative;
+    z-index: 1;
+    background: var(--bg-surface);
+    border: 2px solid rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
+    padding: 10px 16px;
+    text-align: center;
+    cursor: pointer;
+    flex: 1;
+    transition: var(--transition);
+}
+
+.stepper-item.active {
+    border-color: var(--primary);
+    background: var(--bg-card);
+    box-shadow: 0 0 15px rgba(56, 189, 248, 0.3);
+}
+
+.stepper-item.completed {
+    border-color: var(--success);
+    color: var(--success);
+}
+
+.stepper-title {
+    font-size: 13px;
+    font-weight: 700;
+}
+
+/* --- Objective Pills ("Mi Objetivo Actual") --- */
+.objective-pills-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+    margin: 15px 0;
+}
+
+.objective-pill {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 14px 16px;
+    color: var(--text-secondary);
+    font-size: 13.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.objective-pill:hover, .objective-pill.active {
+    background: rgba(56, 189, 248, 0.15);
+    border-color: var(--primary);
+    color: #fff;
+}
+
+
 
