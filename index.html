@@ -132,26 +132,84 @@
     <!-- Certificado Modal -->
     <div id="certificate-modal" class="modal-overlay" style="display: none;"></div>
 
-    <!-- Chatbot Asistente Flotante -->
+    <!-- Chatbot Asistente Flotante Repotenciado Elprofe 360 -->
     <div id="chatbot-wrapper" class="chatbot-wrapper">
-        <button class="chatbot-fab" onclick="app.toggleChatbot()" title="Elprofe - Asistente de Aprendizaje">
+        <button class="chatbot-fab" onclick="app.toggleChatbot()" title="Elprofe 360 - Asistente Académico RAG">
             <i class="ph-bold ph-robot"></i>
         </button>
         <div id="chatbot-window" class="chatbot-window" style="display: none;">
             <div class="chatbot-header">
-                <div><i class="ph-fill ph-robot"></i> Elprofe — Asistente de Aprendizaje y Desarrollo</div>
-                <button class="icon-btn" onclick="app.toggleChatbot()"><i class="ph ph-x"></i></button>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <i class="ph-fill ph-robot" style="color: var(--primary);"></i>
+                    <span style="font-weight: 700;">Elprofe 360 — Asistente Académico</span>
+                </div>
+                <div style="display: flex; gap: 6px;">
+                    <button class="icon-btn" onclick="app.toggleTutorMode()" title="Modo Tutor Interactivo"><i class="ph-bold ph-student"></i></button>
+                    <button class="icon-btn" onclick="app.openKnowledgeAdmin()" title="Gestionar Base de Conocimiento"><i class="ph-bold ph-database"></i></button>
+                    <button class="icon-btn" onclick="app.toggleChatbot()"><i class="ph ph-x"></i></button>
+                </div>
             </div>
             <div id="chatbot-messages" class="chatbot-messages">
-                <div class="chat-msg bot-msg">¡Hola! Soy <b>Elprofe</b>, tu asistente de aprendizaje y desarrollo profesional en <b>Psicoeduca Academy</b>. Puedo orientarte en pedagogía, diseño instruccional, entrevistas de trabajo, habilidades sociales o liderazgo. ¿En qué te puedo ayudar hoy?</div>
+                <div class="chat-msg bot-msg">
+                    ¡Hola! Soy <b>Elprofe 360</b>, tu <b>Asistente Académico Inteligente</b> en PsicoEduca.
+                    <br><br>
+                    Cuento con una <b>Base de Conocimiento Académica RAG</b> para orientarte con rigor en pedagogía, constructivismo (Piaget, Vygotsky), conductismo (Skinner, Pavlov), educación cognitiva, inteligencia emocional, liderazgo y desarrollo profesional.
+                    <br><br>
+                    <i>¿Qué te gustaría aprender, comparar o aplicar hoy?</i>
+                </div>
             </div>
             <div class="chatbot-input-area">
-                <input type="text" id="chatbot-input" placeholder="Pregunta sobre rutas, liderazgo, clases, feedback..." onkeypress="if(event.key==='Enter') app.sendChatMessage()">
+                <input type="text" id="chatbot-input" placeholder="Pregunta sobre Piaget vs Vygotsky, Refuerzo Negativo, DUA..." onkeypress="if(event.key==='Enter') app.sendChatMessage()">
                 <button onclick="app.sendChatMessage()"><i class="ph-bold ph-paper-plane-right"></i></button>
             </div>
         </div>
     </div>
 
+    <!-- Modal de Administración de Base de Conocimiento RAG -->
+    <div id="kb-admin-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content" style="max-width: 750px; max-height: 85vh; overflow-y: auto;">
+            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="color: var(--primary); display: flex; align-items: center; gap: 10px;">
+                    <i class="ph-bold ph-database"></i> Base de Conocimiento de PsicoEduca
+                </h2>
+                <button class="icon-btn" onclick="document.getElementById('kb-admin-modal').style.display='none'"><i class="ph ph-x"></i></button>
+            </div>
+            <p style="color: var(--text-secondary); margin-bottom: 15px; font-size: 14px;">
+                Administra, añade y consulta los fragmentos académicos utilizados por el motor RAG de Elprofe 360 sin necesidad de reentrenar modelos.
+            </p>
+
+            <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                <button class="hero-btn" onclick="app.showAddKnowledgeForm()" style="font-size: 13px; padding: 10px 16px;">
+                    <i class="ph-bold ph-plus-circle"></i> Nuevo Fragmento Académico
+                </button>
+                <input type="text" id="kb-search-input" placeholder="Buscar concepto o autor..." oninput="app.filterKnowledgeBaseUI()" style="flex: 1; padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main);">
+            </div>
+
+            <div id="kb-form-container" style="display: none; background: rgba(0,0,0,0.15); padding: 20px; border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 20px;">
+                <h3 style="margin-bottom: 15px; font-size: 16px; color: var(--success);">Crear Nuevo Conocimiento Académico</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+                    <input type="text" id="kb-new-tema" placeholder="Tema (ej: Constructivismo)" style="padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main);">
+                    <input type="text" id="kb-new-subtema" placeholder="Subtema (ej: ZDP)" style="padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main);">
+                </div>
+                <input type="text" id="kb-new-concepto" placeholder="Nombre del Concepto" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); margin-bottom: 12px;">
+                <textarea id="kb-new-definicion" rows="3" placeholder="Definición académica rigurosa..." style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); margin-bottom: 12px;"></textarea>
+                <input type="text" id="kb-new-autores" placeholder="Autores (separados por coma)" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); margin-bottom: 12px;">
+                <textarea id="kb-new-aplicaciones" rows="2" placeholder="Aplicaciones educativas (una por línea)..." style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); margin-bottom: 12px;"></textarea>
+                <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                    <button class="filter-pill" onclick="document.getElementById('kb-form-container').style.display='none'">Cancelar</button>
+                    <button class="hero-btn" onclick="app.saveKnowledgeEntryUI()">Guardar en la Base</button>
+                </div>
+            </div>
+
+            <div id="kb-items-list" style="display: flex; flex-direction: column; gap: 12px;">
+                <!-- Cargado dinámicamente -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts de la Aplicación -->
+    <script src="./js/knowledge_base.js"></script>
+    <script src="./js/elprofe_engine.js"></script>
     <script src="./js/app.js"></script>
 </body>
 </html>

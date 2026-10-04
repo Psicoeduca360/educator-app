@@ -1298,4 +1298,176 @@ Puedo guiarte en el desarrollo de competencias educativas, liderazgo, empleabili
             themeMenu.style.display = 'none';
         }
     });
+
+    // --- INTEGRACIÓN ELPROFE 360 Y GESTIÓN DE BASE DE CONOCIMIENTO RAG ---
+    window.app.toggleChatbot = () => {
+        const win = document.getElementById('chatbot-window');
+        if (win) {
+            win.style.display = (win.style.display === 'none' || !win.style.display) ? 'flex' : 'none';
+            if (win.style.display === 'flex') {
+                playSound('click');
+                document.getElementById('chatbot-input')?.focus();
+            }
+        }
+    };
+
+    window.app.toggleTutorMode = () => {
+        if (window.elprofeEngine) {
+            window.elprofeEngine.currentMode = window.elprofeEngine.currentMode === 'tutor' ? 'standard' : 'tutor';
+            const isTutor = window.elprofeEngine.currentMode === 'tutor';
+            playSound('click');
+            const chatMsgs = document.getElementById('chatbot-messages');
+            if (chatMsgs) {
+                const sysMsg = document.createElement('div');
+                sysMsg.className = 'chat-msg bot-msg';
+                sysMsg.style.background = isTutor ? 'rgba(16, 185, 129, 0.15)' : 'var(--bg-card)';
+                sysMsg.style.borderColor = isTutor ? 'var(--success)' : 'var(--border-color)';
+                sysMsg.innerHTML = isTutor 
+                    ? `<b>🎓 Modo Tutor Activado:</b> Hazme una pregunta sobre lo que estudias o pídeme que te evalúe.`
+                    : `<b>📚 Modo Estándar Activado:</b> Responderé a tus preguntas académicas y técnicas.`;
+                chatMsgs.appendChild(sysMsg);
+                chatMsgs.scrollTop = chatMsgs.scrollHeight;
+            }
+        }
+    };
+
+    const formatMarkdownToHTML = (text) => {
+        if (!text) return '';
+        let html = text
+            .replace(/^### (.*$)/gim, '<h3 style="color:var(--primary); font-size:16px; margin:10px 0 6px 0;">$1</h3>')
+            .replace(/^#### (.*$)/gim, '<h4 style="color:var(--success); font-size:14px; margin:8px 0 4px 0;">$1</h4>')
+            .replace(/^> (.*$)/gim, '<blockquote style="border-left:3px solid var(--primary); padding-left:10px; margin:6px 0; color:var(--text-secondary); font-style:italic;">$1</blockquote>')
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+            .replace(/\*(.*?)\*/g, '<em>$1</em>')
+            .replace(/\n\n/g, '<br><br>')
+            .replace(/\n/g, '<br>');
+        return html;
+    };
+
+    window.app.sendChatMessage = async () => {
+        const input = document.getElementById('chatbot-input');
+        const msgs = document.getElementById('chatbot-messages');
+        if (!input || !msgs) return;
+        const text = input.value.trim();
+        if (!text) return;
+
+        // Agregar mensaje usuario
+        const userDiv = document.createElement('div');
+        userDiv.className = 'chat-msg user-msg';
+        userDiv.innerText = text;
+        msgs.appendChild(userDiv);
+        input.value = '';
+        msgs.scrollTop = msgs.scrollHeight;
+        playSound('click');
+
+        // Indicador escribiendo...
+        const botDiv = document.createElement('div');
+        botDiv.className = 'chat-msg bot-msg';
+        botDiv.innerHTML = `<i class="ph-bold ph-spinner spinner" style="animation: spin 1s infinite linear;"></i> <i>Elprofe 360 está consultando la Base de Conocimiento...</i>`;
+        msgs.appendChild(botDiv);
+        msgs.scrollTop = msgs.scrollHeight;
+
+        try {
+            if (window.elprofeEngine) {
+                const res = await window.elprofeEngine.processUserMessage(text, gameState);
+                botDiv.innerHTML = formatMarkdownToHTML(res.reply);
+            } else {
+                botDiv.innerHTML = "Error: El motor de conocimiento no está disponible en este momento.";
+            }
+        } catch (err) {
+            console.error("Error en chat:", err);
+            botDiv.innerHTML = "Ocurrió un error al procesar la consulta.";
+        }
+        msgs.scrollTop = msgs.scrollHeight;
+    };
+
+    window.app.openKnowledgeAdmin = () => {
+        playSound('click');
+        const modal = document.getElementById('kb-admin-modal');
+        if (modal) {
+            modal.style.display = 'flex';
+            window.app.renderKnowledgeBaseUIList();
+        }
+    };
+
+    window.app.renderKnowledgeBaseUIList = (filter = "") => {
+        const listDiv = document.getElementById('kb-items-list');
+        if (!listDiv) return;
+        const kb = (window.psicoeducaKnowledgeBase) ? window.psicoeducaKnowledgeBase : [];
+        const normFilter = filter.toLowerCase();
+
+        const filtered = kb.filter(item => {
+            if (!normFilter) return true;
+            return (item.concepto && item.concepto.toLowerCase().includes(normFilter)) ||
+                   (item.tema && item.tema.toLowerCase().includes(normFilter)) ||
+                   (item.autores && item.autores.some(a => a.toLowerCase().includes(normFilter)));
+        });
+
+        if (filtered.length === 0) {
+            listDiv.innerHTML = `<div style="text-align:center; padding: 20px; color: var(--text-secondary);">No se encontraron fragmentos para "${filter}".</div>`;
+            return;
+        }
+
+        listDiv.innerHTML = filtered.map(item => `
+            <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 16px;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px;">
+                    <h4 style="color: var(--primary); font-size: 16px; margin: 0;">${item.concepto}</h4>
+                    <span class="badge" style="background: rgba(14,165,233,0.15); color: var(--primary); font-size: 11px;">${item.tema}</span>
+                </div>
+                <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 8px; line-height: 1.4;">${item.definicion}</p>
+                <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted);">
+                    <span><b>Autores:</b> ${(item.autores||[]).join(', ') || 'N/A'}</span>
+                    <span><b>Estado:</b> ${item.validado ? '✅ Validado' : '⏳ En revisión'}</span>
+                </div>
+            </div>
+        `).join('');
+    };
+
+    window.app.filterKnowledgeBaseUI = () => {
+        const val = document.getElementById('kb-search-input')?.value || "";
+        window.app.renderKnowledgeBaseUIList(val);
+    };
+
+    window.app.showAddKnowledgeForm = () => {
+        const f = document.getElementById('kb-form-container');
+        if (f) f.style.display = 'block';
+    };
+
+    window.app.saveKnowledgeEntryUI = () => {
+        const tema = document.getElementById('kb-new-tema')?.value.trim();
+        const subtema = document.getElementById('kb-new-subtema')?.value.trim();
+        const concepto = document.getElementById('kb-new-concepto')?.value.trim();
+        const definicion = document.getElementById('kb-new-definicion')?.value.trim();
+        const autoresStr = document.getElementById('kb-new-autores')?.value.trim();
+        const aplicacionesStr = document.getElementById('kb-new-aplicaciones')?.value.trim();
+
+        if (!concepto || !definicion) {
+            alert("Por favor completa al menos el nombre del concepto y su definición.");
+            return;
+        }
+
+        const newItem = {
+            id: "custom_" + Date.now(),
+            tema: tema || "Conocimiento Propio",
+            subtema: subtema || "General",
+            concepto,
+            definicion,
+            autores: autoresStr ? autoresStr.split(',').map(a => a.trim()) : ["PsicoEduca"],
+            aplicaciones_educativas: aplicacionesStr ? aplicacionesStr.split('\n').filter(a => a.trim()) : ["Aplicación práctica en procesos formativos."],
+            nivel: ["intermedio"],
+            publico: ["General"],
+            tipo_conocimiento: "propio_psicoeduca",
+            fecha_actualizacion: new Date().toISOString().split('T')[0],
+            validado: true
+        };
+
+        if (window.saveCustomKnowledgeItem) {
+            window.saveCustomKnowledgeItem(newItem);
+            window.psicoeducaKnowledgeBase.unshift(newItem);
+            playSound('success');
+            alert("¡Fragmento académico agregado exitosamente a la Base de Conocimiento!");
+            document.getElementById('kb-form-container').style.display = 'none';
+            window.app.renderKnowledgeBaseUIList();
+        }
+    };
 });
