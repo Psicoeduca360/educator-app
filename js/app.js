@@ -367,6 +367,268 @@ const testsData = {
     didactica: { title: "Didáctica Práctica", icon: "ph-presentation-chart", desc: "El arte de enseñar: métodos y técnicas.", category: "Competencias pedagógicas", locked: false, questions: [ { q: "¿Qué es la transposición didáctica?", options: ["Evaluación", "Adaptar el saber académico al saber enseñado", "Castigo", "Copiar texto"], answer: 1 } ] }
 };
 
+// --- Diagnósticos Situacionales Avanzados (Data) ---
+const constructivistData = [
+    {
+        q: "Al iniciar un nuevo módulo de formación, ¿qué acción priorizas?",
+        options: [
+            { text: "Explicar el temario y los objetivos detalladamente.", points: 0 },
+            { text: "Hacer algunas preguntas generales para ver si conocen el tema.", points: 1 },
+            { text: "Hacer una encuesta rápida o lluvia de ideas guiada.", points: 2 },
+            { text: "Presentar un caso o problema de la vida real y pedir que intenten resolverlo.", points: 3 }
+        ]
+    },
+    {
+        q: "Tus estudiantes no logran comprender un concepto complejo. ¿Cómo reaccionas?",
+        options: [
+            { text: "Repito la explicación más despacio y con otras palabras.", points: 0 },
+            { text: "Les pido que me digan qué parte no entendieron para explicarla de nuevo.", points: 1 },
+            { text: "Busco un video, analogía o ejemplo visual distinto para ilustrarlo.", points: 2 },
+            { text: "Les proporciono un problema similar en parejas para que debatan y descubran el error.", points: 3 }
+        ]
+    },
+    {
+        q: "Durante un caso práctico, un grupo comete un error grave de razonamiento.",
+        options: [
+            { text: "Les indico el error inmediatamente y les doy la respuesta correcta.", points: 0 },
+            { text: "Les marco que están equivocados y les pido que lo revisen.", points: 1 },
+            { text: "Espero al final de la actividad para mostrar la solución correcta a todos.", points: 2 },
+            { text: "Les hago preguntas orientadoras (Socráticas) para que ellos mismos descubran la contradicción.", points: 3 }
+        ]
+    },
+    {
+        q: "Al diseñar la evaluación final del curso, prefieres...",
+        options: [
+            { text: "Crear un examen de selección múltiple sobre los conceptos teóricos.", points: 0 },
+            { text: "Combinar un examen teórico con algunas preguntas abiertas.", points: 1 },
+            { text: "Pedirles que expongan un tema teórico libre frente a la clase.", points: 2 },
+            { text: "Diseñar un proyecto donde deban aplicar lo aprendido para resolver un problema de su entorno laboral.", points: 3 }
+        ]
+    },
+    {
+        q: "Respecto a la interacción entre los alumnos durante la clase:",
+        options: [
+            { text: "Prefiero que trabajen solos para asegurar la asimilación individual.", points: 0 },
+            { text: "Permito que compartan respuestas solo al final de una tarea individual.", points: 1 },
+            { text: "Organizo grupos de trabajo para que discutan y entreguen un informe escrito conjunto.", points: 2 },
+            { text: "Diseño retos que requieren la interdependencia y negociación activa entre los miembros del equipo.", points: 3 }
+        ]
+    },
+    {
+        q: "A la hora de estructurar el contenido a enseñar:",
+        options: [
+            { text: "Sigo estrictamente el manual o temario establecido sin alteraciones.", points: 0 },
+            { text: "Sigo el temario oficial pero le añado mis propios ejemplos.", points: 1 },
+            { text: "Doy el contenido base y ofrezco muchas lecturas complementarias opcionales.", points: 2 },
+            { text: "Adapto el orden y la profundidad del contenido de forma flexible según los intereses de los estudiantes.", points: 3 }
+        ]
+    },
+    {
+        q: "Cuando un alumno propone una idea que se desvía del tema central planificado:",
+        options: [
+            { text: "Le pido amablemente que volvamos al tema que nos toca hoy.", points: 0 },
+            { text: "Escucho brevemente por cortesía y retomo mi explicación.", points: 1 },
+            { text: "Anoto su idea en la pizarra para que él la investigue al final de la clase.", points: 2 },
+            { text: "Aprovecho su idea, la valido, y exploro si podemos conectarla colaborativamente con el objetivo del día.", points: 3 }
+        ]
+    },
+    {
+        q: "¿Qué indicador define el éxito final de tus sesiones de formación?",
+        options: [
+            { text: "Que todos hayan memorizado, asimilado el temario y aprobado el test.", points: 0 },
+            { text: "Que los estudiantes hayan participado respondiendo correctamente mis preguntas.", points: 1 },
+            { text: "Que los estudiantes hayan completado los ejercicios prácticos sin muchos errores.", points: 2 },
+            { text: "Que los estudiantes demuestren capacidad de transferir lo aprendido para analizar y resolver problemas inéditos.", points: 3 }
+        ]
+    }
+];
+
+const pedagogicalData = [
+    {
+        dimension: "Facilitación del aprendizaje",
+        q: "Inicias un tema complejo y notas que el grupo está confundido. ¿Cuál es tu primera acción?",
+        options: [
+            { text: "Repetir la explicación tal cual, hablando más pausado.", points: 0 },
+            { text: "Preguntar al grupo qué parte exacta no entendieron.", points: 1 },
+            { text: "Buscar un ejemplo cotidiano para hacer una analogía visual.", points: 2 },
+            { text: "Dividirlos en pares para que comparen sus notas e identifiquen la duda central juntos.", points: 3 }
+        ]
+    },
+    {
+        dimension: "Evaluación del aprendizaje",
+        q: "Al finalizar un módulo de formación de un mes, ¿cómo mides el éxito real del grupo?",
+        options: [
+            { text: "Con un examen escrito estandarizado de opción múltiple.", points: 0 },
+            { text: "Con un examen escrito más algunas preguntas abiertas de análisis.", points: 1 },
+            { text: "Pidiendo a los alumnos que realicen una presentación oral sobre la teoría.", points: 2 },
+            { text: "Mediante la resolución de un caso práctico basado en un problema real de su contexto.", points: 3 }
+        ]
+    },
+    {
+        dimension: "Interacción y participación",
+        q: "En un debate grupal, siempre participan las mismas 3 personas. ¿Qué estrategia aplicas?",
+        options: [
+            { text: "Felicito a los que participan activamente y continúo la clase.", points: 0 },
+            { text: "Le pido directamente a los alumnos callados que hablen, llamándolos por su nombre.", points: 1 },
+            { text: "Hago una pregunta abierta y digo que hoy quiero escuchar a alguien diferente.", points: 2 },
+            { text: "Utilizo la técnica 'Piensa-Compara-Comparte' (Think-Pair-Share) para que todos hablen primero en privado.", points: 3 }
+        ]
+    },
+    {
+        dimension: "Gestión del aula",
+        q: "Varios estudiantes están distraídos usando el celular durante tu explicación teórica central.",
+        options: [
+            { text: "Los regaño frente a todos y les exijo guardar el teléfono inmediatamente.", points: 0 },
+            { text: "Ignoro la situación mientras no interrumpan el silencio del resto de la clase.", points: 1 },
+            { text: "Pauso la clase, hago un chiste o anécdota para recuperar su atención y continúo.", points: 2 },
+            { text: "Cambio la dinámica rápidamente a una actividad donde tengan que usar el celular para investigar.", points: 3 }
+        ]
+    },
+    {
+        dimension: "Comunicación educativa",
+        q: "Un estudiante te hace una pregunta excelente que definitivamente no sabes responder. ¿Qué dices?",
+        options: [
+            { text: "Invento una respuesta que suene muy lógica para no perder autoridad.", points: 0 },
+            { text: "Digo que ese dato no es tan relevante para el tema central de hoy y sigo adelante.", points: 1 },
+            { text: "Admito que no lo sé y prometo investigarlo para traerles la respuesta en la próxima clase.", points: 2 },
+            { text: "Digo: 'Excelente pregunta, no tengo el dato exacto. ¿Quién del grupo nos ayuda a buscarlo ahora mismo en su móvil?'", points: 3 }
+        ]
+    },
+    {
+        dimension: "Motivación del estudiante",
+        q: "Debes impartir un tema que sabes que es árido, denso y aburrido por naturaleza.",
+        options: [
+            { text: "Les digo firmemente que presten atención porque eso saldrá en la evaluación obligatoria.", points: 0 },
+            { text: "Intento usar muchas diapositivas coloridas y hablar más fuerte de lo normal.", points: 1 },
+            { text: "Les muestro un video introductorio entretenido antes de iniciar la carga teórica.", points: 2 },
+            { text: "Planteo un misterio o un 'Reto Imposible' al inicio que solo podrán resolver si dominan el tema aburrido.", points: 3 }
+        ]
+    },
+    {
+        dimension: "Adaptabilidad pedagógica",
+        q: "Planificaste una clase interactiva usando el proyector, pero hay un corte repentino de energía eléctrica.",
+        options: [
+            { text: "Cancelo la sesión o les doy tiempo libre porque es imposible seguir el plan trazado.", points: 0 },
+            { text: "Saco mis notas impresas y dicto la información para que la copien en sus cuadernos.", points: 1 },
+            { text: "Hago la clase de forma magistral improvisando frente a ellos hablando claro.", points: 2 },
+            { text: "Organizo un círculo de sillas, adapto la actividad a un debate oral o juego de roles.", points: 3 }
+        ]
+    },
+    {
+        dimension: "Desarrollo del pensamiento crítico",
+        q: "Un estudiante entrega un análisis donde concluye algo completamente erróneo y contradictorio.",
+        options: [
+            { text: "Le marco una gran 'X' roja, le pongo un cero y le escribo la respuesta que esperaba.", points: 0 },
+            { text: "Le doy medio punto por el esfuerzo de escribir y le explico verbalmente el porqué de su error.", points: 1 },
+            { text: "Le pido que rehaga el trabajo prestándole más atención a la página 45 de sus apuntes.", points: 2 },
+            { text: "Le hago dos preguntas estratégicas escritas al margen para guiarlo a que él mismo descubra su falla lógica.", points: 3 }
+        ]
+    }
+];
+
+const innovationData = [
+    {
+        dimension: "Diseño de experiencias de aprendizaje",
+        q: "Al estructurar una nueva unidad de capacitación, tu enfoque principal es:",
+        options: [
+            { text: "Definir los temas a transmitir y preparar las diapositivas de contenido.", points: 0 },
+            { text: "Organizar el contenido y añadir algunas actividades prácticas al final.", points: 1 },
+            { text: "Diseñar retos donde los alumnos descubran el contenido mediante la acción.", points: 2 },
+            { text: "Co-crear el camino de aprendizaje con los alumnos basándome en sus intereses reales.", points: 3 }
+        ]
+    },
+    {
+        dimension: "Uso de metodologías activas",
+        q: "¿Con qué frecuencia utilizas enfoques como el Aprendizaje Basado en Proyectos (ABP) o Gamificación?",
+        options: [
+            { text: "Casi nunca. Prefiero la instrucción directa para garantizar que cubro el temario.", points: 0 },
+            { text: "Esporádicamente, como una actividad de cierre divertida o proyecto final.", points: 1 },
+            { text: "Frecuentemente. Mis módulos están diseñados en torno a retos prácticos.", points: 2 },
+            { text: "Siempre. Mi curso completo está gamificado o basado en resolver un gran desafío transversal.", points: 3 }
+        ]
+    },
+    {
+        dimension: "Rol del docente",
+        q: "Durante una sesión típica, la mayor parte del tiempo actúas como:",
+        options: [
+            { text: "El experto que explica y transmite la información de forma clara frontalmente.", points: 0 },
+            { text: "El instructor que explica la teoría y luego supervisa los ejercicios.", points: 1 },
+            { text: "El guía que plantea problemas y hace preguntas para que ellos piensen.", points: 2 },
+            { text: "Un mentor que facilita recursos mientras los equipos lideran su propio proceso.", points: 3 }
+        ]
+    },
+    {
+        dimension: "Rol del estudiante",
+        q: "¿Cuál de estas descripciones se ajusta más a lo que hacen tus estudiantes en clase?",
+        options: [
+            { text: "Escuchan, toman apuntes y hacen preguntas ocasionales.", points: 0 },
+            { text: "Escuchan la explicación y luego participan en dinámicas controladas.", points: 1 },
+            { text: "Investigan, debaten, proponen soluciones y presentan sus ideas constantemente.", points: 2 },
+            { text: "Toman decisiones sobre su aprendizaje, evalúan a sus pares y crean productos reales.", points: 3 }
+        ]
+    },
+    {
+        dimension: "Evaluación",
+        q: "Tu principal instrumento para evaluar si hubo aprendizaje real es:",
+        options: [
+            { text: "El examen final teórico y objetivo (opción múltiple o preguntas cerradas).", points: 0 },
+            { text: "Una mezcla entre exámenes teóricos y algunas entregas de trabajos prácticos.", points: 1 },
+            { text: "Rúbricas aplicadas a proyectos, portafolios de evidencias o simulaciones.", points: 2 },
+            { text: "Evaluación formativa continua 360 (auto, co y hetero-evaluación) sobre productos.", points: 3 }
+        ]
+    },
+    {
+        dimension: "Uso de tecnología educativa",
+        q: "¿Cómo integras las herramientas digitales en tu práctica?",
+        options: [
+            { text: "Uso el proyector para mostrar presentaciones y el correo para enviar archivos.", points: 0 },
+            { text: "Uso plataformas LMS (ej. Moodle) como repositorios de PDF y para recibir tareas.", points: 1 },
+            { text: "Uso apps interactivas (Kahoot, Miro, Padlet) para dinamizar las sesiones.", points: 2 },
+            { text: "La tecnología es invisible; los alumnos la usan para crear, investigar o simular la realidad.", points: 3 }
+        ]
+    },
+    {
+        dimension: "Nivel de contextualización",
+        q: "Respecto a los problemas o ejemplos que usas en clase:",
+        options: [
+            { text: "Uso los ejemplos clásicos que vienen en los manuales o libros estándar.", points: 0 },
+            { text: "Intento traer ejemplos de noticias recientes para ilustrar la teoría.", points: 1 },
+            { text: "Planteo escenarios simulados complejos o casos de estudio de empresas reales.", points: 2 },
+            { text: "Los estudiantes trabajan con problemas reales de su propia comunidad aportando soluciones.", points: 3 }
+        ]
+    },
+    {
+        dimension: "Nivel de experimentación e innovación",
+        q: "Cuando descubres una nueva herramienta o enfoque pedagógico:",
+        options: [
+            { text: "Rara vez la aplico; prefiero lo que ya me ha funcionado por años.", points: 0 },
+            { text: "Espero a que mi institución me capacite y me pida usarla oficialmente.", points: 1 },
+            { text: "La pruebo ocasionalmente en una clase piloto a ver qué tal reaccionan.", points: 2 },
+            { text: "Itero constantemente mi diseño instruccional, prototipando y midiendo impacto.", points: 3 }
+        ]
+    },
+    {
+        dimension: "Manejo del error",
+        q: "Cuando un estudiante se equivoca al aplicar un concepto en una práctica:",
+        options: [
+            { text: "Le marco el error y le doy la respuesta correcta para que no se confunda.", points: 0 },
+            { text: "Le explico por qué está mal y le pido que repita el ejercicio exactamente.", points: 1 },
+            { text: "Le hago preguntas guía para que él mismo descubra dónde falló lógicamente.", points: 2 },
+            { text: "Celebro el error y le pido al grupo que analice qué podemos aprender de ese fallo iterativo.", points: 3 }
+        ]
+    },
+    {
+        dimension: "Diseño del espacio",
+        q: "¿Cómo está distribuido o cómo manejas el espacio físico o virtual de tu clase?",
+        options: [
+            { text: "Sillas en filas hacia mí / Cámaras apagadas en Zoom mientras comparto pantalla.", points: 0 },
+            { text: "Sillas en 'U' a veces / Salas virtuales (Breakout rooms) al final de la clase.", points: 1 },
+            { text: "Mesas de trabajo colaborativo / Plataformas (Mural/Miro) como centro de sesión.", points: 2 },
+            { text: "El aula es solo un punto; el aprendizaje ocurre explorando la calle, la empresa o simuladores.", points: 3 }
+        ]
+    }
+];
+
 // --- Web Audio API ---
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 const playSound = (type) => {
@@ -1143,6 +1405,48 @@ Puedo guiarte en el desarrollo de competencias educativas, liderazgo, empleabili
                         `;
                     }).join('')}
                 </div>
+
+                <!-- Historial de Diagnósticos Situacionales -->
+                <div class="view-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <div>
+                        <h2 class="view-title" style="font-size: 22px;">Mis Diagnósticos Situacionales</h2>
+                        <p class="view-subtitle" style="font-size: 13px;">Historial de evaluaciones de perfil completadas y recomendaciones.</p>
+                    </div>
+                    <button class="hero-btn" onclick="app.navigate('evaluate')" style="font-size: 12px; padding: 8px 16px;">
+                        <i class="ph-bold ph-plus-circle"></i> Nuevo Diagnóstico
+                    </button>
+                </div>
+                ${(gameState.diagnosticResults && gameState.diagnosticResults.length > 0) ? `
+                    <div style="display: flex; flex-direction: column; gap: 16px; margin-bottom: 40px;">
+                        ${gameState.diagnosticResults.map(res => `
+                            <div class="card avatar-card" style="padding: 24px; border: 1px solid rgba(255,255,255,0.1);">
+                                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; flex-wrap: wrap; gap: 10px;">
+                                    <div>
+                                        <span class="route-badge" style="font-size: 11px;">${res.testName}</span>
+                                        <h3 style="color: #fff; font-size: 19px; margin-top: 6px;">Nivel: <span style="color: var(--primary);">${res.nivel}</span></h3>
+                                    </div>
+                                    <div style="text-align: right;">
+                                        <span style="font-size: 12px; color: var(--text-secondary);"><i class="ph ph-calendar"></i> ${res.date}</span>
+                                        <div style="font-size: 14px; font-weight: 800; color: var(--warning); margin-top: 4px;">Puntuación: ${res.score} / ${res.maxScore || 24}</div>
+                                    </div>
+                                </div>
+                                <p style="color: var(--text-secondary); font-size: 13.5px; line-height: 1.5; margin-bottom: 14px;">${res.diag}</p>
+                                ${res.recomendacion ? `
+                                    <details style="background: rgba(0,0,0,0.25); padding: 12px 16px; border-radius: 12px; font-size: 13px; color: var(--text-primary); cursor: pointer; border: 1px solid rgba(255,255,255,0.06);">
+                                        <summary style="font-weight: 700; color: var(--accent);">Ver Recomendaciones Prácticas</summary>
+                                        <div style="margin-top: 10px; line-height: 1.6; color: var(--text-secondary);">${res.recomendacion}</div>
+                                    </details>
+                                ` : ''}
+                            </div>
+                        `).join('')}
+                    </div>
+                ` : `
+                    <div class="card avatar-card" style="text-align: center; padding: 35px 20px; margin-bottom: 40px;">
+                        <i class="ph-bold ph-clipboard-text" style="font-size: 44px; color: var(--text-secondary); margin-bottom: 12px; opacity: 0.6;"></i>
+                        <p style="color: var(--text-secondary); font-size: 14px; max-width: 500px; margin: 0 auto 18px;">Aún no has completado un diagnóstico situacional. Realiza uno para identificar tu perfil pedagógico y obtener un plan de acción personalizado.</p>
+                        <button class="hero-btn" onclick="app.navigate('evaluate')"><i class="ph-bold ph-scan"></i> Realizar un Diagnóstico</button>
+                    </div>
+                `}
             </div>
         `;
     };
@@ -1190,13 +1494,23 @@ Puedo guiarte en el desarrollo de competencias educativas, liderazgo, empleabili
         history: renderHistory
     };
 
-    // Diagnósticos Situacionales Avanzados (Test Logic)
+    // Diagnósticos Situacionales Avanzados (Test Logic & Rich Reporting)
     window.app.startDiagnosticTest = (type) => {
         playSound('click');
         let dataToUse = constructivistData;
         let testName = "Diagnóstico de Perfil Constructivista";
-        if (type === 'pedagogical') { dataToUse = pedagogicalData; testName = "Diagnóstico de Habilidades Pedagógicas"; }
-        else if (type === 'innovation') { dataToUse = innovationData; testName = "Scanner de Innovación Educativa"; }
+        let isInnovation = (type === 'innovation');
+        let maxScore = 24;
+
+        if (type === 'pedagogical') {
+            dataToUse = pedagogicalData;
+            testName = "Diagnóstico de Habilidades Pedagógicas";
+            maxScore = 24;
+        } else if (type === 'innovation') {
+            dataToUse = innovationData;
+            testName = "Scanner de Innovación Educativa";
+            maxScore = 30;
+        }
 
         let currentQ = 0;
         let totalScore = 0;
@@ -1206,33 +1520,215 @@ Puedo guiarte en el desarrollo de competencias educativas, liderazgo, empleabili
                 gameState.xp += 1000;
                 gameState.testsCompleted++;
                 playSound('success');
+
+                let nivel = "";
+                let diag = "";
+                let recomendacion = "";
+                let interpretacion = "";
+                let metodologias = "";
+
+                if (type === 'constructivist') {
+                    if (totalScore <= 8) {
+                        nivel = "Facilitador Tradicional";
+                        diag = "Tu estilo se centra fuertemente en la transmisión directa de conocimientos. Confías en la estructura y en tu rol como experto para garantizar el aprendizaje.";
+                        recomendacion = "1. Intenta ceder gradualmente el protagonismo al grupo.<br>2. Antes de explicar un concepto, plantea un problema abierto o caso real y deja que los alumnos deduzcan la respuesta.<br>3. Fomenta el debate guiado antes de entregar la respuesta oficial.";
+                    } else if (totalScore <= 14) {
+                        nivel = "Facilitador en Transición";
+                        diag = "Combinas métodos tradicionales con estrategias interactivas. Permites la participación, pero en momentos de duda aún recaes rápidamente en la explicación magistral directa de la solución.";
+                        recomendacion = "1. Profundiza en el Aprendizaje Basado en Problemas (ABP).<br>2. Utiliza los errores de los alumnos como puntos de partida para la discusión socrática grupal.<br>3. Evita responder las dudas de inmediato; devuélvelas con preguntas reflexivas que activen su Zona de Desarrollo Próximo (ZDP).";
+                    } else if (totalScore <= 20) {
+                        nivel = "Facilitador Constructivista";
+                        diag = "Entiendes que el alumno debe construir activamente su propio conocimiento. Diseñas experiencias interactivas y actúas como un guía que facilita el proceso de descubrimiento colaborativo.";
+                        recomendacion = "1. Perfecciona tus instrumentos de evaluación formativa continua.<br>2. Reemplaza exámenes memorísticos por proyectos situacionales reales con rúbricas de desempeño transparentes.<br>3. Diseña rúbricas de co-evaluación para que los estudiantes aprendan a dar feedback constructivo a sus pares.";
+                    } else {
+                        nivel = "Arquitecto de Aprendizaje";
+                        diag = "Tu práctica refleja un dominio total del constructivismo. Transformas el aula en un laboratorio de experiencias. El centro de tu clase no es lo que dices, sino las decisiones, investigaciones y creaciones de tus estudiantes.";
+                        recomendacion = "1. Documenta y comparte tus dinámicas didácticas con otros colegas de tu institución.<br>2. Explora metodologías de vanguardia como el Diseño de Experiencias de Aprendizaje (LXD) y Design Thinking educativo.<br>3. Diseña retos inmersivos y casos de estudio contextualizados a los problemas reales de tu comunidad.";
+                    }
+                } else if (type === 'pedagogical') {
+                    if (totalScore <= 10) {
+                        nivel = "Nivel Básico (Tradicional)";
+                        diag = "Tu enfoque se centra principalmente en la exposición de contenidos y el mantenimiento del orden. Tiendes a tomar decisiones unidireccionales para resolver problemas en el aula.";
+                        recomendacion = "1. Permite espacios de silencio activo de 3 a 5 segundos después de hacer una pregunta para que los alumnos elaboren su respuesta.<br>2. Sustituye parte de tu explicación teórica por breves trabajos de discusión en parejas (técnica Think-Pair-Share).<br>3. Acostúmbrate a admitir el desconocimiento frente a una pregunta difícil como una valiosa oportunidad de indagación colectiva con el móvil.";
+                    } else if (totalScore <= 18) {
+                        nivel = "Nivel Intermedio (Práctico)";
+                        diag = "Utilizas estrategias de participación activa e intentas diversificar la clase. Sin embargo, en situaciones de presión recaes en la resolución directa del conflicto en lugar de empoderar al alumno para que lo resuelva.";
+                        recomendacion = "1. Utiliza la técnica 'Piensa-Compara-Comparte' rutinariamente para elevar la participación de los alumnos más reservados.<br>2. Antes de responder a una duda, pregúntale al grupo si alguien más tiene una hipótesis o pista.<br>3. Incorpora evaluación formativa basada en mini-retos prácticos y no únicamente en pruebas teóricas.";
+                    } else if (totalScore <= 22) {
+                        nivel = "Nivel Avanzado (Facilitador Activo)";
+                        diag = "Eres un formador ágil que sabe leer la energía del grupo. Utilizas problemas, analogías y debates eficazmente. Sabes ceder el control del aprendizaje manteniendo claros los objetivos pedagógicos.";
+                        recomendacion = "1. Empieza a usar explícitamente los errores de los alumnos como material didáctico de clase (el análisis del error constructivo).<br>2. Permite que los estudiantes participen en la definición de acuerdos de convivencia y ponderaciones de entrega.<br>3. Integra la co-evaluación estructurada de forma sistemática.";
+                    } else {
+                        nivel = "Nivel Experto (Arquitecto Pedagógico)";
+                        diag = "Dominas el arte de la mediación educativa. Usas preguntas socráticas instintivamente, adaptas el entorno rápidamente y conviertes distracciones o fallas técnicas en oportunidades brillantes de aprendizaje.";
+                        recomendacion = "1. Lidera talleres de formación docente para compartir tus estrategias de facilitación.<br>2. Diseña módulos bajo el modelo de Aula Invertida (Flipped Classroom) para dedicar el aula 100% a la práctica.<br>3. Involucra a los estudiantes en el co-diseño de las rúbricas y criterios de evaluación del próximo ciclo.";
+                    }
+                } else if (type === 'innovation') {
+                    if (totalScore <= 10) {
+                        nivel = "Docente Tradicional";
+                        diag = "Tu práctica prioriza la transmisión frontal de conocimientos. Te apoyas en la exposición teórica y en el control del aula para asegurar que se cubra el temario estructurado.";
+                        interpretacion = "Este nivel indica que concibes el aprendizaje como recepción de información. Confías en métodos estandarizados pero corres el riesgo de generar pasividad y desinterés en los estudiantes actuales.";
+                        recomendacion = "1. Transforma el 20% de tu tiempo de exposición en dinámicas de discusión y aplicación inmediata.<br>2. Reemplaza preguntas cerradas por preguntas abiertas de análisis y juicio crítico.<br>3. Pide a los alumnos que sinteticen los puntos clave de la sesión en lugar de hacerlo tú.";
+                        metodologias = "Aprendizaje activo básico, método de preguntas socráticas, debates cortos guiados.";
+                    } else if (totalScore <= 18) {
+                        nivel = "Docente en Transición";
+                        diag = "Has comenzado a integrar dinámicas interactivas y herramientas digitales, pero en el fondo continúas dirigiendo fuertemente el proceso y las decisiones del curso.";
+                        interpretacion = "Estás en un punto de evolución consciente. Sabes que la clase magistral es insuficiente e intentas variar, aunque las metodologías activas aún operan como complementos y no como el eje central de tu diseño instruccional.";
+                        recomendacion = "1. Plantea un reto o caso como el hilo conductor de la unidad, no solo como la tarea final.<br>2. Fomenta el trabajo colaborativo donde ellos investiguen y contrasten antes de que tú expongas.<br>3. Introduce herramientas digitales para que los estudiantes creen productos didácticos (infografías, audios, mapas).";
+                        metodologias = "Flipped Classroom (Aula Invertida), Trabajo Colaborativo (Jigsaw), Estudios de Caso estructurados.";
+                    } else if (totalScore <= 26) {
+                        nivel = "Facilitador Innovador";
+                        diag = "Diseñas verdaderas experiencias de aprendizaje. Entiendes que el estudiante debe ser protagonista, utilizas la tecnología de forma significativa y evalúas mediante el desempeño práctico.";
+                        interpretacion = "Actúas como un arquitecto del entorno de aprendizaje. Tus participantes están comprometidos porque los involucras en la resolución de problemas reales en lugar de limitarse a memorizar conceptos abstractos.";
+                        recomendacion = "1. Atrévete a gamificar un módulo completo con mecánicas de narrativa, insignias y retos progresivos.<br>2. Conecta tus clases con desafíos del contexto local donde los estudiantes interactúen con agentes externos.<br>3. Implementa rúbricas de co-evaluación para empoderar el juicio crítico entre pares.";
+                        metodologias = "Aprendizaje Basado en Proyectos (ABP), Gamificación Educativa, Design Thinking aplicado al aula.";
+                    } else {
+                        nivel = "Diseñador de Experiencias Disruptivas";
+                        diag = "Tu práctica rompe con los paradigmas tradicionales. El aula es un laboratorio de co-creación donde los alumnos lideran su aprendizaje resolviendo retos de alta complejidad del mundo real.";
+                        interpretacion = "Has disuelto la frontera entre el aula y la realidad profesional. No dictas clases; orquestas ecosistemas de aprendizaje donde el error es celebrado, la tecnología es invisible y el impacto formativo trasciende la sesión.";
+                        recomendacion = "1. Involucra a tus estudiantes en la co-creación del plan de aprendizaje y los criterios evaluativos.<br>2. Conecta tus retos con proyectos u organizaciones reales para que los productos tengan impacto social tangible.<br>3. Sistematiza tu práctica pedagógica y publica tus métodos de innovación en comunidades docentes.";
+                        metodologias = "Aprendizaje Basado en Retos (CBL), Co-creación curricular, Aprendizaje Inmersivo y Experiencial de frontera.";
+                    }
+                }
+
+                // Guardar en el historial del estado
+                gameState.diagnosticResults.unshift({
+                    testName: testName,
+                    type: type,
+                    nivel: nivel,
+                    score: totalScore,
+                    maxScore: maxScore,
+                    date: new Date().toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }),
+                    diag: diag,
+                    recomendacion: recomendacion,
+                    interpretacion: interpretacion,
+                    metodologias: metodologias
+                });
+                if (gameState.diagnosticResults.length > 20) gameState.diagnosticResults.pop();
+
                 updateUI();
                 saveGameState();
+
+                let reportDetailsHtml = '';
+                if (isInnovation) {
+                    reportDetailsHtml = `
+                        <div style="background: var(--bg-card); border: 1px solid rgba(236,72,153,0.3); border-radius: 20px; padding: 35px; margin: 25px 0; text-align: left; box-shadow: 0 10px 30px rgba(0,0,0,0.4);">
+                            <div style="text-align: center; margin-bottom: 25px;">
+                                <span class="route-badge" style="background: rgba(236,72,153,0.15); color: #F472B6; border-color: #EC4899; font-size: 13px;">Resultado del Scanner</span>
+                                <h2 style="color: #F472B6; font-size: 28px; margin: 10px 0 6px;">${nivel}</h2>
+                                <h4 style="color: var(--text-secondary); font-weight: 500; font-size: 16px;">Puntuación de Innovación: <strong style="color: #fff;">${totalScore} / ${maxScore}</strong></h4>
+                            </div>
+
+                            <h3 style="margin-bottom: 10px; color: var(--primary); font-size: 17px; display: flex; align-items: center; gap: 8px;"><i class="ph-bold ph-scan"></i> Diagnóstico Situacional:</h3>
+                            <div style="background: rgba(0,0,0,0.3); padding: 18px; border-radius: 12px; margin-bottom: 20px; border-left: 4px solid var(--primary);">
+                                <p style="color: var(--text-primary); line-height: 1.6; font-size: 14.5px; margin: 0;">${diag}</p>
+                            </div>
+
+                            <h3 style="margin-bottom: 10px; color: var(--accent); font-size: 17px; display: flex; align-items: center; gap: 8px;"><i class="ph-bold ph-chart-polar"></i> Interpretación Formativa:</h3>
+                            <div style="background: rgba(0,0,0,0.3); padding: 18px; border-radius: 12px; margin-bottom: 20px; border-left: 4px solid var(--accent);">
+                                <p style="color: var(--text-secondary); line-height: 1.6; font-size: 14px; margin: 0;">${interpretacion}</p>
+                            </div>
+
+                            <h3 style="margin-bottom: 12px; color: var(--success); font-size: 17px; display: flex; align-items: center; gap: 8px;"><i class="ph-bold ph-rocket-launch"></i> Recomendaciones Prácticas Paso a Paso:</h3>
+                            <div style="background: rgba(16,185,129,0.06); border: 1px solid rgba(16,185,129,0.2); padding: 18px 22px; border-radius: 14px; color: var(--text-primary); line-height: 1.8; font-size: 14px; margin-bottom: 20px;">
+                                ${recomendacion}
+                            </div>
+
+                            <h3 style="margin-bottom: 10px; color: var(--warning); font-size: 17px; display: flex; align-items: center; gap: 8px;"><i class="ph-bold ph-toolbox"></i> Metodologías Recomendadas para tu Nivel:</h3>
+                            <div style="background: var(--warning-bg); border: 1px solid rgba(245,158,11,0.3); padding: 16px 20px; border-radius: 12px;">
+                                <p style="color: var(--warning); line-height: 1.5; font-size: 15px; font-weight: 600; margin: 0;">${metodologias}</p>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    const themeColor = (type === 'pedagogical') ? '#A855F7' : 'var(--primary)';
+                    reportDetailsHtml = `
+                        <div style="background: var(--bg-card); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 35px; margin: 25px 0; text-align: left; box-shadow: 0 10px 30px rgba(0,0,0,0.4);">
+                            <div style="text-align: center; margin-bottom: 25px;">
+                                <span class="route-badge" style="font-size: 13px;">${testName}</span>
+                                <h2 style="color: ${themeColor}; font-size: 28px; margin: 10px 0 6px;">${nivel}</h2>
+                                <h4 style="color: var(--text-secondary); font-weight: 500; font-size: 16px;">Puntuación Obtenida: <strong style="color: #fff;">${totalScore} / ${maxScore}</strong></h4>
+                            </div>
+
+                            <h3 style="margin-bottom: 10px; color: ${themeColor}; font-size: 17px; display: flex; align-items: center; gap: 8px;"><i class="ph-bold ph-clipboard-text"></i> Diagnóstico Pedagógico:</h3>
+                            <div style="background: rgba(0,0,0,0.3); padding: 18px; border-radius: 12px; margin-bottom: 20px; border-left: 4px solid ${themeColor};">
+                                <p style="color: var(--text-primary); line-height: 1.6; font-size: 14.5px; margin: 0;">${diag}</p>
+                            </div>
+
+                            <h3 style="margin-bottom: 12px; color: var(--success); font-size: 17px; display: flex; align-items: center; gap: 8px;"><i class="ph-bold ph-lightbulb"></i> Recomendaciones Prácticas Paso a Paso:</h3>
+                            <div style="background: rgba(16,185,129,0.06); border: 1px solid rgba(16,185,129,0.2); padding: 18px 22px; border-radius: 14px; color: var(--text-primary); line-height: 1.8; font-size: 14px;">
+                                ${recomendacion}
+                            </div>
+                        </div>
+                    `;
+                }
+
                 contentArea.innerHTML = `
-                    <div class="view-animate" style="max-width: 700px; margin: 0 auto; text-align: center; padding: 40px 0;">
-                        <i class="ph-fill ph-check-circle" style="font-size: 70px; color: var(--success); margin-bottom: 20px;"></i>
-                        <h1 class="view-title">Diagnóstico Completado</h1>
-                        <p style="font-size: 18px; color: var(--text-secondary); margin-bottom: 25px;">Has obtenido tu reporte orientativo de desarrollo y +1000 XP.</p>
-                        <button class="hero-btn" onclick="app.navigate('profile')">Ver mi Desarrollo</button>
+                    <div class="view-animate" style="max-width: 820px; margin: 0 auto; text-align: center; padding: 25px 15px;">
+                        <div style="width: 80px; height: 80px; border-radius: 50%; background: rgba(16,185,129,0.15); color: var(--success); display: flex; align-items: center; justify-content: center; margin: 0 auto 18px; font-size: 44px; border: 2px solid var(--success);">
+                            <i class="ph-fill ph-check-circle"></i>
+                        </div>
+                        <h1 class="view-title" style="font-size: 32px;">Reporte de Diagnóstico</h1>
+                        <p style="color: var(--text-secondary); font-size: 15px;">Evaluación situacional completada exitosamente.</p>
+                        
+                        ${reportDetailsHtml}
+
+                        <div style="background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.25); border-radius: 16px; padding: 16px 24px; margin-bottom: 30px; display: inline-flex; align-items: center; gap: 12px;">
+                            <i class="ph-fill ph-star" style="color: var(--warning); font-size: 24px;"></i>
+                            <span style="font-size: 16px; font-weight: 700; color: #fff;">¡Has ganado <strong style="color: var(--warning);">+1000 XP</strong> y tu reporte se ha guardado en Mi Desarrollo!</span>
+                        </div>
+
+                        <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+                            <button class="hero-btn" onclick="app.navigate('profile')"><i class="ph-bold ph-user-circle"></i> Ver en Mi Desarrollo</button>
+                            <button class="hero-btn" style="background: rgba(255,255,255,0.08); color: white;" onclick="app.navigate('evaluate')"><i class="ph-bold ph-arrow-left"></i> Volver a Evaluaciones</button>
+                        </div>
                     </div>`;
                 return;
             }
+
             const qObj = dataToUse[currentQ];
-            let optsHtml = qObj.options.map((opt) => `<div class="quiz-option" onclick="app.handleDiagAnswer(${opt.points})" style="margin-bottom: 12px; padding: 18px;"><span>${opt.text}</span></div>`).join('');
+            let dimensionHtml = '';
+            if (qObj.dimension) {
+                dimensionHtml = `<div style="background: var(--success-bg); color: var(--success); padding: 6px 16px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; margin-bottom: 20px; border: 1px solid rgba(16,185,129,0.3);"><i class="ph-bold ph-compass"></i> Dimensión: ${qObj.dimension}</div>`;
+            }
+
+            const progPct = Math.round(((currentQ) / dataToUse.length) * 100);
+            let optsHtml = qObj.options.map((opt) => `
+                <div class="quiz-option" onclick="app.handleDiagAnswer(${opt.points})" style="margin-bottom: 14px; padding: 20px 24px; font-size: 15px; line-height: 1.45; display: flex; justify-content: space-between; align-items: center;">
+                    <span style="flex: 1; text-align: left; padding-right: 15px;">${opt.text}</span>
+                    <i class="ph ph-circle" style="color: var(--primary); font-size: 20px; flex-shrink: 0;"></i>
+                </div>
+            `).join('');
+
             contentArea.innerHTML = `
-                <div class="view-animate quiz-container">
-                    <div class="view-header" style="text-align:center;">
-                        <h2 style="color: var(--primary);">${testName}</h2>
-                        <p class="view-subtitle">Pregunta ${currentQ + 1} de ${dataToUse.length}</p>
+                <div class="view-animate quiz-container" style="max-width: 800px; margin: 0 auto;">
+                    <div class="view-header" style="text-align: center; margin-bottom: 25px;">
+                        <span class="route-badge" style="font-size: 11px;">Evaluación en Curso</span>
+                        <h2 style="color: var(--primary); margin: 8px 0 4px; font-size: 26px;">${testName}</h2>
+                        <p class="view-subtitle" style="font-size: 14px;">Pregunta ${currentQ + 1} de ${dataToUse.length}</p>
+                        <div class="progress-bar-bg" style="width: 100%; max-width: 440px; margin: 16px auto 0; height: 8px;">
+                            <div class="progress-bar-fill" style="width: ${progPct}%;"></div>
+                        </div>
                     </div>
-                    <h2 class="quiz-question" style="text-align: center; margin-bottom: 30px; font-size: 20px;">${qObj.q}</h2>
+                    
+                    <div style="text-align: center;">${dimensionHtml}</div>
+                    
+                    <h2 class="quiz-question" style="text-align: center; max-width: 760px; margin: 0 auto 35px; font-size: 22px; line-height: 1.45;">${qObj.q}</h2>
+                    
                     <div class="quiz-options">${optsHtml}</div>
                 </div>`;
         };
 
-        window.app.handleDiagAnswer = (pts) => { playSound('click'); totalScore += pts; currentQ++; renderDiagnosticQuestion(); };
+        window.app.handleDiagAnswer = (pts) => {
+            playSound('click');
+            totalScore += pts;
+            currentQ++;
+            renderDiagnosticQuestion();
+        };
+
         renderDiagnosticQuestion();
     };
+    app.startDiagnosticTest = window.app.startDiagnosticTest;
 
     window.app.startQuiz = (quizId) => {
         playSound('click');
@@ -1467,7 +1963,16 @@ Puedo guiarte en el desarrollo de competencias educativas, liderazgo, empleabili
             playSound('success');
             alert("¡Fragmento académico agregado exitosamente a la Base de Conocimiento!");
             document.getElementById('kb-form-container').style.display = 'none';
-            window.app.renderKnowledgeBaseUIList();
         }
     };
+
+    // Asegurar disponibilidad global de métodos del chatbot y diagnósticos
+    Object.assign(window.app, {
+        toggleChatbot: window.app.toggleChatbot,
+        sendChatMessage: window.app.sendChatMessage,
+        toggleTutorMode: window.app.toggleTutorMode,
+        openKnowledgeAdmin: window.app.openKnowledgeAdmin,
+        startDiagnosticTest: window.app.startDiagnosticTest
+    });
 });
+

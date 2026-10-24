@@ -4,6 +4,16 @@
 // Resolución de Perfiles, Memoria Conversacional e Inferencia Híbrida.
 // ============================================================================
 
+const normalizeText = (text) => {
+    if (!text) return "";
+    return text
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "") // quitar tildes/diacríticos
+        .replace(/[¿?¡!.,:;()\[\]{}'"_\-\/]/g, " ")
+        .trim();
+};
+
 class ElprofeEngine {
     constructor() {
         this.memory = [];
@@ -16,27 +26,39 @@ class ElprofeEngine {
     // 1. CLASIFICADOR DE INTENCIÓN (INTENT CLASSIFIER)
     // ------------------------------------------------------------------------
     classifyIntent(query) {
-        const q = query.toLowerCase();
+        const q = normalizeText(query);
         
-        if (q.includes("modo tutor") || q.includes("modo docente") || q.includes("ponme a prueba") || q.includes("Cuestióname") || q.includes("hazme una pregunta")) {
+        if (q.includes("modo tutor") || q.includes("modo docente") || q.includes("ponme a prueba") || q.includes("cuestioname") || q.includes("hazme una pregunta")) {
             return "teacher_mode";
         }
-        if (q.includes("diferencia") || q.includes("compara") || q.includes("vs") || q.includes("versus") || q.includes("distinto")) {
+        if (q === "hola" || q.startsWith("hola ") || q.includes("buenos dias") || q.includes("buenas tardes") || q.includes("buenas noches") || q.includes("saludos") || q.includes("que tal") || q.includes("quien eres") || q.includes("presentate") || q === "ayuda" || q.startsWith("ayuda ")) {
+            return "greeting";
+        }
+        if (q.includes("curso") || q.includes("talleres") || q.includes("modulo") || q.includes("canva") || q.includes("tiktok") || q.includes("lxd") || q.includes("catalogo") || q.includes("que puedo aprender")) {
+            return "courses_info";
+        }
+        if (q.includes("evalua") || q.includes("diagnostico") || q.includes("scanner") || q.includes("test") || q.includes("prueba") || q.includes("examen")) {
+            return "diagnostic_info";
+        }
+        if (q.includes("practica") || q.includes("laboratorio") || q.includes("simulador") || q.includes("juego") || q.includes("sales") || q.includes("voz en escena") || q.includes("aprende jugando")) {
+            return "practice_info";
+        }
+        if (q.includes("diferencia") || q.includes("compara") || q.includes(" vs ") || q.includes("versus") || q.includes("distinto")) {
             return "comparison";
         }
-        if (q.includes("ejemplo") || q.includes("casos prácticos") || q.includes("dame un caso")) {
+        if (q.includes("ejemplo") || q.includes("casos practicos") || q.includes("dame un caso")) {
             return "example";
         }
-        if (q.includes("cómo aplico") || q.includes("cómo implementar") || q.includes("estrategia") || q.includes("actividad") || q.includes("pasos para")) {
+        if (q.includes("como aplico") || q.includes("como implementar") || q.includes("estrategia") || q.includes("actividad") || q.includes("pasos para")) {
             return "application";
         }
-        if (q.includes("problema") || q.includes("pierden") || q.includes("distraen") || q.includes("no participan") || q.includes("tengo un caso")) {
+        if (q.includes("problema") || q.includes("pierden") || q.includes("distra") || q.includes("celular") || q.includes("telefono") || q.includes("no participan") || q.includes("aburr") || q.includes("desinteres") || q.includes("motiv") || q.includes("disciplin") || q.includes("atencion") || q.includes("callados")) {
             return "problem_solving";
         }
-        if (q.includes("qué es") || q.includes("defina") || q.includes("concepto de") || q.includes("significa")) {
+        if (q.includes("que es") || q.includes("defina") || q.includes("concepto de") || q.includes("significa") || q.includes("en que consiste")) {
             return "definition";
         }
-        if (q.includes("quién fue") || q.includes("biografía") || q.includes("obras de") || q.includes("autor")) {
+        if (q.includes("quien fue") || q.includes("biografia") || q.includes("obras de") || q.includes("autor")) {
             return "author_info";
         }
         return "explanation";
@@ -46,12 +68,12 @@ class ElprofeEngine {
     // 2. RESOLUTOR DE PERFIL DE USUARIO (PROFILE RESOLVER)
     // ------------------------------------------------------------------------
     resolveProfile(query, userState = {}) {
-        const q = query.toLowerCase();
+        const q = normalizeText(query);
         
-        if (q.includes("empresa") || q.includes("capacitación") || q.includes("empleados") || q.includes("formador empresarial")) {
+        if (q.includes("empresa") || q.includes("capacitacion") || q.includes("empleados") || q.includes("formador empresarial")) {
             return "Formador Organizacional";
         }
-        if (q.includes("equipo") || q.includes("liderar") || q.includes("supervisar") || q.includes("colaboradores") || q.includes("líder")) {
+        if (q.includes("equipo") || q.includes("liderar") || q.includes("supervisar") || q.includes("colaboradores") || q.includes("lider")) {
             return "Líder / Supervisor";
         }
         if (q.includes("estudiante") || q.includes("universidad") || q.includes("mi aprendizaje") || q.includes("estudiar")) {
@@ -63,9 +85,10 @@ class ElprofeEngine {
         
         // Retornar objetivo del estado o por defecto Docente
         if (userState.userObjective) {
-            if (userState.userObjective.includes("formador")) return "Formador Organizacional";
-            if (userState.userObjective.includes("liderar")) return "Líder / Supervisor";
-            if (userState.userObjective.includes("empleo") || userState.userObjective.includes("vocacional")) return "Desarrollo Laboral";
+            const objNorm = normalizeText(userState.userObjective);
+            if (objNorm.includes("formador")) return "Formador Organizacional";
+            if (objNorm.includes("liderar")) return "Líder / Supervisor";
+            if (objNorm.includes("empleo") || objNorm.includes("vocacional")) return "Desarrollo Laboral";
         }
         return this.currentProfile || "Docente / Educador";
     }
@@ -77,29 +100,63 @@ class ElprofeEngine {
         const kb = (typeof window !== 'undefined' && window.psicoeducaKnowledgeBase) ? window.psicoeducaKnowledgeBase : [];
         if (!kb || kb.length === 0) return [];
 
-        const normalizedQuery = query.toLowerCase();
-        const tokens = normalizedQuery.split(/\s+/).filter(t => t.length > 3);
+        const normQuery = normalizeText(query);
+        const queryTokens = normQuery.split(/\s+/).filter(t => t.length >= 3);
 
         const scored = kb.map(item => {
             let score = 0;
-            const fullText = `${item.tema} ${item.subtema} ${item.concepto} ${item.definicion} ${(item.autores||[]).join(' ')} ${(item.conceptos_relacionados||[]).join(' ')} ${(item.errores_frecuentes||[]).join(' ')}`.toLowerCase();
+            const normConcept = normalizeText(item.concepto || "");
+            const normTema = normalizeText(item.tema || "");
+            const normSubtema = normalizeText(item.subtema || "");
+            const normDefinicion = normalizeText(item.definicion || "");
+            const normAutores = (item.autores || []).map(a => normalizeText(a));
+            const normRel = (item.conceptos_relacionados || []).map(r => normalizeText(r));
+            const normErrores = (item.errores_frecuentes || []).map(e => normalizeText(e));
+            const fullNormalized = `${normTema} ${normSubtema} ${normConcept} ${normDefinicion} ${normAutores.join(' ')} ${normRel.join(' ')} ${normErrores.join(' ')}`;
 
-            // Coincidencia exacta de concepto o autor
-            if (item.concepto && normalizedQuery.includes(item.concepto.toLowerCase())) score += 50;
-            if (item.autores && item.autores.some(a => normalizedQuery.includes(a.toLowerCase()))) score += 40;
-            if (item.tema && normalizedQuery.includes(item.tema.toLowerCase())) score += 30;
-            if (item.subtema && normalizedQuery.includes(item.subtema.toLowerCase())) score += 20;
+            // 1. Coincidencia directa de concepto
+            if (normConcept && (normQuery.includes(normConcept) || normConcept.includes(normQuery))) {
+                score += 60;
+            }
 
-            // Coincidencia por tokens
-            tokens.forEach(token => {
-                if (fullText.includes(token)) score += 5;
+            // 2. Acrónimos y términos de alto impacto pedagógico
+            const keyTerms = [
+                'dua', 'zdp', 'abp', 'constructivismo', 'conductismo', 'cognitivismo',
+                'andragogia', 'metacognicion', 'neuromitos', 'gamificacion', 'lxd',
+                'feedback', 'inclusion', 'asimilacion', 'acomodacion', 'skinner',
+                'piaget', 'vygotsky', 'freire', 'dewey', 'montessori', 'bloom',
+                'gardner', 'inteligencia emocional', 'liderazgo', 'refuerzo'
+            ];
+            keyTerms.forEach(kt => {
+                if (normQuery.includes(kt) && fullNormalized.includes(kt)) {
+                    score += 40;
+                }
+            });
+
+            // 3. Coincidencia de autores (por partes o completo)
+            normAutores.forEach(author => {
+                if (normQuery.includes(author)) {
+                    score += 50;
+                } else {
+                    const parts = author.split(/\s+/).filter(p => p.length >= 4);
+                    parts.forEach(part => {
+                        if (normQuery.includes(part)) score += 35;
+                    });
+                }
+            });
+
+            // 4. Coincidencia por tokens
+            queryTokens.forEach(token => {
+                if (normConcept.includes(token)) score += 20;
+                else if (normTema.includes(token) || normSubtema.includes(token)) score += 12;
+                else if (fullNormalized.includes(token)) score += 6;
             });
 
             return { item, score };
         });
 
         scored.sort((a, b) => b.score - a.score);
-        return scored.filter(s => s.score > 8).map(s => s.item).slice(0, 3);
+        return scored.filter(s => s.score >= 15).map(s => s.item).slice(0, 3);
     }
 
     // ------------------------------------------------------------------------
@@ -109,10 +166,9 @@ class ElprofeEngine {
         let enhancedQuery = query;
         if (this.memory.length > 0) {
             const lastTurn = this.memory[this.memory.length - 1];
-            const lower = query.toLowerCase();
+            const lower = normalizeText(query);
             
-            // Si el usuario pregunta "¿cómo lo aplico?" o "ejemplos de eso"
-            if (lower.includes("lo aplico") || lower.includes("de eso") || lower.includes("cómo funciona eso") || lower.includes("y él")) {
+            if (lower.includes("lo aplico") || lower.includes("de eso") || lower.includes("como funciona eso") || lower.includes("y el") || lower.includes("dame otro")) {
                 if (lastTurn.retrievedTopic) {
                     enhancedQuery += ` sobre ${lastTurn.retrievedTopic}`;
                 }
@@ -125,35 +181,110 @@ class ElprofeEngine {
     // 5. SINTETIZADOR DE RESPUESTAS ADAPTATIVAS (CLIENT-SIDE SYNTHESIZER)
     // ------------------------------------------------------------------------
     synthesizeResponse(query, intent, profile, retrievedItems) {
-        if (retrievedItems.length === 0) {
-            return `### 💡 Orientación de Elprofe 360
+        // CASO 1: SALUDOS / BIENVENIDA
+        if (intent === "greeting") {
+            return `### 👋 ¡Hola! Soy Elprofe 360
 
-Actualmente no dispongo de un fragmento específico en la Base de Conocimiento de PsicoEduca para responder en detalle sobre esa consulta exacta.
+Tu **Asistente Académico Inteligente** en PsicoEduca Academy. Estoy equipado con un motor **RAG pedagógico** para orientarte con rigor en:
 
-**Recomendación**:
-* Intenta consultar sobre conceptos como: *Constructivismo, Vygotsky, Piaget, Skinner, Refuerzo Negativo vs Castigo, DUA, Metacognición, Educación Siglo XXI, o Liderazgo*.
-* ¿Te gustaría que exploremos alguno de estos temas clave para tu perfil de **${profile}**?`;
+* 🧠 **Teorías del Aprendizaje**: Constructivismo (*Piaget, Vygotsky*), Conductismo (*Skinner, Pavlov*) y Cognitivismo.
+* ♿ **Inclusión Educativa**: Principios del *Diseño Universal para el Aprendizaje (DUA)*.
+* 🏫 **Gestión de Aula & Andragogía**: Motivación activa, técnicas *Think-Pair-Share* y formación de adultos.
+* 🚀 **Innovación & Liderazgo**: Metodologías activas (ABP, Gamificación) y desarrollo profesional para tu perfil de **${profile}**.
+
+> *¿Sobre qué concepto, autor o desafío formativo te gustaría consultar hoy?*`;
         }
 
+        // CASO 2: INFORMACIÓN DE CURSOS
+        if (intent === "courses_info") {
+            return `### 📚 Catálogo Formativo de PsicoEduca Academy
+
+Nuestra academia ofrece micro-cursos y programas especializados diseñados bajo el enfoque de aprendizaje activo:
+
+1. **Masterclass: Diseño Universal para el Aprendizaje (DUA)**: Neuroeducación y aulas inclusivas derribando el mito del alumno promedio.
+2. **LXD (Diseño de Experiencias de Aprendizaje)**: Metodologías ágiles para estructurar rutas de formación de alto impacto.
+3. **Canva para Docentes y Formadores**: Psicología del color, jerarquía visual y creación de recursos didácticos atractivos.
+4. **TikTok y Microaprendizaje**: Estrategias de síntesis y contenido educativo en formatos breves y dinámicos.
+
+💡 *Puedes explorar todos los módulos y lecciones interactivas navegando a la sección **Aprende** en el menú lateral.*`;
+        }
+
+        // CASO 3: INFORMACIÓN DE DIAGNÓSTICOS
+        if (intent === "diagnostic_info") {
+            return `### 🏆 Centro de Evaluación y Diagnósticos Situacionales
+
+En la sección **Evalúate** dispones de 3 instrumentos orientativos avanzados para potenciar tu desarrollo:
+
+* 📊 **Scanner de Innovación Educativa**: Evalúa 10 dimensiones clave (desde metodologías activas y rol docente hasta uso invisible de la tecnología).
+* 🎯 **Diagnóstico de Habilidades Pedagógicas**: Mide 8 dimensiones de facilitación, resolución de imprevistos e interacción en el aula.
+* 🧠 **Diagnóstico de Perfil Constructivista**: Analiza tu aplicación situacional del andamiaje socrático y aprendizaje colaborativo.
+
+✨ *Cada diagnóstico completado te otorga **+1000 XP** y un reporte detallado con recomendaciones prácticas y metodologías sugeridas.*`;
+        }
+
+        // CASO 4: INFORMACIÓN DE PRÁCTICA Y LABORATORIO
+        if (intent === "practice_info") {
+            return `### 🔬 Laboratorio Psicoeduca: Aprende Haciendo
+
+En la sección **Practica** puedes entrenar tus competencias mediante simuladores y experiencias interactivas:
+
+* 🎮 **Sales 360 Game**: Simulador gamificado de empatía y ventas consultivas.
+* 🎭 **Voz en Escena**: Laboratorio de oratoria, presencia escénica y modulación vocal.
+* 🧩 **Sales Experience**: Dinámicas de memoria, trivia y aplicación de conceptos clave.
+* 🧭 **Consultor Vocacional**: Diagnóstico inteligente de afinidad didáctica y rutas docentes.`;
+        }
+
+        // CASO 5: RESOLUCIÓN DE PROBLEMAS DE AULA Y GESTIÓN DE PARTICIPANTES
+        if (intent === "problem_solving") {
+            const relatedConcept = retrievedItems[0] ? `\n\n---\n💡 *Concepto Académico Sugerido en PsicoEduca: **${retrievedItems[0].concepto}** (${retrievedItems[0].tema} — ${retrievedItems[0].subtema}).*` : '';
+            return `### 💡 Estrategia de Gestión de Aula y Motivación de Elprofe 360
+
+Para abordar situaciones de desinterés, pasividad o distracción digital en el aula, te sugiero aplicar estas 4 estrategias basadas en neuroeducación y constructivismo:
+
+1. **Transformar la Distracción en Herramienta (BYOD)**:
+   * En lugar de confrontar el uso del celular, lanza un reto de investigación rápida de 3 minutos: *"¿Quién encuentra primero el dato más curioso sobre este problema en su móvil?"*.
+2. **Técnica Piensa - Compara - Comparte (Think-Pair-Share)**:
+   * Haz una pausa activa. Pide a los alumnos formular su hipótesis individualmente (1 min), contrastarla en parejas (2 min) y exponerla en plenaria. Esto elimina el miedo escénico y activa a los tímidos.
+3. **Ganchos Cognitivos Situacionales**:
+   * Inicia tu sesión con un enigma o caso contradictorio antes de impartir teoría. El cerebro solo retiene información cuando percibe un vacío o misterio que necesita resolver.
+4. **Validación del Error como Oportunidad**:
+   * Si un estudiante comete una falla, utilízala con preguntas socráticas para que el grupo analice la lógica del razonamiento sin emitir juicios negativos.
+
+> *¿Te gustaría que diseñemos juntos una actividad práctica para tu próxima sesión?*` + relatedConcept;
+        }
+
+        // CASO 6: SIN FRAGMENTO RAG ESPECÍFICO
+        if (retrievedItems.length === 0) {
+            return `### 💡 Orientación Académica de Elprofe 360
+
+Actualmente no cuento con un fragmento indexado con esa formulación exacta, pero puedo orientarte en principios pedagógicos clave.
+
+**Temas Académicos Destacados**:
+* **Constructivismo**: *Jean Piaget* (asimilación/acomodación) y *Lev Vygotsky* (Zona de Desarrollo Próximo y andamiaje).
+* **Conductismo**: *B.F. Skinner* (refuerzo positivo/negativo) vs *Pavlov*.
+* **Inclusión**: *Diseño Universal para el Aprendizaje (DUA)* y derribo del mito del alumno promedio.
+* **Metacognición & Aprendizaje Activo**: ABP, Aula Invertida (Flipped Classroom) y Gamificación.
+
+¿Deseas profundizar en alguno de estos conceptos para tu perfil de **${profile}**?`;
+        }
+
+        // CASO 7: RESPUESTA RAG ACADÉMICA ESTRUCTURADA
         const primary = retrievedItems[0];
         let response = "";
 
-        // Encabezado contextual
         response += `### 📚 ${primary.concepto}\n\n`;
         response += `> **Área**: ${primary.tema} — ${primary.subtema}  \n`;
         response += `> **Perfil Adaptado**: ${profile}\n\n`;
 
-        // INTENCIÓN: DEFINICIÓN / EXPLICACIÓN
-        if (intent === "definition" || intent === "explanation") {
-            response += `#### 📌 Definición Académica\n${primary.definicion}\n\n`;
-            if (primary.autores && primary.autores.length > 0) {
-                response += `**Autores / Teóricos Clave**: ${primary.autores.join(", ")}.\n\n`;
-            }
+        // DEFINICIÓN / EXPLICACIÓN
+        response += `#### 📌 Definición Académica\n${primary.definicion}\n\n`;
+        if (primary.autores && primary.autores.length > 0) {
+            response += `**Autores / Teóricos Clave**: ${primary.autores.join(", ")}.\n\n`;
         }
 
-        // INTENCIÓN: COMPARACIÓN
+        // COMPARACIÓN
         if (intent === "comparison" || (primary.comparaciones && primary.comparaciones.length > 0 && intent !== "example")) {
-            response += `#### ⚖️ Comparación y Distinción Conceptualmente Clave\n`;
+            response += `#### ⚖️ Comparación y Distinción Clave\n`;
             if (primary.comparaciones && primary.comparaciones.length > 0) {
                 primary.comparaciones.forEach(comp => {
                     response += `* **Frente a ${comp.con}**: ${comp.diferencia}\n`;
@@ -165,7 +296,7 @@ Actualmente no dispongo de un fragmento específico en la Base de Conocimiento d
             response += `\n`;
         }
 
-        // SECCIÓN DE ERRORES FRECUENTES (SI APLICA)
+        // ERRORES FRECUENTES
         if (primary.errores_frecuentes && primary.errores_frecuentes.length > 0) {
             response += `#### ⚠️ Errores Frecuentes a Evitar\n`;
             primary.errores_frecuentes.forEach(err => {
@@ -174,7 +305,7 @@ Actualmente no dispongo de un fragmento específico en la Base de Conocimiento d
             response += `\n`;
         }
 
-        // APLICACIÓN PRÁCTICA SEGÚN EL PERFIL DEL USUARIO
+        // APLICACIÓN PRÁCTICA SEGÚN PERFIL
         response += `#### 🛠️ Aplicación Práctica para ${profile}\n`;
         if (profile.includes("Organizacional") || profile.includes("Líder") || profile.includes("Supervisor")) {
             if (primary.aplicaciones_organizacionales && primary.aplicaciones_organizacionales.length > 0) {
@@ -194,7 +325,7 @@ Actualmente no dispongo de un fragmento específico en la Base de Conocimiento d
 
         // ACTIVIDAD SUGERIDA
         if (primary.actividades && primary.actividades.length > 0) {
-            response += `#### 📝 Actividad de Cierre Recomendada\n* ${primary.actividades[0]}\n\n`;
+            response += `#### 📝 Actividad Recomendada\n* ${primary.actividades[0]}\n\n`;
         }
 
         // FUENTES Y TRAZABILIDAD
