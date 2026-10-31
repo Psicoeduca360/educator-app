@@ -109,7 +109,7 @@ const gamificationLevels = [
     { name: "Mentor", xp: 10000, seed: "Mentor", desc: "Guías a otros educadores y profesionales." }
 ];
 
-// --- 8 Insignias de Desarrollo ---
+// --- Insignias de Desarrollo y Medallas de Evaluación ---
 const badgesData = [
     { id: 'comunicacion', name: "Comunicación efectiva", icon: "ph-chats-teardrop", desc: "Dominas la expresión asertiva y la escucha activa." },
     { id: 'facilitador', name: "Facilitador", icon: "ph-chalkboard-teacher", desc: "Lideras experiencias formativas de alto impacto." },
@@ -118,7 +118,16 @@ const badgesData = [
     { id: 'neuroeducador', name: "Neuroeducador", icon: "ph-brain", desc: "Aplicas principios de neurociencia y DUA en el aula." },
     { id: 'orientador', name: "Orientador laboral", icon: "ph-briefcase", desc: "Guías planes de carrera y empleabilidad." },
     { id: 'trabajo_equipo', name: "Trabajo en equipo", icon: "ph-users-three", desc: "Construyes sinergia y colaboración." },
-    { id: 'resolucion_conflictos', name: "Resolución de conflictos", icon: "ph-scales", desc: "Medias con éxito situaciones difíciles." }
+    { id: 'resolucion_conflictos', name: "Resolución de conflictos", icon: "ph-scales", desc: "Medias con éxito situaciones difíciles." },
+    // Medallas de los Cuatro Instrumentos de Evaluación
+    { id: 'maestro_evaluacion', name: "Maestro de la Evaluación", icon: "ph-pencil-line", desc: "Aprobaste la evaluación de Evaluación Formativa con 80 puntos o más." },
+    { id: 'arquitecto_aprendizaje', name: "Arquitecto del Aprendizaje", icon: "ph-books", desc: "Aprobaste la evaluación de Fundamentos de Pedagogía con 80 puntos o más." },
+    { id: 'mentor_aprendizaje', name: "Mentor del Aprendizaje", icon: "ph-users-four", desc: "Aprobaste la evaluación de Andragogía Avanzada con 80 puntos o más." },
+    { id: 'estratega_didactico', name: "Estratega Didáctico", icon: "ph-presentation-chart", desc: "Aprobaste la evaluación de Didáctica Práctica con 80 puntos o más." },
+    // Logros Especiales
+    { id: 'primer_paso_pedagogico', name: "Primer Paso Pedagógico", icon: "ph-footprints", desc: "Completaste tu primer instrumento de evaluación interactivo." },
+    { id: 'dominio_integral', name: "Dominio Pedagógico Integral", icon: "ph-trophy", desc: "Aprobaste los cuatro instrumentos de evaluación docente con 80+ puntos." },
+    { id: 'excelencia_pedagogica', name: "Excelencia Pedagógica", icon: "ph-medal", desc: "Alcanzaste nivel Avanzado (90+ puntos) en todos los instrumentos." }
 ];
 
 // --- 5 Rutas de Aprendizaje ---
@@ -1298,12 +1307,78 @@ Puedo guiarte en el desarrollo de competencias educativas, liderazgo, empleabili
                 </div>
             </div>
 
-            <!-- Tests por Categoría -->
-            <div class="view-header"><h2 class="view-title" style="font-size: 22px;">Tests Básicos de Opción Múltiple</h2></div>
-            <div class="grid-container">
-                ${Object.keys(testsData).map(key => {
-                    const t = testsData[key];
-                    return `<div class="card avatar-card" onclick="app.startQuiz('${key}')"><div class="card-icon-wrapper"><i class="ph ${t.icon}"></i></div><h3 class="card-title">${t.title}</h3><p class="card-desc">${t.desc}</p><div class="card-action" style="margin-top: 15px; color: var(--primary); font-weight: bold;">Iniciar Test <i class="ph ph-arrow-right"></i></div></div>`;
+            <!-- Cuatro Instrumentos de Evaluación Pedagógica Interactivos -->
+            <div class="view-header" style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 14px; margin-bottom: 20px;">
+                <div>
+                    <h2 class="view-title" style="font-size: 22px;">Instrumentos de Evaluación de Competencias</h2>
+                    <p class="view-subtitle" style="font-size: 13.5px;">Evaluaciones completas de 40 preguntas (35 min), diagnóstico por 4 dimensiones, medallas y retroalimentación pedagógica.</p>
+                </div>
+                <button class="hero-btn" onclick="EvaluationEngine.renderHistoryView()" style="background: rgba(255,255,255,0.08); color: white; font-size: 13px; padding: 10px 18px;">
+                    <i class="ph-bold ph-chart-line-up"></i> Historial y Evolución
+                </button>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px; margin-bottom: 40px;">
+                ${['formativa', 'pedagogia', 'andragogia', 'didactica'].map(key => {
+                    const inst = (window.EVALUATIONS_DATA && window.EVALUATIONS_DATA.instruments[key]) || testsData[key];
+                    const active = window.EvaluationStorageService ? EvaluationStorageService.getActiveAttempt(key) : null;
+                    const best = window.EvaluationStorageService ? EvaluationStorageService.getBestAttempt(key) : null;
+                    const hasMedal = gameState.unlockedBadges && gameState.unlockedBadges.includes(inst.badgeId);
+                    
+                    let statusBadge = `<span class="route-badge" style="background: rgba(255,255,255,0.08); color: var(--text-secondary);"><i class="ph ph-circle"></i> No iniciado</span>`;
+                    if (active) {
+                        const answered = Object.keys(active.answers || {}).length;
+                        statusBadge = `<span class="route-badge" style="background: rgba(245,158,11,0.2); color: var(--warning);"><i class="ph-bold ph-hourglass"></i> En curso (${answered}/40)</span>`;
+                    } else if (best) {
+                        statusBadge = best.passed ? 
+                            `<span class="route-badge" style="background: rgba(16,185,129,0.2); color: var(--success);"><i class="ph-bold ph-seal-check"></i> Aprobado</span>` : 
+                            `<span class="route-badge" style="background: rgba(245,158,11,0.2); color: var(--warning);"><i class="ph-bold ph-trend-up"></i> En desarrollo</span>`;
+                    }
+
+                    return `
+                        <div class="card avatar-card" style="display: flex; flex-direction: column; justify-content: space-between; padding: 24px; border: 1px solid rgba(255,255,255,0.08); background: var(--bg-card); border-radius: 20px;">
+                            <div>
+                                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
+                                    <div class="card-icon-wrapper" style="width: 50px; height: 50px; border-radius: 14px; background: rgba(14,165,233,0.15); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 26px;">
+                                        <i class="ph ${inst.icon}"></i>
+                                    </div>
+                                    ${statusBadge}
+                                </div>
+                                <h3 class="card-title" style="font-size: 19px; color: #fff; margin-bottom: 8px;">${inst.title}</h3>
+                                <p class="card-desc" style="font-size: 13.5px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 16px;">${inst.shortDesc || inst.desc}</p>
+                                
+                                <div style="background: rgba(0,0,0,0.25); border-radius: 12px; padding: 12px 14px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 16px; display: flex; flex-direction: column; gap: 8px; font-size: 12.5px;">
+                                    <div style="display: flex; justify-content: space-between;">
+                                        <span style="color: var(--text-secondary);"><i class="ph-bold ph-list-numbers"></i> Estructura:</span>
+                                        <strong style="color: #fff;">40 preguntas • 35 min</strong>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between;">
+                                        <span style="color: var(--text-secondary);"><i class="ph-bold ph-chart-bar"></i> Mejor puntaje:</span>
+                                        <strong style="color: ${best ? (best.passed ? 'var(--success)' : 'var(--warning)') : 'var(--text-secondary)'};">
+                                            ${best ? `${best.score}/100 pts (${best.masteryLevel})` : '--/100'}
+                                        </strong>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 6px;">
+                                        <span style="color: var(--text-secondary);"><i class="ph-bold ph-medal"></i> Medalla:</span>
+                                        ${hasMedal ? 
+                                            `<span style="color: var(--warning); font-weight: 700;"><i class="ph-fill ph-medal"></i> Desbloqueada</span>` : 
+                                            `<span style="color: var(--text-secondary);"><i class="ph ph-lock"></i> Por desbloquear (80+)</span>`}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div style="display: flex; gap: 8px; margin-top: 10px;">
+                                <button class="hero-btn" onclick="EvaluationEngine.startTest('${key}')" style="flex: 1; justify-content: center; font-size: 13px; padding: 12px;">
+                                    ${active ? '<i class="ph-bold ph-play"></i> Continuar Test' : (best ? '<i class="ph-bold ph-arrow-counter-clockwise"></i> Reintentar Test' : '<i class="ph-bold ph-play"></i> Iniciar Test')}
+                                </button>
+                                ${best ? `
+                                    <button class="hero-btn" onclick="EvaluationEngine.viewPastAttempt('${best.id}')" title="Ver último informe" style="background: rgba(255,255,255,0.08); padding: 12px 14px; font-size: 13px;">
+                                        <i class="ph-bold ph-file-text"></i>
+                                    </button>
+                                ` : ''}
+                            </div>
+                        </div>
+                    `;
                 }).join('')}
             </div>
         </div>
@@ -1401,6 +1476,49 @@ Puedo guiarte en el desarrollo de competencias educativas, liderazgo, empleabili
                                 <div class="badge-icon-box"><i class="ph-bold ${b.icon}"></i></div>
                                 <div class="badge-name">${b.name}</div>
                                 <div class="badge-status">${isUnlocked ? 'Desbloqueada' : 'Por desbloquear'}</div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+
+                <!-- Historial de los Cuatro Instrumentos de Evaluación -->
+                <div class="view-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <div>
+                        <h2 class="view-title" style="font-size: 22px;">Mis Evaluaciones Docentes (4 Instrumentos)</h2>
+                        <p class="view-subtitle" style="font-size: 13px;">Diagnósticos por dimensiones, evolución de puntajes y medallas obtenidas.</p>
+                    </div>
+                    <button class="hero-btn" onclick="EvaluationEngine.renderHistoryView()" style="font-size: 12px; padding: 8px 16px;">
+                        <i class="ph-bold ph-chart-line-up"></i> Historial Completo y Evolución
+                    </button>
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 40px;">
+                    ${['formativa', 'pedagogia', 'andragogia', 'didactica'].map(k => {
+                        const inst = window.EVALUATIONS_DATA ? EVALUATIONS_DATA.instruments[k] : testsData[k];
+                        const best = window.EvaluationStorageService ? EvaluationStorageService.getBestAttempt(k) : null;
+                        const hasMedal = gameState.unlockedBadges && gameState.unlockedBadges.includes(inst.badgeId);
+                        return `
+                            <div class="card avatar-card" style="padding: 18px; border: 1px solid rgba(255,255,255,0.08); display: flex; flex-direction: column; justify-content: space-between;">
+                                <div>
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                        <div style="font-size: 24px; color: var(--primary);"><i class="ph ${inst.icon}"></i></div>
+                                        ${hasMedal ? `<span style="color: var(--warning); font-size: 16px;" title="Medalla desbloqueada"><i class="ph-fill ph-medal"></i></span>` : `<span style="color: var(--text-secondary); font-size: 14px;" title="Medalla por desbloquear"><i class="ph ph-lock"></i></span>`}
+                                    </div>
+                                    <h4 style="font-size: 15px; color: #fff; margin-bottom: 6px;">${inst.title}</h4>
+                                    <div style="font-size: 13px; font-weight: 800; color: ${best ? (best.passed ? 'var(--success)' : 'var(--warning)') : 'var(--text-secondary)'};">
+                                        ${best ? `${best.score} pts (${best.masteryLevel})` : 'Sin evaluar'}
+                                    </div>
+                                </div>
+                                <div style="margin-top: 12px;">
+                                    ${best ? `
+                                        <button class="hero-btn" onclick="EvaluationEngine.viewPastAttempt('${best.id}')" style="width: 100%; justify-content: center; font-size: 11.5px; padding: 6px 10px; background: rgba(255,255,255,0.08);">
+                                            Ver Informe
+                                        </button>
+                                    ` : `
+                                        <button class="hero-btn" onclick="EvaluationEngine.startTest('${k}')" style="width: 100%; justify-content: center; font-size: 11.5px; padding: 6px 10px;">
+                                            Iniciar Test
+                                        </button>
+                                    `}
+                                </div>
                             </div>
                         `;
                     }).join('')}
@@ -1731,6 +1849,10 @@ Puedo guiarte en el desarrollo de competencias educativas, liderazgo, empleabili
     app.startDiagnosticTest = window.app.startDiagnosticTest;
 
     window.app.startQuiz = (quizId) => {
+        if (window.EvaluationEngine && window.EVALUATIONS_DATA && window.EVALUATIONS_DATA.instruments[quizId]) {
+            window.EvaluationEngine.startTest(quizId);
+            return;
+        }
         playSound('click');
         const data = testsData[quizId];
         let currentQ = 0;
