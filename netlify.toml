@@ -1,0 +1,13 @@
+# Configuración de despliegue para Netlify
+# Psicoeduca Academy es una aplicación web estática (Vanilla HTML, CSS, JS)
+
+[build]
+  publish = "."
+  command = ""
+  functions = "netlify/functions"
+
+# Redirecciones opcionales para SPA o acceso a funciones
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
