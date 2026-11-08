@@ -723,8 +723,24 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     window.app = {
+        toggleSidebar: (forceState = null) => {
+            const sidebar = document.getElementById('main-sidebar');
+            const backdrop = document.getElementById('sidebar-backdrop');
+            if (!sidebar) return;
+            const isOpen = sidebar.classList.contains('mobile-open');
+            const newState = (forceState !== null) ? forceState : !isOpen;
+            if (newState) {
+                sidebar.classList.add('mobile-open');
+                backdrop?.classList.add('active');
+            } else {
+                sidebar.classList.remove('mobile-open');
+                backdrop?.classList.remove('active');
+            }
+        },
+
         navigate: (target, param = null) => {
             playSound('click');
+            window.app.toggleSidebar(false);
             navLinks.forEach(l => l.classList.remove('active'));
             const activeLink = document.querySelector(`.nav-link[data-target="${target}"]`);
             if (activeLink) activeLink.classList.add('active');
@@ -1005,83 +1021,180 @@ Puedo guiarte en el desarrollo de competencias educativas, liderazgo, empleabili
 
     // --- RENDERIZADO DE VISTAS PRINCIPALES ---
 
-    // 1. NUEVA HOME (Página de Inicio)
-    const renderHome = () => `
+    // 1. NUEVA HOME (Página de Inicio Neurotech)
+    const renderHome = () => {
+        let currentLevelObj = gamificationLevels[0];
+        let nextLevelObj = gamificationLevels[1] || gamificationLevels[0];
+        for (let i = 0; i < gamificationLevels.length; i++) {
+            if (gameState.xp >= gamificationLevels[i].xp) {
+                currentLevelObj = gamificationLevels[i];
+                nextLevelObj = gamificationLevels[i + 1] || gamificationLevels[i];
+            }
+        }
+        
+        const unlockedBadgesCount = (gameState.unlockedBadges || []).length;
+        const activeObjective = gameState.userObjective || "Mejorar como docente";
+
+        return `
         <div class="view-animate">
-            <!-- Hero Header -->
-            <div class="hero-banner" style="background: linear-gradient(135deg, rgba(15,23,42,0.95), rgba(30,41,59,0.95)), url('https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&q=80') center/cover; border-radius: 24px; padding: 45px; border: 1px solid rgba(255,255,255,0.08); margin-bottom: 40px; box-shadow: 0 20px 40px rgba(0,0,0,0.5);">
-                <div style="max-width: 750px;">
-                    <span style="background: rgba(56, 189, 248, 0.15); color: var(--primary); border: 1px solid rgba(56, 189, 248, 0.3); padding: 5px 14px; border-radius: 20px; font-size: 12px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase;"><i class="ph-bold ph-sparkle"></i> Academia Virtual Ecosistémica</span>
-                    <h1 style="font-size: 40px; font-weight: 800; margin: 15px 0 10px; color: #fff; line-height: 1.15;">PSICOEDUCA ACADEMY</h1>
-                    <p style="font-size: 22px; font-weight: 700; color: var(--primary); margin-bottom: 8px;">"Aprende para enseñar, liderar y crecer."</p>
-                    <p style="font-size: 16px; color: var(--text-secondary); margin-bottom: 28px; line-height: 1.5;">Una academia virtual para desarrollar competencias educativas, profesionales y humanas en 5 áreas de impacto.</p>
+            <!-- Neurotech Hero Banner -->
+            <div class="neuro-hero-banner">
+                <div style="max-width: 680px; z-index: 2;">
+                    <div class="hero-badge-pill">
+                        <i class="ph-bold ph-brain"></i> LABORATORIO NEUROCOGNITIVO // v2.5
+                    </div>
+                    <h1 class="hero-main-title">
+                        PSICOEDUCA <span class="gradient-text">ACADEMY</span>
+                    </h1>
+                    <p class="hero-tagline">"Conectando el conocimiento, la mente y el aprendizaje."</p>
+                    <p class="hero-desc">
+                        Bienvenido, <strong>${gameState.userName || 'Educador'}</strong>. Entorno de entrenamiento y desarrollo docente basado en neurociencias aplicadas, diseño universal (DUA), constructivismo y microaprendizaje de alta retención.
+                    </p>
                     <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-                        <button class="hero-btn" onclick="app.navigate('evaluate')"><i class="ph-bold ph-compass"></i> Explorar mi Ruta Recomendada</button>
-                        <button class="hero-btn" style="background: rgba(255,255,255,0.08); color: white; border: 1px solid rgba(255,255,255,0.15);" onclick="app.navigate('explora')">Descubrir Psicoeduca</button>
+                        <button class="hero-btn" onclick="app.navigate('evaluate')">
+                            <i class="ph-bold ph-scan"></i> Iniciar Diagnóstico Situacional
+                        </button>
+                        <button class="hero-btn hero-btn-cyan" onclick="app.navigate('practica')">
+                            <i class="ph-bold ph-flask"></i> Laboratorio Experimental
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Gráfico Neuronal Interactivo del Hero -->
+                <div class="hero-synapse-visual" title="Núcleo de Sinapsis Cognitiva">
+                    <div class="synapse-core-ring"></div>
+                    <div class="synapse-inner-ring"></div>
+                    <div class="synapse-center-node">
+                        <i class="ph-bold ph-brain"></i>
                     </div>
                 </div>
             </div>
 
-            <!-- Sección: ¿Qué quieres desarrollar? (5 Tarjetas Principales) -->
+            <!-- HUD de Telemetría Cognitiva del Usuario -->
+            <div class="cognitive-hud-grid">
+                <div class="hud-metric-card" onclick="app.navigate('profile')">
+                    <div class="hud-icon-box" style="background: rgba(245, 158, 11, 0.12); color: var(--warning); border-color: rgba(245, 158, 11, 0.3);">
+                        <i class="ph-fill ph-star"></i>
+                    </div>
+                    <div>
+                        <div class="hud-metric-val">${currentLevelObj.name}</div>
+                        <div class="hud-metric-label">Rango Evolutivo</div>
+                    </div>
+                </div>
+
+                <div class="hud-metric-card" onclick="app.navigate('profile')">
+                    <div class="hud-icon-box" style="background: rgba(34, 211, 238, 0.12); color: var(--color-cyan); border-color: rgba(34, 211, 238, 0.3);">
+                        <i class="ph-bold ph-lightning"></i>
+                    </div>
+                    <div style="flex: 1;">
+                        <div class="hud-metric-val" style="color: var(--color-cyan);">${gameState.xp || 0} XP</div>
+                        <div class="hud-metric-label">Energía Sináptica</div>
+                    </div>
+                </div>
+
+                <div class="hud-metric-card" onclick="app.navigate('evaluate')">
+                    <div class="hud-icon-box" style="background: rgba(52, 211, 153, 0.12); color: var(--success); border-color: rgba(52, 211, 153, 0.3);">
+                        <i class="ph-bold ph-exam"></i>
+                    </div>
+                    <div>
+                        <div class="hud-metric-val">${gameState.testsCompleted || 0}</div>
+                        <div class="hud-metric-label">Evaluaciones Validadas</div>
+                    </div>
+                </div>
+
+                <div class="hud-metric-card" onclick="app.navigate('profile')">
+                    <div class="hud-icon-box" style="background: rgba(168, 85, 247, 0.12); color: #C084FC; border-color: rgba(168, 85, 247, 0.3);">
+                        <i class="ph-bold ph-medal"></i>
+                    </div>
+                    <div>
+                        <div class="hud-metric-val">${unlockedBadgesCount}</div>
+                        <div class="hud-metric-label">Insignias Desbloqueadas</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sección: ¿Qué quieres desarrollar? (5 Tarjetas de Objetivos) -->
             <div class="view-header">
                 <h2 class="view-title">¿Qué quieres desarrollar hoy?</h2>
-                <p class="view-subtitle">Selecciona tu meta principal y accede a una ruta de aprendizaje personalizada.</p>
+                <p class="view-subtitle">Selecciona tu meta pedagógica o profesional para activar una ruta de aprendizaje adaptativa.</p>
             </div>
             
             <div class="audiences-grid">
-                <div class="audience-card" onclick="app.setUserObjective('Mejorar como docente')">
+                <div class="audience-card" onclick="app.setUserObjective('Mejorar como docente')" style="border-top: 2px solid #38BDF8;">
                     <div>
-                        <div class="audience-icon"><i class="ph-bold ph-chalkboard-teacher"></i></div>
+                        <div class="audience-icon" style="color: #38BDF8; background: rgba(56, 189, 248, 0.12); border-color: rgba(56, 189, 248, 0.3);">
+                            <i class="ph-bold ph-chalkboard-teacher"></i>
+                        </div>
                         <h3 class="audience-title">Quiero enseñar mejor</h3>
-                        <p class="audience-desc">Pedagogía, didáctica, DUA, neuroeducación e IA aplicada al aula.</p>
+                        <p class="audience-desc">Pedagogía activa, didáctica constructivista, DUA, neuroeducación e IA aplicada al aula.</p>
                     </div>
-                    <div class="audience-action">Iniciar Ruta Docente <i class="ph-bold ph-arrow-right"></i></div>
+                    <div class="audience-action" style="color: #38BDF8;">
+                        Ruta Docente <i class="ph-bold ph-arrow-right"></i>
+                    </div>
                 </div>
 
-                <div class="audience-card" onclick="app.setUserObjective('Convertirme en formador')">
+                <div class="audience-card" onclick="app.setUserObjective('Convertirme en formador')" style="border-top: 2px solid #C084FC;">
                     <div>
-                        <div class="audience-icon" style="color: #a855f7; background: rgba(168,85,247,0.1);"><i class="ph-bold ph-presentation"></i></div>
+                        <div class="audience-icon" style="color: #C084FC; background: rgba(192, 132, 252, 0.12); border-color: rgba(192, 132, 252, 0.3);">
+                            <i class="ph-bold ph-presentation"></i>
+                        </div>
                         <h3 class="audience-title">Quiero formar personas</h3>
-                        <p class="audience-desc">Diseño instruccional, andragogía, capacitación empresarial y facilitación.</p>
+                        <p class="audience-desc">Diseño instruccional LXD, andragogía corporativa, capacitación y facilitación moderna.</p>
                     </div>
-                    <div class="audience-action" style="color: #a855f7;">Ruta Formador <i class="ph-bold ph-arrow-right"></i></div>
+                    <div class="audience-action" style="color: #C084FC;">
+                        Ruta Formador <i class="ph-bold ph-arrow-right"></i>
+                    </div>
                 </div>
 
-                <div class="audience-card" onclick="app.setUserObjective('Conseguir empleo')">
+                <div class="audience-card" onclick="app.setUserObjective('Conseguir empleo')" style="border-top: 2px solid #34D399;">
                     <div>
-                        <div class="audience-icon" style="color: #34d399; background: rgba(52,211,153,0.1);"><i class="ph-bold ph-briefcase"></i></div>
-                        <h3 class="audience-title">Quiero crecer profesionalmente</h3>
-                        <p class="audience-desc">Orientación vocacional, empleabilidad, CV, entrevistas y marca personal.</p>
+                        <div class="audience-icon" style="color: #34D399; background: rgba(52, 211, 153, 0.12); border-color: rgba(52, 211, 153, 0.3);">
+                            <i class="ph-bold ph-briefcase"></i>
+                        </div>
+                        <h3 class="audience-title">Quiero crecer laboralmente</h3>
+                        <p class="audience-desc">Orientación vocacional, empleabilidad, CV estratégico, entrevistas STAR y marca personal.</p>
                     </div>
-                    <div class="audience-action" style="color: #34d399;">Ruta Empleabilidad <i class="ph-bold ph-arrow-right"></i></div>
+                    <div class="audience-action" style="color: #34D399;">
+                        Ruta Empleabilidad <i class="ph-bold ph-arrow-right"></i>
+                    </div>
                 </div>
 
-                <div class="audience-card" onclick="app.setUserObjective('Mejorar mis habilidades sociales')">
+                <div class="audience-card" onclick="app.setUserObjective('Mejorar mis habilidades sociales')" style="border-top: 2px solid #FBBF24;">
                     <div>
-                        <div class="audience-icon" style="color: #fbbf24; background: rgba(251,191,36,0.1);"><i class="ph-bold ph-chats-teardrop"></i></div>
-                        <h3 class="audience-title">Quiero mejorar mis relaciones</h3>
-                        <p class="audience-desc">Comunicación asertiva, inteligencia emocional, empatía y resolución de conflictos.</p>
+                        <div class="audience-icon" style="color: #FBBF24; background: rgba(251, 191, 36, 0.12); border-color: rgba(251, 191, 36, 0.3);">
+                            <i class="ph-bold ph-chats-teardrop"></i>
+                        </div>
+                        <h3 class="audience-title">Quiero conectar mejor</h3>
+                        <p class="audience-desc">Comunicación asertiva, inteligencia emocional, empatía activa y mediación de conflictos.</p>
                     </div>
-                    <div class="audience-action" style="color: #fbbf24;">Ruta Habilidades <i class="ph-bold ph-arrow-right"></i></div>
+                    <div class="audience-action" style="color: #FBBF24;">
+                        Ruta Habilidades <i class="ph-bold ph-arrow-right"></i>
+                    </div>
                 </div>
 
-                <div class="audience-card" onclick="app.setUserObjective('Prepararme para liderar equipos')">
+                <div class="audience-card" onclick="app.setUserObjective('Prepararme para liderar equipos')" style="border-top: 2px solid #F472B6;">
                     <div>
-                        <div class="audience-icon" style="color: #ec4899; background: rgba(236,72,153,0.1);"><i class="ph-bold ph-crown"></i></div>
-                        <h3 class="audience-title">Quiero liderar mejor</h3>
-                        <p class="audience-desc">Liderazgo, feedback efectivo, delegación, conversaciones difíciles y desempeño.</p>
+                        <div class="audience-icon" style="color: #F472B6; background: rgba(244, 114, 182, 0.12); border-color: rgba(244, 114, 182, 0.3);">
+                            <i class="ph-bold ph-crown"></i>
+                        </div>
+                        <h3 class="audience-title">Quiero liderar equipos</h3>
+                        <p class="audience-desc">Liderazgo inspirador, feedback constructivo, delegación ágil y gestión del alto desempeño.</p>
                     </div>
-                    <div class="audience-action" style="color: #ec4899;">Ruta Liderazgo <i class="ph-bold ph-arrow-right"></i></div>
+                    <div class="audience-action" style="color: #F472B6;">
+                        Ruta Liderazgo <i class="ph-bold ph-arrow-right"></i>
+                    </div>
                 </div>
             </div>
 
-            <!-- Sección: Rutas Destacadas -->
-            <div class="view-header" style="display: flex; justify-content: space-between; align-items: flex-end;">
+            <!-- Sección: Rutas de Aprendizaje Destacadas -->
+            <div class="view-header" style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 12px;">
                 <div>
-                    <h2 class="view-title">Rutas de Aprendizaje Destacadas</h2>
-                    <p class="view-subtitle">Estructura jerárquica de competencias por niveles.</p>
+                    <h2 class="view-title">Rutas de Aprendizaje Sináptico</h2>
+                    <p class="view-subtitle">Estructuras modulares secuenciales diseñadas para el dominio cognitivo.</p>
                 </div>
-                <button class="hero-btn" style="font-size: 13px; padding: 8px 16px; background: rgba(255,255,255,0.05);" onclick="app.navigate('aprende')">Ver Todas las Rutas</button>
+                <button class="hero-btn" style="font-size: 13px; padding: 8px 18px; background: rgba(34, 211, 238, 0.1); border-color: var(--border-glow); color: var(--color-cyan);" onclick="app.navigate('aprende')">
+                    Ver Todas las Rutas <i class="ph-bold ph-arrow-right"></i>
+                </button>
             </div>
 
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px; margin-bottom: 40px;">
@@ -1089,49 +1202,60 @@ Puedo guiarte en el desarrollo de competencias educativas, liderazgo, empleabili
                     <div class="route-card" onclick="app.navigate('aprende')">
                         <div class="route-header">
                             <span class="route-badge">${r.category}</span>
-                            <span style="font-size: 12px; color: var(--warning); font-weight: bold;">+${r.xp} XP</span>
+                            <span style="font-size: 12px; color: var(--warning); font-weight: bold; font-family: var(--font-tech); background: rgba(245, 158, 11, 0.1); padding: 3px 8px; border-radius: 6px; border: 1px solid rgba(245, 158, 11, 0.3);">
+                                <i class="ph-bold ph-lightning"></i> +${r.xp} XP
+                            </span>
                         </div>
-                        <h3 style="font-size: 20px; color: #fff; margin-bottom: 10px;">${r.title}</h3>
+                        <h3 style="font-size: 19px; font-family: var(--font-tech); color: #fff; margin-bottom: 10px;">${r.title}</h3>
                         <p style="font-size: 13.5px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 18px;">${r.desc}</p>
                         <div class="route-meta-pills">
-                            <span class="meta-pill"><i class="ph ph-clock"></i> ${r.duration}</span>
-                            <span class="meta-pill"><i class="ph ph-chart-bar"></i> ${r.level}</span>
-                            <span class="meta-pill"><i class="ph ph-squares-four"></i> ${r.modulesCount} módulos</span>
+                            <span class="meta-pill"><i class="ph-bold ph-clock"></i> ${r.duration}</span>
+                            <span class="meta-pill"><i class="ph-bold ph-chart-bar"></i> ${r.level}</span>
+                            <span class="meta-pill"><i class="ph-bold ph-squares-four"></i> ${r.modulesCount} módulos</span>
                         </div>
                         <div class="audience-action">Explorar Ruta Completa <i class="ph-bold ph-arrow-right"></i></div>
                     </div>
                 `).join('')}
             </div>
 
-            <!-- Sección: Descubre tu Perfil (CTA Diagnóstico) -->
-            <div style="background: linear-gradient(135deg, rgba(13, 138, 188, 0.15), rgba(16, 185, 129, 0.15)); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 24px; padding: 35px; margin-bottom: 40px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;">
-                <div>
-                    <span style="color: var(--success); font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;"><i class="ph-bold ph-clipboard-text"></i> Diagnóstico Situacional</span>
-                    <h3 style="font-size: 24px; margin: 8px 0; color: #fff;">Descubre tu Perfil de Desarrollo</h3>
-                    <p style="color: var(--text-secondary); max-width: 600px; font-size: 14px; line-height: 1.5;">Realiza una breve autoevaluación profesional e identifica tus fortalezas, áreas de oportunidad y mapa de desarrollo personalizado.</p>
+            <!-- Scanner Situacional (CTA Diagnóstico) -->
+            <div class="scanner-cta-panel">
+                <div style="max-width: 650px; z-index: 2;">
+                    <div style="display: inline-flex; align-items: center; gap: 6px; color: var(--success); font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; font-family: var(--font-tech); margin-bottom: 8px;">
+                        <i class="ph-bold ph-shield-check"></i> DIAGNÓSTICO DE COMPETENCIAS DOCENTES
+                    </div>
+                    <h3 style="font-family: var(--font-tech); font-size: 26px; font-weight: 800; color: #FFFFFF; margin-bottom: 8px;">
+                        Escáner de Perfil Pedagógico & Constructivista
+                    </h3>
+                    <p style="color: var(--text-secondary); font-size: 14px; line-height: 1.55;">
+                        Descubre tu nivel en 8 dimensiones clave: metodologías activas, DUA, evaluación formativa y neuroeducación. Obtén tu mapa de desarrollo y recomendaciones personalizadas.
+                    </p>
                 </div>
-                <button class="hero-btn" style="background: var(--success); color: #000; font-weight: 800; padding: 14px 28px;" onclick="app.navigate('evaluate')"><i class="ph-bold ph-scan"></i> Evaluar mi Perfil</button>
+                <button class="hero-btn hero-btn-emerald" style="padding: 14px 28px; z-index: 2;" onclick="app.navigate('evaluate')">
+                    <i class="ph-bold ph-scan"></i> Iniciar Evaluación
+                </button>
             </div>
 
-            <!-- Sección: Aprende Haciendo (Laboratorio showcase) -->
+            <!-- Laboratorio Psicoeduca (Aprende Haciendo) -->
             <div class="view-header">
-                <h2 class="view-title">Aprende Haciendo: Laboratorio Psicoeduca</h2>
-                <p class="view-subtitle">Simuladores interactivos, role play y resolución de casos reales.</p>
+                <h2 class="view-title">Laboratorio Experimental Psicoeduca</h2>
+                <p class="view-subtitle">Simuladores de casos, dinámicas de aula y resolución de retos en entornos controlados.</p>
             </div>
 
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; margin-bottom: 40px;">
                 ${Object.values(laboratorioData).slice(0, 4).map(l => `
-                    <div class="card avatar-card" onclick="app.openExternalModule('${l.url}')" style="cursor: pointer;">
-                        <div class="card-icon-wrapper" style="margin-bottom: 15px;"><i class="ph ${l.icon}"></i></div>
-                        <span style="font-size: 11px; color: var(--primary); font-weight: 800; text-transform: uppercase;">${l.category}</span>
-                        <h4 style="font-size: 17px; margin: 6px 0 8px; color: #fff;">${l.title}</h4>
-                        <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.4; margin-bottom: 15px;">${l.objetivo}</p>
-                        <div class="audience-action" style="font-size: 12px;">Iniciar Práctica <i class="ph-bold ph-play"></i></div>
+                    <div class="card" onclick="app.openExternalModule('${l.url}')" style="cursor: pointer;">
+                        <div class="card-icon-wrapper"><i class="ph-bold ${l.icon}"></i></div>
+                        <span style="font-size: 10.5px; color: var(--color-cyan); font-weight: 800; text-transform: uppercase; letter-spacing: 1px; font-family: var(--font-tech);">${l.category}</span>
+                        <h4 style="font-size: 17px; font-family: var(--font-tech); margin: 6px 0 8px; color: #fff;">${l.title}</h4>
+                        <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.45; margin-bottom: 16px;">${l.objetivo}</p>
+                        <div class="audience-action" style="font-size: 12.5px;">Iniciar Simulación <i class="ph-bold ph-play"></i></div>
                     </div>
                 `).join('')}
             </div>
         </div>
-    `;
+        `;
+    };
 
     // 2. VISTA EXPLORA (Filtrada por las 6 Vertocales)
     const renderExplora = (selectedVertical = 'Docencia') => {
@@ -1883,6 +2007,111 @@ Puedo guiarte en el desarrollo de competencias educativas, liderazgo, empleabili
         window.app.nextQuestion = () => { playSound('click'); currentQ++; renderQuestion(); };
         renderQuestion();
     };
+
+    // Inicialización del Motor de Red Neuronal Reactiva (Canvas 2D)
+    const initNeuralCanvas = () => {
+        const canvas = document.getElementById('neural-canvas');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+
+        let width = 0;
+        let height = 0;
+        let particles = [];
+        let mouse = { x: -1000, y: -1000, radius: 140 };
+        const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        const resize = () => {
+            width = window.innerWidth;
+            height = window.innerHeight;
+            canvas.width = width;
+            canvas.height = height;
+            createParticles();
+        };
+
+        const createParticles = () => {
+            particles = [];
+            const count = width < 768 ? 26 : 55;
+            for (let i = 0; i < count; i++) {
+                particles.push({
+                    x: Math.random() * width,
+                    y: Math.random() * height,
+                    vx: (Math.random() - 0.5) * (prefersReducedMotion ? 0.08 : 0.45),
+                    vy: (Math.random() - 0.5) * (prefersReducedMotion ? 0.08 : 0.45),
+                    radius: Math.random() * 2 + 1.2,
+                    baseAlpha: Math.random() * 0.4 + 0.35,
+                    pulseSpeed: Math.random() * 0.02 + 0.01,
+                    pulseOffset: Math.random() * Math.PI * 2
+                });
+            }
+        };
+
+        let tick = 0;
+        const render = () => {
+            ctx.clearRect(0, 0, width, height);
+            tick += 0.02;
+
+            for (let i = 0; i < particles.length; i++) {
+                const p1 = particles[i];
+
+                p1.x += p1.vx;
+                p1.y += p1.vy;
+
+                if (p1.x < 0 || p1.x > width) p1.vx *= -1;
+                if (p1.y < 0 || p1.y > height) p1.vy *= -1;
+
+                const dxM = mouse.x - p1.x;
+                const dyM = mouse.y - p1.y;
+                const distM = Math.hypot(dxM, dyM);
+                if (distM < mouse.radius && !prefersReducedMotion) {
+                    const angle = Math.atan2(dyM, dxM);
+                    p1.x -= Math.cos(angle) * 0.7;
+                    p1.y -= Math.sin(angle) * 0.7;
+                }
+
+                const currentAlpha = p1.baseAlpha + Math.sin(tick * p1.pulseSpeed * 20 + p1.pulseOffset) * 0.2;
+                ctx.beginPath();
+                ctx.arc(p1.x, p1.y, p1.radius, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(34, 211, 238, ${Math.max(0.12, currentAlpha)})`;
+                ctx.fill();
+
+                for (let j = i + 1; j < particles.length; j++) {
+                    const p2 = particles[j];
+                    const dx = p1.x - p2.x;
+                    const dy = p1.y - p2.y;
+                    const dist = Math.hypot(dx, dy);
+                    const maxDist = width < 768 ? 90 : 130;
+
+                    if (dist < maxDist) {
+                        const lineAlpha = (1 - dist / maxDist) * 0.22;
+                        ctx.beginPath();
+                        ctx.moveTo(p1.x, p1.y);
+                        ctx.lineTo(p2.x, p2.y);
+                        ctx.strokeStyle = `rgba(34, 211, 238, ${lineAlpha})`;
+                        ctx.lineWidth = 0.8;
+                        ctx.stroke();
+                    }
+                }
+            }
+
+            requestAnimationFrame(render);
+        };
+
+        window.addEventListener('resize', resize);
+        window.addEventListener('mousemove', (e) => {
+            mouse.x = e.clientX;
+            mouse.y = e.clientY;
+        });
+        window.addEventListener('mouseleave', () => {
+            mouse.x = -1000;
+            mouse.y = -1000;
+        });
+
+        resize();
+        render();
+    };
+
+    initNeuralCanvas();
 
     // Clean Welcome Overlay with Tech Sound
     const welcomeOverlay = document.getElementById('welcome-overlay');

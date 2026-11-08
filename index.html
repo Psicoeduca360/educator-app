@@ -4,91 +4,162 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PSICOEDUCA ACADEMY - Aprende para enseñar, liderar y crecer</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <link rel="stylesheet" href="./css/style.css">
     <link rel="stylesheet" href="./css/evaluation.css">
 </head>
 <body>
-    <!-- Overlay de Bienvenida Animado -->
+    <!-- Overlay de Bienvenida Animado Neurotech -->
     <div id="welcome-overlay" class="welcome-overlay">
         <div class="welcome-card">
+            <div class="welcome-scanner-beam"></div>
             <div class="welcome-icon-glow">
                 <video src="assets/logoestatico.mp4" autoplay loop muted playsinline poster="assets/logoanimado.png"></video>
             </div>
+            <span class="welcome-badge"><i class="ph-bold ph-brain"></i> NEUROTECH LEARNING LAB</span>
             <h1 class="welcome-title">PSICOEDUCA ACADEMY</h1>
-            <p class="welcome-subtitle">Aprende para enseñar, liderar y crecer.<br><small style="opacity: 0.85; font-size: 13px;">Una academia virtual para desarrollar competencias educativas, profesionales y humanas.</small></p>
+            <p class="welcome-subtitle">Conectando el conocimiento, la mente y el aprendizaje.<br><small style="opacity: 0.85; font-size: 13px;">Laboratorio digital de neuroeducación, desarrollo cognitivo e innovación docente.</small></p>
             <div class="welcome-loader-bar">
                 <div class="welcome-loader-progress"></div>
             </div>
         </div>
     </div>
 
+    <!-- Fondo Neuronal Reactivo & Profundidad Cuántica -->
     <div id="parallax-bg" class="parallax-bg">
+        <canvas id="neural-canvas"></canvas>
         <div class="glow-orb orb-1"></div>
         <div class="glow-orb orb-2"></div>
         <div class="glow-orb orb-3"></div>
+        <div class="cyber-grid-overlay"></div>
     </div>
 
+    <!-- Backdrop para cerrar sidebar en dispositivos móviles -->
+    <div id="sidebar-backdrop" class="sidebar-backdrop" onclick="app.toggleSidebar(false)"></div>
+
     <div id="app">
-        <aside class="sidebar">
-            <div class="sidebar-logo" style="display: flex; align-items: center; gap: 12px; padding: 18px 20px;">
-                <img src="assets/logoanimado.png" alt="Psicoeduca Logo" style="height: 38px; width: auto; max-width: 44px; object-fit: contain; filter: drop-shadow(0 0 8px rgba(13, 138, 188, 0.5));">
-                <div>
-                    <span style="font-size: 17px; font-weight: 800; white-space: nowrap; display: block; line-height: 1; color: var(--primary);">PSICOEDUCA</span>
-                    <small style="font-size: 10px; font-weight: 700; letter-spacing: 2px; color: var(--text-secondary); text-transform: uppercase;">ACADEMY</small>
+        <aside class="sidebar" id="main-sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <div class="logo-aura">
+                        <img src="assets/logoanimado.png" alt="Psicoeduca Logo">
+                    </div>
+                    <div class="brand-meta">
+                        <span class="brand-title">PSICOEDUCA</span>
+                        <small class="brand-sub"><i class="ph-bold ph-brain"></i> NEUROTECH</small>
+                    </div>
                 </div>
+                <button class="sidebar-close-btn" onclick="app.toggleSidebar(false)" aria-label="Cerrar navegación">
+                    <i class="ph-bold ph-x"></i>
+                </button>
             </div>
+
             <nav class="sidebar-nav">
-                <a href="#home" class="nav-link active" data-target="home"><i class="ph ph-squares-four"></i> Inicio</a>
-                <a href="#explora" class="nav-link" data-target="explora"><i class="ph ph-compass"></i> Explora</a>
-                <a href="#aprende" class="nav-link" data-target="aprende"><i class="ph ph-books"></i> Aprende</a>
-                <a href="#practica" class="nav-link" data-target="practica"><i class="ph ph-flask"></i> Practica</a>
-                <a href="#evaluate" class="nav-link" data-target="evaluate"><i class="ph ph-exam"></i> Evalúate</a>
-                <a href="#community" class="nav-link" data-target="community"><i class="ph ph-users-three"></i> Comunidad</a>
-                <a href="#profile" class="nav-link" data-target="profile"><i class="ph ph-user-circle"></i> Mi Desarrollo</a>
+                <div class="nav-category-label">CORE // SISTEMA</div>
+                <a href="#home" class="nav-link active" data-target="home">
+                    <i class="ph-bold ph-squares-four"></i>
+                    <span>Inicio & Dashboard</span>
+                    <span class="nav-synapse-glow"></span>
+                </a>
+                <a href="#explora" class="nav-link" data-target="explora">
+                    <i class="ph-bold ph-compass"></i>
+                    <span>Explora 6 Verticales</span>
+                    <span class="nav-synapse-glow"></span>
+                </a>
+                <a href="#aprende" class="nav-link" data-target="aprende">
+                    <i class="ph-bold ph-books"></i>
+                    <span>Rutas de Aprendizaje</span>
+                    <span class="nav-synapse-glow"></span>
+                </a>
+
+                <div class="nav-category-label">LABORATORIO & DIAGNÓSTICO</div>
+                <a href="#practica" class="nav-link" data-target="practica">
+                    <i class="ph-bold ph-flask"></i>
+                    <span>Laboratorio Experimental</span>
+                    <span class="nav-synapse-glow"></span>
+                </a>
+                <a href="#evaluate" class="nav-link" data-target="evaluate">
+                    <i class="ph-bold ph-exam"></i>
+                    <span>Centro de Evaluación</span>
+                    <span class="nav-synapse-glow"></span>
+                </a>
+
+                <div class="nav-category-label">EVOLUCIÓN DOCENTE</div>
+                <a href="#community" class="nav-link" data-target="community">
+                    <i class="ph-bold ph-users-three"></i>
+                    <span>Comunidad Sináptica</span>
+                    <span class="nav-synapse-glow"></span>
+                </a>
+                <a href="#profile" class="nav-link" data-target="profile">
+                    <i class="ph-bold ph-user-circle"></i>
+                    <span>Mi Desarrollo (XP)</span>
+                    <span class="nav-synapse-glow"></span>
+                </a>
             </nav>
+
             <div class="sidebar-footer">
                 <div class="user-profile" id="user-profile-container" onclick="app.navigate('profile')">
-                    <img id="user-avatar" src="https://api.dicebear.com/7.x/bottts/svg?seed=Novato" alt="Perfil">
-                    <div class="profile-info">
-                        <span id="user-name-display" style="display: block; line-height: 1.2;">Estudiante</span>
-                        <small id="sidebar-level" style="display: block; color: var(--text-secondary); font-size: 11px; margin-top: 2px;">Explorador</small>
-                        <small id="sidebar-xp" style="color: var(--primary); font-size: 12px; font-weight: 600;">XP: 0</small>
+                    <div class="avatar-ring">
+                        <img id="user-avatar" src="https://api.dicebear.com/7.x/bottts/svg?seed=Novato" alt="Perfil">
+                        <span class="online-pulse"></span>
                     </div>
+                    <div class="profile-info">
+                        <span id="user-name-display" class="user-name">Estudiante</span>
+                        <div class="user-meta-row">
+                            <small id="sidebar-level" class="user-level">Explorador</small>
+                            <span class="xp-divider">•</span>
+                            <small id="sidebar-xp" class="user-xp">XP: 0</small>
+                        </div>
+                    </div>
+                    <i class="ph-bold ph-caret-right profile-arrow"></i>
                 </div>
             </div>
         </aside>
 
         <main class="main-content">
             <header class="topbar">
-                <div class="search-bar" style="position: relative;">
-                    <i class="ph ph-magnifying-glass"></i>
-                    <input type="text" placeholder="Buscar rutas, cursos, laboratorio, simuladores..." onkeyup="app.searchApp(this.value)">
-                    <div id="search-results" style="display: none; position: absolute; top: 100%; left: 0; width: 100%; background: var(--bg-dark); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; margin-top: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); z-index: 1000; overflow: hidden; max-height: 400px; overflow-y: auto;"></div>
+                <div class="topbar-left">
+                    <button class="mobile-toggle-btn" onclick="app.toggleSidebar(true)" aria-label="Abrir Menú">
+                        <i class="ph-bold ph-list"></i>
+                    </button>
+                    <div class="search-bar" style="position: relative;">
+                        <i class="ph-bold ph-magnifying-glass"></i>
+                        <input type="text" placeholder="Buscar módulos, neurociencias, simuladores, DUA..." onkeyup="app.searchApp(this.value)">
+                        <span class="search-kbd-hint"><i class="ph-bold ph-command"></i> K</span>
+                        <div id="search-results" style="display: none; position: absolute; top: 100%; left: 0; width: 100%; background: var(--bg-surface); border: 1px solid var(--border-glow); border-radius: 14px; margin-top: 10px; box-shadow: 0 15px 35px rgba(0,0,0,0.8); z-index: 1000; overflow: hidden; max-height: 400px; overflow-y: auto;"></div>
+                    </div>
                 </div>
+
                 <div class="topbar-actions" style="position: relative;">
+                    <div class="synaptic-status-chip" title="Estado del entorno de aprendizaje">
+                        <span class="synapse-beacon"></span>
+                        <span class="status-text">RED ACTIVA // 60 FPS</span>
+                    </div>
+
                     <div class="level-badge" id="topbar-level"><i class="ph-fill ph-star"></i> Explorador</div>
                     
-                    <button class="icon-btn" onclick="app.navigate('news')" style="position: relative;" title="Novedades">
-                        <i class="ph ph-bell"></i>
+                    <button class="icon-btn" onclick="app.navigate('news')" style="position: relative;" title="Novedades y Actualizaciones">
+                        <i class="ph-bold ph-bell"></i>
                         <span class="notification-badge"></span>
                     </button>
                     
-                    <button class="icon-btn" onclick="app.toggleThemeMenu()" title="Temas Visuales"><i class="ph ph-gear"></i></button>
-                    <button class="icon-btn" onclick="app.logoutUser()" title="Cerrar Sesión / Cambiar Usuario"><i class="ph ph-sign-out"></i></button>
+                    <button class="icon-btn" onclick="app.toggleThemeMenu()" title="Modo Visual & Ajustes"><i class="ph-bold ph-gear"></i></button>
+                    <button class="icon-btn" onclick="app.logoutUser()" title="Cerrar Sesión / Cambiar Usuario"><i class="ph-bold ph-sign-out"></i></button>
                     
-                    <div id="theme-menu" style="display: none; position: absolute; top: 100%; right: 0; background: var(--bg-card); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 15px; margin-top: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); z-index: 1000; width: 220px;">
-                        <h4 style="margin-bottom: 15px; font-size: 14px; color: var(--text-secondary); text-transform: uppercase; font-weight: 800; letter-spacing: 1px;">Temas Visuales</h4>
+                    <div id="theme-menu" style="display: none; position: absolute; top: 100%; right: 0; background: var(--bg-surface); border: 1px solid var(--border-glow); border-radius: 14px; padding: 18px; margin-top: 12px; box-shadow: 0 20px 45px rgba(0,0,0,0.85); z-index: 1000; width: 230px; backdrop-filter: blur(20px);">
+                        <h4 style="margin-bottom: 14px; font-size: 12px; color: var(--color-cyan); text-transform: uppercase; font-weight: 800; letter-spacing: 1.5px; font-family: var(--font-tech);"><i class="ph-bold ph-palette"></i> Temas Neurotech</h4>
                         <div style="display: flex; flex-direction: column; gap: 8px;">
-                            <button onclick="app.changeTheme('default')" style="background: none; border: none; color: white; display: flex; align-items: center; gap: 12px; cursor: pointer; padding: 10px; border-radius: 8px; transition: var(--transition); width: 100%; text-align: left; font-family: var(--font-main);" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='none'">
-                                <div style="width: 20px; height: 20px; border-radius: 50%; background: #93C5FD; border: 2px solid #3B82F6;"></div> Azul Clásico
+                            <button onclick="app.changeTheme('default')" class="theme-option-btn">
+                                <div style="width: 18px; height: 18px; border-radius: 50%; background: #22D3EE; box-shadow: 0 0 10px #22D3EE;"></div> Neurotech Oscuro
                             </button>
-                            <button onclick="app.changeTheme('neon')" style="background: none; border: none; color: white; display: flex; align-items: center; gap: 12px; cursor: pointer; padding: 10px; border-radius: 8px; transition: var(--transition); width: 100%; text-align: left; font-family: var(--font-main);" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='none'">
-                                <div style="width: 20px; height: 20px; border-radius: 50%; background: #C084FC; border: 2px solid #9333EA;"></div> Púrpura Neón
+                            <button onclick="app.changeTheme('neon')" class="theme-option-btn">
+                                <div style="width: 18px; height: 18px; border-radius: 50%; background: #C084FC; box-shadow: 0 0 10px #C084FC;"></div> Sinapsis Púrpura
                             </button>
-                            <button onclick="app.changeTheme('forest')" style="background: none; border: none; color: white; display: flex; align-items: center; gap: 12px; cursor: pointer; padding: 10px; border-radius: 8px; transition: var(--transition); width: 100%; text-align: left; font-family: var(--font-main);" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='none'">
-                                <div style="width: 20px; height: 20px; border-radius: 50%; background: #4ADE80; border: 2px solid #16A34A;"></div> Verde Esmeralda
+                            <button onclick="app.changeTheme('forest')" class="theme-option-btn">
+                                <div style="width: 18px; height: 18px; border-radius: 50%; background: #34D399; box-shadow: 0 0 10px #34D399;"></div> Bio-Neuro Verde
                             </button>
                         </div>
                     </div>
