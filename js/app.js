@@ -2018,29 +2018,29 @@ Puedo guiarte en el desarrollo de competencias educativas, liderazgo, empleabili
         let width = 0;
         let height = 0;
         let particles = [];
-        let mouse = { x: -1000, y: -1000, radius: 140 };
+        let mouse = { x: -2000, y: -2000, radius: 180 };
+        const colors = ['#22D3EE', '#60A5FA', '#34D399', '#38BDF8'];
         const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
         const resize = () => {
-            width = window.innerWidth;
-            height = window.innerHeight;
-            canvas.width = width;
-            canvas.height = height;
+            width = canvas.width = window.innerWidth || document.documentElement.clientWidth || 1280;
+            height = canvas.height = window.innerHeight || document.documentElement.clientHeight || 800;
             createParticles();
         };
 
         const createParticles = () => {
             particles = [];
-            const count = width < 768 ? 26 : 55;
+            const count = width < 768 ? 40 : 85;
             for (let i = 0; i < count; i++) {
                 particles.push({
                     x: Math.random() * width,
                     y: Math.random() * height,
-                    vx: (Math.random() - 0.5) * (prefersReducedMotion ? 0.08 : 0.45),
-                    vy: (Math.random() - 0.5) * (prefersReducedMotion ? 0.08 : 0.45),
-                    radius: Math.random() * 2 + 1.2,
-                    baseAlpha: Math.random() * 0.4 + 0.35,
-                    pulseSpeed: Math.random() * 0.02 + 0.01,
+                    vx: (Math.random() - 0.5) * (prefersReducedMotion ? 0.08 : 0.55),
+                    vy: (Math.random() - 0.5) * (prefersReducedMotion ? 0.08 : 0.55),
+                    radius: Math.random() * 2.2 + 2.0,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    baseAlpha: Math.random() * 0.35 + 0.55,
+                    pulseSpeed: Math.random() * 0.025 + 0.015,
                     pulseOffset: Math.random() * Math.PI * 2
                 });
             }
@@ -2051,48 +2051,80 @@ Puedo guiarte en el desarrollo de competencias educativas, liderazgo, empleabili
             ctx.clearRect(0, 0, width, height);
             tick += 0.02;
 
+            // 1. Dibujar conexiones entre partículas
             for (let i = 0; i < particles.length; i++) {
                 const p1 = particles[i];
 
                 p1.x += p1.vx;
                 p1.y += p1.vy;
 
+                // Rebotar en bordes
                 if (p1.x < 0 || p1.x > width) p1.vx *= -1;
                 if (p1.y < 0 || p1.y > height) p1.vy *= -1;
 
+                // Atracción magnética sutil hacia el cursor
                 const dxM = mouse.x - p1.x;
                 const dyM = mouse.y - p1.y;
                 const distM = Math.hypot(dxM, dyM);
                 if (distM < mouse.radius && !prefersReducedMotion) {
-                    const angle = Math.atan2(dyM, dxM);
-                    p1.x -= Math.cos(angle) * 0.7;
-                    p1.y -= Math.sin(angle) * 0.7;
+                    p1.x += dxM * 0.018;
+                    p1.y += dyM * 0.018;
                 }
 
-                const currentAlpha = p1.baseAlpha + Math.sin(tick * p1.pulseSpeed * 20 + p1.pulseOffset) * 0.2;
-                ctx.beginPath();
-                ctx.arc(p1.x, p1.y, p1.radius, 0, Math.PI * 2);
-                ctx.fillStyle = `rgba(34, 211, 238, ${Math.max(0.12, currentAlpha)})`;
-                ctx.fill();
-
+                // Dibujar conexiones entre nodos vecinos
                 for (let j = i + 1; j < particles.length; j++) {
                     const p2 = particles[j];
                     const dx = p1.x - p2.x;
                     const dy = p1.y - p2.y;
                     const dist = Math.hypot(dx, dy);
-                    const maxDist = width < 768 ? 90 : 130;
+                    const maxDist = width < 768 ? 110 : 155;
 
                     if (dist < maxDist) {
-                        const lineAlpha = (1 - dist / maxDist) * 0.22;
+                        const lineAlpha = (1 - dist / maxDist) * 0.42;
                         ctx.beginPath();
                         ctx.moveTo(p1.x, p1.y);
                         ctx.lineTo(p2.x, p2.y);
                         ctx.strokeStyle = `rgba(34, 211, 238, ${lineAlpha})`;
-                        ctx.lineWidth = 0.8;
+                        ctx.lineWidth = 1.1;
                         ctx.stroke();
                     }
                 }
+
+                // Conectar nodos cercanos al cursor interactivo
+                if (distM < 185) {
+                    const cursorLineAlpha = (1 - distM / 185) * 0.85;
+                    ctx.beginPath();
+                    ctx.moveTo(mouse.x, mouse.y);
+                    ctx.lineTo(p1.x, p1.y);
+                    ctx.strokeStyle = `rgba(34, 211, 238, ${cursorLineAlpha})`;
+                    ctx.lineWidth = 1.6;
+                    ctx.stroke();
+                }
             }
+
+            // 2. Dibujar nodos con halo luminoso
+            ctx.save();
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = '#22D3EE';
+            for (let i = 0; i < particles.length; i++) {
+                const p = particles[i];
+                const currentAlpha = p.baseAlpha + Math.sin(tick * p.pulseSpeed * 20 + p.pulseOffset) * 0.2;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                ctx.fillStyle = p.color;
+                ctx.globalAlpha = Math.max(0.25, Math.min(1, currentAlpha));
+                ctx.fill();
+            }
+
+            // 3. Nodo central en el cursor si está en pantalla
+            if (mouse.x > 0 && mouse.y > 0 && mouse.x < width && mouse.y < height) {
+                ctx.beginPath();
+                ctx.arc(mouse.x, mouse.y, 4, 0, Math.PI * 2);
+                ctx.fillStyle = '#22D3EE';
+                ctx.globalAlpha = 0.9;
+                ctx.fill();
+            }
+            ctx.restore();
 
             requestAnimationFrame(render);
         };
@@ -2103,8 +2135,11 @@ Puedo guiarte en el desarrollo de competencias educativas, liderazgo, empleabili
             mouse.y = e.clientY;
         });
         window.addEventListener('mouseleave', () => {
-            mouse.x = -1000;
-            mouse.y = -1000;
+            mouse.x = -2000;
+            mouse.y = -2000;
+        });
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) resize();
         });
 
         resize();
@@ -2112,6 +2147,7 @@ Puedo guiarte en el desarrollo de competencias educativas, liderazgo, empleabili
     };
 
     initNeuralCanvas();
+    window.addEventListener('load', initNeuralCanvas, { once: true });
 
     // Clean Welcome Overlay with Tech Sound
     const welcomeOverlay = document.getElementById('welcome-overlay');
