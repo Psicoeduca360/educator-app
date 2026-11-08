@@ -27,6 +27,7 @@ const addAccessLog = (userName, userKey) => {
 const defaultState = {
     userName: "Estudiante",
     userObjective: "Mejorar como docente",
+    avatarGender: "male",
     xp: 0,
     testsCompleted: 0,
     videosWatched: 0,
@@ -46,12 +47,16 @@ if (!usersDB[activeUserKey]) {
     usersDB[activeUserKey] = {
         ...defaultState,
         userName: "Estudiante",
+        avatarGender: "male",
         firstLogin: Date.now(),
         lastLogin: Date.now()
     };
     saveUsersDB(usersDB);
 }
 let gameState = usersDB[activeUserKey];
+if (!gameState.avatarGender) {
+    gameState.avatarGender = 'male';
+}
 
 const saveGameState = () => {
     if (activeUserKey) {
@@ -748,10 +753,12 @@ document.addEventListener('DOMContentLoaded', () => {
             if (views[target]) {
                 contentArea.innerHTML = views[target](param);
                 window.scrollTo(0, 0);
-                if (target === 'profile') {
+                if (target === 'aprende') {
                     setTimeout(() => {
-                        if (window.initBrain3D) window.initBrain3D();
-                    }, 60);
+                        if (window.initBrain3D && (!window._activeAprendeTab || window._activeAprendeTab === 'cerebro')) {
+                            window.initBrain3D();
+                        }
+                    }, 80);
                 }
             }
         },
@@ -1298,75 +1305,669 @@ Puedo guiarte en el desarrollo de competencias educativas, liderazgo, empleabili
         `;
     };
 
-    // 3. VISTA APRENDE (Rutas, Cursos, Microcursos y Biblioteca)
-    const renderAprende = () => `
-        <div class="view-animate">
-            <div class="view-header">
-                <h1 class="view-title">Centro de Aprendizaje & Rutas</h1>
-                <p class="view-subtitle">Accede al catálogo jerárquico de formación continua y biblioteca de recursos.</p>
-            </div>
+    // --- ARTÍCULOS ACADÉMICOS DE NEUROEDUCACIÓN & PROCESOS COGNITIVOS ---
+    window.neuroArticlesData = {
+        frontal: {
+            id: 'frontal',
+            lobe: 'Lóbulo Frontal y Corteza Prefrontal',
+            title: 'Lóbulo Frontal y Corteza Prefrontal: Funciones Ejecutivas y Autorregulación en el Aula',
+            subtitle: 'Neurobiología del control inhibitorio, memoria de trabajo, flexibilidad cognitiva y diseño curricular bajo el Diseño Universal para el Aprendizaje (DUA).',
+            tag: 'NEUROEDUCACIÓN // FUNCIONES EJECUTIVAS & DUA',
+            icon: 'ph-cpu',
+            color: '#22D3EE',
+            badge: 'Corteza Asociativa Anterior',
+            basicProcesses: 'Atención focalizada y sostenida, inhibición de reflejos motores automáticos inmediatos, control visomotor.',
+            advancedProcesses: 'Funciones Ejecutivas (FE): Control inhibitorio, memoria de trabajo fonológica y visoespacial, flexibilidad cognitiva (shifting), planificación prospectiva, metacognición, empatía y toma de decisiones éticas.',
+            classroomApplication: 'Implementación del DUA (múltiples formas de acción y expresión), pausas activas programadas cada 25-30 minutos para reponer dopamina prefrontal, checklists metacognitivas y andamiaje estructurado del control conductual.',
+            readingTime: '7 min de lectura académica',
+            bodyHtml: `
+                <div class="article-section">
+                    <h3>1. Introducción Neurobiológica y Maduración Tardía</h3>
+                    <p>El lóbulo frontal, y en particular la <strong>corteza prefrontal (CPF)</strong> dorsolateral, ventromedial y orbitofrontal, representa la cúspide evolutiva del encéfalo humano. A diferencia de las áreas sensoriales primarias que completan su mielinización en la infancia temprana, la CPF experimenta una remodelación y poda sináptica prolongada que se extiende hasta aproximadamente los 22-25 años de edad.</p>
+                    <div class="article-quote-box">
+                        <em>«La corteza prefrontal es el director de orquesta del cerebro; no toca ningún instrumento individualmente, pero asegura que todos toquen en armonía, a tiempo y con el volumen adecuado.»</em>
+                        <small>— Dra. Adele Diamond, Neurocientífica del Desarrollo (Universidad de British Columbia)</small>
+                    </div>
+                </div>
+                <div class="article-section">
+                    <h3>2. La Tríada Dorada de las Funciones Ejecutivas (FE) en Educación</h3>
+                    <p>Las Funciones Ejecutivas son un constructo neurocognitivo fundamental que predice el éxito académico y socioemocional con mayor precisión que el cociente intelectual (CI):</p>
+                    <div class="article-grid-2">
+                        <div class="article-card-mini">
+                            <h4>A. Control Inhibitorio</h4>
+                            <p>Capacidad biológica de resistir interferencias, demorar la gratificación y frenar respuestas impulsivas automáticas. Permite al estudiante mantenerse enfocado a pesar de las distracciones del aula.</p>
+                        </div>
+                        <div class="article-card-mini">
+                            <h4>B. Memoria de Trabajo (Working Memory)</h4>
+                            <p>Sistema multicomponente (bucle fonológico, agenda visoespacial y retén episódico) coordinado por el ejecutivo central para retener y manipular mentalmente información en tiempo real.</p>
+                        </div>
+                    </div>
+                    <div class="article-card-mini" style="margin-top: 14px;">
+                        <h4>C. Flexibilidad Cognitiva (Shifting)</h4>
+                        <p>Habilidad para cambiar de perspectiva, corregir estrategias ante un error didáctico y adaptarse a demandas cambiantes o consignas complejas del docente.</p>
+                    </div>
+                </div>
+                <div class="article-section">
+                    <h3>3. Conexión con el Diseño Universal para el Aprendizaje (DUA)</h3>
+                    <p>El marco DUA (Center for Applied Special Technology - CAST) mapea directamente la red estratégica del lóbulo frontal en el principio: <strong>Múltiples Formas de Acción y Expresión</strong>. Cuando un docente ofrece alternativas para demostrar el conocimiento (un ensayo, un podcast, un mapa conceptual interactivo o un prototipo físico), alivia la sobrecarga de la memoria de trabajo y permite que la corteza prefrontal opere en su zona de desarrollo óptimo.</p>
+                </div>
+                <div class="article-section">
+                    <h3>4. Estrategias Didácticas Basadas en Evidencia para el Docente</h3>
+                    <ul>
+                        <li><strong>Pausas Activas (Brain Breaks):</strong> Intervalos de 2 a 3 minutos con movimiento físico o respiración consciente cada 25-30 minutos. El ejercicio ligero promueve la liberación de BDNF (Factor Neurotrófico Derivado del Cerebro) y restaura la glucosa cerebral en la CPF.</li>
+                        <li><strong>Externalización de la Memoria de Trabajo:</strong> Uso de organizadores visuales, rúbricas por pasos y tableros Kanban en el aula para evitar la sobrecarga cognitiva intrínseca.</li>
+                        <li><strong>Entrenamiento Metacognitivo Explícito:</strong> Preguntas de auto-monitoreo: <em>«¿Qué estrategia utilicé?», «¿Dónde me estanqué?», «¿Qué otra ruta podría probar?»</em>.</li>
+                    </ul>
+                </div>
+            `
+        },
+        parietal: {
+            id: 'parietal',
+            lobe: 'Lóbulo Parietal',
+            title: 'Lóbulo Parietal: Integración Multisensorial y Neurodidáctica del Pensamiento Matemático',
+            subtitle: 'El surco intraparietal y la cognición numérica, el homúnculo somatosensorial y el aprendizaje activo manipulativo.',
+            tag: 'NEUROEDUCACIÓN // COGNICIÓN ESPACIAL & CÁLCULO',
+            icon: 'ph-presentation-chart',
+            color: '#38BDF8',
+            badge: 'Corteza Somatosensorial y Visuoespacial',
+            basicProcesses: 'Somatosensación primaria (área S1, homúnculo somatotópico de Penfield), tacto discriminativo, propiocepción consciente y nocicepción.',
+            advancedProcesses: 'Integración multimodal multisensorial, conciencia visoespacial, esquema corporal, cálculo numérico simbólico y analógico (Surco Intraparietal - IPS), rotación mental de objetos y praxias motoras complejas.',
+            classroomApplication: 'Uso de materiales manipulables concretos (bloques Dienes, regletas Cuisenaire, ábacos), estimulación de la gnosia digital (contar con dedos), diagramación espacial de problemas y enseñanza kinestésica.',
+            readingTime: '6 min de lectura académica',
+            bodyHtml: `
+                <div class="article-section">
+                    <h3>1. El Surco Intraparietal (IPS) y el Sentido Numérico Innato</h3>
+                    <p>Las investigaciones de neuroimagen funcional dirigidas por Stanislas Dehaene han demostrado que el <strong>Surco Intraparietal (IPS)</strong> bilateral es la estructura cerebral responsable de representar magnitudes numéricas y espaciales de forma intuitiva (el llamado <em>«sentido del número»</em>).</p>
+                    <div class="article-quote-box">
+                        <em>«No nacemos con una calculadora en el cerebro, sino con un 'acumulador analógico' en el lóbulo parietal capaz de estimar cantidades aproximadas desde los primeros meses de vida.»</em>
+                        <small>— Dr. Stanislas Dehaene, Catedrático de Psicología Cognitiva Experimental (Collège de France)</small>
+                    </div>
+                </div>
+                <div class="article-section">
+                    <h3>2. Gnosia Digital y Desarrollo del Pensamiento Matemático</h3>
+                    <p>El área parietal encargada de la percepción y diferenciación de los propios dedos (gnosia digital) está íntimamente yuxtapuesta y conectada con las redes del cálculo aritmético. La neurociencia ha confirmado que prohibir a los niños contar con los dedos en etapas tempranas perjudica la consolidación de la línea numérica mental parietal. Contar con los dedos es el puente biológico entre lo concreto y lo simbólico.</p>
+                </div>
+                <div class="article-section">
+                    <h3>3. Integración Multisensorial: De la Sensación al Concepto</h3>
+                    <p>El lóbulo parietal actúa como un intercambiador multimodal donde confluyen las señales auditivas del lóbulo temporal, las visuales del lóbulo occipital y las táctiles de la corteza somatosensorial. Cuantas más modalidades sensoriales coherentes involucre una actividad pedagógica (ver, tocar, escuchar y manipular), mayor es la densidad de espinas dendríticas generadas en la corteza parietal asociativa.</p>
+                </div>
+                <div class="article-section">
+                    <h3>4. Aplicaciones Prácticas en el Aula</h3>
+                    <ul>
+                        <li><strong>Metodología Singapur (CPA: Concreto - Pictórico - Abstracto):</strong> Iniciar siempre cualquier concepto abstracto con manipulación física parietal antes de pasar a la ecuación formal.</li>
+                        <li><strong>Anclajes Visuoespaciales:</strong> Uso de líneas de tiempo físicas en el suelo del aula, ejes cartesianos interactivos y mapas mentales espaciales.</li>
+                        <li><strong>Modelado Físico y Maker:</strong> Construcción de prototipos tridimensionales para activar las praxias constructivas del hemisferio parietal.</li>
+                    </ul>
+                </div>
+            `
+        },
+        temporal: {
+            id: 'temporal',
+            lobe: 'Lóbulo Temporal y Sistema Límbico',
+            title: 'Lóbulo Temporal y Sistema Límbico: Memoria a Largo Plazo, Emoción y Comprensión del Lenguaje',
+            subtitle: 'El eje hipocampo-amígdala, el área de Wernicke, la repetición espaciada y el papel catalizador de la emoción.',
+            tag: 'NEUROEDUCACIÓN // MEMORIA, LENGUAJE & EMOCIÓN',
+            icon: 'ph-users-four',
+            color: '#C084FC',
+            badge: 'Corteza Auditiva & Sistema de Memoria Declarativa',
+            basicProcesses: 'Procesamiento auditivo primario (área de Heschl, corteza A1), discriminación de tonos, prosodia vocal y ritmos.',
+            advancedProcesses: 'Consolidación de memoria declarativa (episódica y semántica vía Hipocampo), comprensión del lenguaje semántico (Área de Wernicke), modulación emocional de la consolidación (Amígdala basolateral), reconocimiento de rostros familiares (giro fusiforme).',
+            classroomApplication: 'Curiosidad como detonante dopaminérgico inicial, storytelling pedagógico, repetición espaciada (Spaced Retrieval), clima emocional de aula seguro e higiene del sueño para la consolidación sináptica.',
+            readingTime: '8 min de lectura académica',
+            bodyHtml: `
+                <div class="article-section">
+                    <h3>1. El Hipocampo y la Potenciación a Largo Plazo (LTP)</h3>
+                    <p>En la cara medial del lóbulo temporal reside el <strong>hipocampo</strong>, la estructura clave para la consolidación de la memoria declarativa (lo que podemos verbalizar y recordar conscientemente). Mediante el fenómeno electrofisiológico de la <strong>Potenciación a Largo Plazo (LTP)</strong> mediada por receptores glutamatérgicos NMDA, las conexiones neuronales activadas simultáneamente incrementan su fuerza de transmisión.</p>
+                    <div class="article-quote-box">
+                        <em>«El cerebro sólo aprende si hay emoción. La curiosidad abre las puertas de la atención, y sin atención sostenida no hay consolidación hipocampal.»</em>
+                        <small>— Dr. Francisco Mora Teruel, Doctor en Medicina y Neurociencia (Universidad Complutense de Madrid)</small>
+                    </div>
+                </div>
+                <div class="article-section">
+                    <h3>2. La Amígdala: El Semáforo Afectivo del Aprendizaje</h3>
+                    <p>La amígdala cerebral actúa como evaluador de relevancia biológica. Cuando el estudiante experimenta una amenaza (humillación pública, miedo al castigo o estrés severo), la amígdala dispara la liberación masiva de cortisol y noradrenalina, bloqueando físicamente el flujo sináptico hacia el hipocampo y la corteza prefrontal (secuestro amigdalino). En contraste, un ambiente de aula emocionalmente seguro y estimulante libera dopamina, la cual actúa como un 'marcador biológico' que le indica al hipocampo: <em>«¡Guarda esta información, es vital!»</em>.</p>
+                </div>
+                <div class="article-section">
+                    <h3>3. El Área de Wernicke y la Arquitectura del Significado</h3>
+                    <p>Ubicada en la porción posterior del giro temporal superior (área 22 de Brodmann), el área de Wernicke decodifica la estructura fonológica y semántica de las palabras. El aprendizaje significativo postulado por David Ausubel encuentra aquí su correlato neural: los nuevos conceptos deben conectarse con las redes semánticas preexistentes en los lóbulos temporales del alumno para no disiparse en el olvido.</p>
+                </div>
+                <div class="article-section">
+                    <h3>4. Recomendaciones Neurodidácticas Clave</h3>
+                    <ul>
+                        <li><strong>Práctica de Recuperación Activa (Retrieval Practice):</strong> Realizar mini-quizzes formativos sin nota o preguntas de autoevaluación fortalece la memoria mucho más que releer apuntes de forma pasiva.</li>
+                        <li><strong>Efecto de Espaciamiento (Spaced Repetition):</strong> Distribuir el estudio en sesiones breves a lo largo de varias semanas para vencer la curva del olvido de Ebbinghaus.</li>
+                        <li><strong>El Sueño como Fase Activa de Consolidación:</strong> Durante el sueño de ondas lentas y fase REM, el hipocampo reproduce los patrones neuronales del día y transfiere la información a la neocorteza temporal para su almacenamiento definitivo.</li>
+                    </ul>
+                </div>
+            `
+        },
+        occipital: {
+            id: 'occipital',
+            lobe: 'Lóbulo Occipital',
+            title: 'Lóbulo Occipital y Reciclaje Neuronal: De la Percepción Visual a la Alfabetización y Evaluación',
+            subtitle: 'Procesamiento retinotópico, discriminación de patrones gráficos, reciclaje neuronal según Stanislas Dehaene y visual thinking.',
+            tag: 'NEUROEDUCACIÓN // VISIÓN, LECTURA & EVALUACIÓN FORMATIVA',
+            icon: 'ph-pencil-line',
+            color: '#F59E0B',
+            badge: 'Corteza Visual Primaria & Asociativa',
+            basicProcesses: 'Procesamiento visual retinotópico primario (corteza estriada V1 / área 17), detección de bordes, líneas de orientación, contraste lumínico y frecuencias espaciales.',
+            advancedProcesses: 'Reconocimiento invariante de formas, rostros y objetos (vía ventral), percepción del movimiento y localización espacial (vía dorsal), reciclaje neuronal para la lectura (Área de la Forma Visual de las Palabras - VWFA / Caja de Letras del Cerebro).',
+            classroomApplication: 'Teoría de la Codificación Dual de Paivio (imagen + palabra sin sobrecarga cognitiva), diseño de rúbricas visuales transparentes de evaluación formativa, sketchnoting y mapas conceptuales cromáticos.',
+            readingTime: '6 min de lectura académica',
+            bodyHtml: `
+                <div class="article-section">
+                    <h3>1. De la Luz al Significado: La Vía Visual Ventral</h3>
+                    <p>El lóbulo occipital procesa la información fotónica captada por la retina con una precisión topográfica asombrosa. A través de la vía visual ventral (el flujo del <em>«¿Qué es?»</em>), la corteza estriada V1 proyecta hacia V2, V4 y la corteza temporal inferior para transformar fotones en objetos, colores, símbolos y rostros con invariancia de escala y orientación.</p>
+                    <div class="article-quote-box">
+                        <em>«Aprender a leer consiste en reciclar un circuito cortical preexistente, originalmente evolucionado para el reconocimiento visual de formas de la naturaleza, para que responda a las letras de nuestro alfabeto.»</em>
+                        <small>— Dr. Stanislas Dehaene, «Los ojos de la mente y las neuronas de la lectura»</small>
+                    </div>
+                </div>
+                <div class="article-section">
+                    <h3>2. La Teoría del Reciclaje Neuronal y la Caja de Letras</h3>
+                    <p>La humanidad inventó la escritura hace apenas 5.400 años, un parpadeo en términos de evolución biológica; por ende, nuestro genoma no incluye ningún 'gen de la lectura'. El cerebro aprende a leer reconvirtiendo plásticamente el giro fusiforme occipitotemporal izquierdo (la <strong>Caja de Letras del Cerebro</strong>), conectándola directamente con las áreas motoras y fonológicas del lenguaje.</p>
+                </div>
+                <div class="article-section">
+                    <h3>3. Teoría de la Codificación Dual y Evaluación Formativa</h3>
+                    <p>Formulada por Allan Paivio y respaldada por la neuroimagen moderna, la Teoría de la Codificación Dual establece que el cerebro procesa la información visual y verbal a través de canales independientes pero interconectados. Cuando un docente acompaña una explicación con un diagrama gráfico bien estructurado, duplica las posibilidades de retención sin saturar la corteza occipital ni la memoria de trabajo.</p>
+                </div>
+                <div class="article-section">
+                    <h3>4. Aplicación Neuroeducativa en Instrumentos de Evaluación</h3>
+                    <ul>
+                        <li><strong>Rúbricas Visuales Transparentes:</strong> Reemplazar textos densos de evaluación por escalas gráficas, iconos de desempeño e infografías de criterios. Esto reduce la ansiedad evaluativa y permite al estudiante autoevaluar su progreso con un solo vistazo.</li>
+                        <li><strong>Pensamiento Visual (Sketchnoting):</strong> Estimular a los estudiantes a sintetizar conferencias y lecturas combinando dibujos sencillos, flechas relacionales y palabras clave.</li>
+                        <li><strong>Jerarquía Cromática Pedagógica:</strong> Emplear un código coherente de color (verde para fortalezas, ámbar para áreas de oportunidad) para facilitar el escaneo visual rápido.</li>
+                    </ul>
+                </div>
+            `
+        },
+        cerebelo: {
+            id: 'cerebelo',
+            lobe: 'Cerebelo y Tronco Encefálico',
+            title: 'El Cerebelo y los Ganglios Basales: Automatización Procedural, Fluidez y Aprendizaje Lúdico',
+            subtitle: 'Del control del equilibrio a la sintonía fina del pensamiento: cómo el juego, la práctica deliberada y el movimiento potencian la cognición.',
+            tag: 'NEUROEDUCACIÓN // LÚDICA, GAMIFICACIÓN & FLUJO',
+            icon: 'ph-game-controller',
+            color: '#34D399',
+            badge: 'Coordinador Motor & Sintonizador Cognitivo',
+            basicProcesses: 'Coordinación motriz refleja, control del equilibrio vestibular, modulación del tono muscular antigravitatorio y timing rítmico.',
+            advancedProcesses: 'Automatización de destrezas procedimentales complejas (memoria procedimental implícita en bucle cerebelo-ganglios basales), predicción y corrección de errores en tiempo real, sintonización fina de la velocidad del pensamiento y fluidez lingüística.',
+            classroomApplication: 'Gamificación educativa con retroalimentación inmediata, micro-retos progresivos para alcanzar el Estado de Flujo (Csikszentmihalyi), práctica distribuida deliberada, simuladores de rol y aprendizaje basado en juegos.',
+            readingTime: '7 min de lectura académica',
+            bodyHtml: `
+                <div class="article-section">
+                    <h3>1. El Gigante Olvidado: Más del 50% de las Neuronas del Encéfalo</h3>
+                    <p>Aunque ocupa únicamente el 10% del volumen craneal, el <strong>cerebelo</strong> contiene más de la mitad de todas las neuronas de nuestro sistema nervioso central, densamente empaquetadas en su corteza plegada en folia. Históricamente se consideró un simple órgano motor; sin embargo, la neurociencia contemporánea ha revelado que sus circuitos feed-forward modulan activamente la atención, el lenguaje y las funciones ejecutivas.</p>
+                    <div class="article-quote-box">
+                        <em>«El cerebelo es el procesador que toma las acciones torpes y las convierte en destrezas fluidas, automáticas e inconscientes. Lo que hace para los dedos de un pianista, lo hace también para los conceptos en la mente del aprendiz.»</em>
+                        <small>— Dr. John Ratey, Profesor Clínico de Psiquiatría (Harvard Medical School)</small>
+                    </div>
+                </div>
+                <div class="article-section">
+                    <h3>2. Automatización y Liberación de Carga Cognitiva Prefrontal</h3>
+                    <p>Cuando un estudiante aprende por primera vez a resolver una ecuación o escribir a máquina, su corteza prefrontal trabaja a máxima potencia y se agota rápidamente. Mediante la práctica deliberada repetida, el cerebelo y los ganglios basales empaquetan la secuencia en una <strong>memoria procedimental automática</strong>. Esto libera ancho de banda prefrontal para el pensamiento creativo y de orden superior.</p>
+                </div>
+                <div class="article-section">
+                    <h3>3. Neurobiología de la Gamificación y el Estado de Flujo</h3>
+                    <p>Los juegos bien diseñados activan circuitos de recompensa dopaminérgica mediante bucles cerrados de retroalimentación inmediata: reto -> intento -> error predictivo -> corrección instantánea -> recompensa. El psicólogo Mihaly Csikszentmihalyi denominó a este estado óptimo de inmersión <strong>«Estado de Flujo»</strong>, donde el nivel de desafío se equilibra milimétricamente con el nivel de habilidad del jugador.</p>
+                </div>
+                <div class="article-section">
+                    <h3>4. Estrategias Docentes Basadas en el Cerebelo</h3>
+                    <ul>
+                        <li><strong>Mecánicas Gamificadas con Feedback Inmediato:</strong> Cuestionarios formativos interactivos donde el alumno conozca al instante su precisión y la justificación pedagógica del error.</li>
+                        <li><strong>Práctica Distribuida y Fraccionada:</strong> 15 minutos diarios de práctica deliberada son infinitamente más efectivos que una maratón de 3 horas el día previo a la entrega.</li>
+                        <li><strong>Incorporación de Movimiento Físico en la Rutina de Clase:</strong> La activación cerebelosa a través de estiramientos y cambios de estación física potencia la irrigación sanguínea en todo el manto cortical.</li>
+                    </ul>
+                </div>
+            `
+        },
+        all: {
+            id: 'all',
+            lobe: 'Conectoma Global y Neuroplasticidad',
+            title: 'El Conectoma Humano y la Neuroplasticidad: Ecosistema Sináptico Integrado en la Educación',
+            subtitle: 'Sinapsis hebbianas, redes cerebrales a gran escala (DMN vs TPN), y los 7 principios universales de la neuroeducación transformadora.',
+            tag: 'NEUROEDUCACIÓN // CONECTOMA & NEUROPLASTICIDAD',
+            icon: 'ph-brain',
+            color: '#22D3EE',
+            badge: 'Red de Redes Sinápticas Globales',
+            basicProcesses: 'Generación y propagación electroquímica de potenciales de acción, sinaptogénesis, neurotransmisión y metabolismo glial.',
+            advancedProcesses: 'Neuroplasticidad estructural y funcional Hebbiana, integración interhemisférica vía cuerpo calloso, alternancia dinámica entre la Red por Defecto (DMN) y la Red de Atención Ejecutiva, pensamiento holístico divergente y convergente.',
+            classroomApplication: 'Cultura de Mentalidad de Crecimiento (Carol Dweck), destierro absoluto de neuromitos pedagógicos, climatología de aula enriquecida y diseño instruccional holístico e interdisciplinar.',
+            readingTime: '9 min de lectura académica',
+            bodyHtml: `
+                <div class="article-section">
+                    <h3>1. El Conectoma: El Mapa de Cableado del Pensamiento</h3>
+                    <p>El cerebro humano alberga aproximadamente 86.000 millones de neuronas conectadas por más de 100 billones de sinapsis. Esta inmensa red de fibra de sustancia blanca conforma el <strong>conectoma humano</strong>. La cognición y el aprendizaje nunca residen en una estructura aislada, sino en la interacción rítmica y sincronizada entre redes neuronales a gran escala.</p>
+                    <div class="article-quote-box">
+                        <em>«Las neuronas que disparan juntas, se conectan juntas (Neurons that fire together, wire together). Toda experiencia de aprendizaje reorganiza físicamente la estructura microscópica del cerebro del alumno.»</em>
+                        <small>— Donald Hebb, Postulado de Plasticidad Sináptica Hebbiana (1949)</small>
+                    </div>
+                </div>
+                <div class="article-section">
+                    <h3>2. Desmontando Neuromitos en la Sala de Clases</h3>
+                    <p>Para aplicar la neurociencia con verdadero rigor en la educación, el primer paso es erradicar los mitos pseudocientíficos ampliamente difundidos:</p>
+                    <ul>
+                        <li><strong>Mito 1: «Usamos sólo el 10% de nuestro cerebro»:</strong> FALSO. Técnicas de resonancia magnética funcional (fMRI) demuestran que utilizamos el 100% del encéfalo, incluso mientras dormimos.</li>
+                        <li><strong>Mito 2: «Estilos de Aprendizaje VAK (Visual, Auditivo, Kinestésico)»:</strong> FALSO. No existe evidencia científica que respalde que enseñar a un alumno exclusivamente en su supuesto 'estilo preferido' mejore su aprendizaje. Por el contrario, el cerebro aprende mejor cuando integra múltiples canales sensoriales simultáneamente.</li>
+                        <li><strong>Mito 3: «Cerebro Izquierdo Lógico vs Cerebro Derecho Creativo»:</strong> FALSO. Ambos hemisferios colaboran estrechamente a través del cuerpo calloso en cualquier tarea cognitiva compleja.</li>
+                    </ul>
+                </div>
+                <div class="article-section">
+                    <h3>3. Los 7 Pilares Universales de la Neuroeducación en PsicoEduca</h3>
+                    <ol>
+                        <li><strong>Plasticidad Cerebral:</strong> La inteligencia no es un rasgo fijo; el cerebro se expande y reorganiza ante el esfuerzo sostenido.</li>
+                        <li><strong>Emoción y Curiosidad:</strong> El contenido sin impacto afectivo es invisible para los sistemas de memoria temporal e hipocampal.</li>
+                        <li><strong>Atención Selectiva:</strong> El cerebro no puede prestar atención sostenida de alta intensidad por más de 20 minutos sin una variación de estímulo.</li>
+                        <li><strong>Carga Cognitiva Controlada:</strong> Evitar la sobrecarga innecesaria de la memoria de trabajo eliminando elementos decorativos irrelevantes.</li>
+                        <li><strong>Práctica Distribuida y Feedback:</strong> El error constructivo con corrección temprana es el motor neurobiológico del aprendizaje.</li>
+                        <li><strong>Sueño y Descanso:</strong> Dormir no es perder tiempo; es el periodo biológico insustituible donde las sinapsis se consolidan.</li>
+                        <li><strong>Actividad Física y Oxigenación:</strong> El ejercicio aeróbico regular incrementa el volumen del hipocampo y la concentración prefrontal.</li>
+                    </ol>
+                </div>
+            `
+        }
+    };
 
-            <!-- Rutas Principales -->
-            <div class="view-header" style="margin-top: 10px;"><h2 class="view-title" style="font-size: 22px;">Rutas de Aprendizaje</h2></div>
-            <div style="margin-bottom: 40px;">
-                ${Object.values(routesData).map(r => `
-                    <div class="route-card">
-                        <div class="route-header">
+    // --- GENERADOR DE AVATAR PIXEL ART EVOLUTIVO (SVG DINÁMICO 16-BIT) ---
+    const generatePixelAvatarSVG = (gender, levelIndex, unlockedBadgesCount) => {
+        const lvl = Math.max(0, Math.min(5, levelIndex || 0));
+        const isFemale = (gender === 'female');
+        
+        const outfitColors = [
+            { primary: '#0284C7', secondary: '#38BDF8', trim: '#FCD34D', cape: '#0369A1' }, // Tier 1: Explorador
+            { primary: '#2563EB', secondary: '#60A5FA', trim: '#F59E0B', cape: '#1D4ED8' }, // Tier 2: Aprendiz
+            { primary: '#7C3AED', secondary: '#A78BFA', trim: '#22D3EE', cape: '#6D28D9' }, // Tier 3: Practicante
+            { primary: '#0F172A', secondary: '#22D3EE', trim: '#F59E0B', cape: '#1E293B' }, // Tier 4: Profesional
+            { primary: '#1E1B4B', secondary: '#34D399', trim: '#C084FC', cape: '#312E81' }, // Tier 5: Especialista
+            { primary: '#090D16', secondary: '#F59E0B', trim: '#FDE047', cape: '#B45309' }  // Tier 6: Mentor
+        ];
+        const col = outfitColors[lvl];
+        const skin = '#FCD34D';
+        const skinShadow = '#F59E0B';
+        const hairColor = isFemale ? (lvl >= 4 ? '#A855F7' : '#92400E') : (lvl >= 4 ? '#06B6D4' : '#78350F');
+        const hairHighlight = isFemale ? (lvl >= 4 ? '#C084FC' : '#B45309') : (lvl >= 4 ? '#22D3EE' : '#92400E');
+        
+        const rects = [];
+        const r = (x, y, w, h, fill) => {
+            rects.push(`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${fill}"/>`);
+        };
+
+        // 1. Alas Celestiales de Energía (Tier 6 - Mentor)
+        if (lvl === 5) {
+            // Ala izquierda
+            r(1, 12, 4, 2, '#38BDF8');
+            r(2, 10, 4, 3, '#22D3EE');
+            r(3, 8, 4, 3, '#BAE6FD');
+            r(4, 6, 3, 3, '#FDE047');
+            r(0, 14, 5, 2, '#0284C7');
+            // Ala derecha
+            r(23, 12, 4, 2, '#38BDF8');
+            r(22, 10, 4, 3, '#22D3EE');
+            r(21, 8, 4, 3, '#BAE6FD');
+            r(21, 6, 3, 3, '#FDE047');
+            r(23, 14, 5, 2, '#0284C7');
+        }
+
+        // 2. Orbes Flotantes Sinápticos (Tier 5 & 6)
+        if (lvl >= 4) {
+            r(3, 17, 3, 3, '#22D3EE');
+            r(4, 18, 1, 1, '#FFFFFF');
+            r(22, 17, 3, 3, '#C084FC');
+            r(23, 18, 1, 1, '#FFFFFF');
+        }
+
+        // 3. Corona / Halo / Visor
+        if (lvl === 5) {
+            // Halo cósmico supremo
+            r(10, 2, 8, 1, '#FDE047');
+            r(9, 3, 2, 1, '#FDE047');
+            r(17, 3, 2, 1, '#FDE047');
+            r(11, 2, 6, 1, '#FFFFFF');
+        } else if (lvl >= 3) {
+            // Diadema cuántica / visor
+            r(10, 7, 8, 2, col.secondary);
+            r(13, 7, 2, 2, '#FFFFFF');
+        } else if (lvl === 1) {
+            // Gafas de aprendiz sobre la frente
+            r(11, 7, 3, 2, '#38BDF8');
+            r(15, 7, 3, 2, '#38BDF8');
+            r(14, 8, 1, 1, '#1E293B');
+        }
+
+        // 4. Capa posterior (Tiers 2+)
+        if (lvl >= 2) {
+            r(7, 16, 2, 13, col.cape);
+            r(19, 16, 2, 13, col.cape);
+            r(6, 18, 2, 10, col.cape);
+            r(20, 18, 2, 10, col.cape);
+            if (lvl >= 4) {
+                r(5, 20, 2, 7, col.secondary);
+                r(21, 20, 2, 7, col.secondary);
+            }
+        }
+
+        // 5. Cabello (Hombre vs Mujer)
+        if (isFemale) {
+            r(10, 5, 8, 3, hairColor);
+            r(9, 6, 10, 3, hairColor);
+            r(9, 5, 3, 1, hairHighlight);
+            r(14, 5, 4, 1, hairHighlight);
+            r(8, 8, 2, 11, hairColor);
+            r(18, 8, 2, 11, hairColor);
+            r(7, 9, 2, 9, hairColor);
+            r(19, 9, 2, 9, hairColor);
+            r(11, 6, 2, 1, hairHighlight);
+            r(15, 6, 2, 1, hairHighlight);
+        } else {
+            r(10, 4, 8, 3, hairColor);
+            r(9, 5, 10, 4, hairColor);
+            r(8, 7, 2, 4, hairColor);
+            r(18, 7, 2, 4, hairColor);
+            r(9, 3, 2, 2, hairColor);
+            r(12, 3, 3, 2, hairHighlight);
+            r(16, 3, 2, 2, hairColor);
+            r(10, 4, 4, 1, hairHighlight);
+        }
+
+        // 6. Rostro y Piel
+        r(10, 8, 8, 7, skin);
+        r(10, 14, 8, 1, skinShadow);
+
+        // Ojos
+        r(11, 10, 2, 2, '#0F172A');
+        r(11, 10, 1, 1, '#FFFFFF');
+        r(15, 10, 2, 2, '#0F172A');
+        r(15, 10, 1, 1, '#FFFFFF');
+
+        // Rubor
+        r(10, 12, 1, 1, '#FB7185');
+        r(17, 12, 1, 1, '#FB7185');
+
+        // Sonrisa
+        r(13, 13, 2, 1, '#BE185D');
+
+        // 7. Cuello
+        r(13, 15, 2, 1, skinShadow);
+
+        // 8. Torso / Atuendo
+        r(9, 16, 10, 8, col.primary);
+        r(11, 16, 6, 7, col.secondary);
+
+        if (lvl === 0) {
+            r(13, 17, 2, 2, col.trim);
+        } else if (lvl === 1) {
+            r(13, 16, 2, 1, col.trim);
+            r(13, 18, 2, 1, col.trim);
+            r(13, 20, 2, 1, col.trim);
+        } else if (lvl >= 2) {
+            r(12, 17, 4, 4, col.primary);
+            r(13, 18, 2, 2, col.trim);
+            r(11, 16, 1, 6, col.trim);
+            r(16, 16, 1, 6, col.trim);
+        }
+
+        // Cinturón
+        r(9, 23, 10, 2, '#0F172A');
+        r(13, 23, 2, 2, col.trim);
+
+        // 9. Brazos
+        r(7, 16, 2, 6, col.primary);
+        r(7, 22, 2, 2, skin);
+        r(19, 16, 2, 6, col.primary);
+        r(19, 22, 2, 2, skin);
+
+        // 10. Accesorio en mano
+        if (lvl === 0) {
+            r(21, 20, 1, 4, '#F59E0B');
+        } else if (lvl === 1) {
+            r(21, 19, 2, 5, '#FEF08A');
+            r(21, 21, 2, 1, '#D97706');
+        } else if (lvl === 2) {
+            r(21, 18, 3, 5, '#0284C7');
+            r(22, 19, 1, 3, '#38BDF8');
+        } else if (lvl === 3) {
+            r(21, 15, 1, 10, '#F59E0B');
+            r(20, 14, 3, 2, '#22D3EE');
+            r(21, 13, 1, 1, '#FFFFFF');
+        } else if (lvl >= 4) {
+            r(22, 12, 1, 15, '#F59E0B');
+            r(21, 10, 3, 3, col.secondary);
+            r(22, 11, 1, 1, '#FFFFFF');
+            r(20, 11, 1, 1, col.trim);
+            r(24, 11, 1, 1, col.trim);
+        }
+
+        // 11. Piernas y Pantalones
+        r(10, 25, 3, 6, '#1E293B');
+        r(15, 25, 3, 6, '#1E293B');
+
+        // 12. Botas
+        r(9, 31, 4, 3, col.primary);
+        r(9, 33, 5, 1, '#0F172A');
+        r(15, 31, 4, 3, col.primary);
+        r(14, 33, 5, 1, '#0F172A');
+
+        if (lvl >= 3) {
+            r(10, 32, 2, 1, col.secondary);
+            r(16, 32, 2, 1, col.secondary);
+        }
+
+        return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 36" width="220" height="280" class="pixel-avatar-svg" shape-rendering="crispEdges">
+            ${rects.join('')}
+        </svg>`;
+    };
+
+    window._activeAprendeTab = 'cerebro';
+    window.app.switchAprendeTab = (tabKey) => {
+        try { playSound('click'); } catch(e) {}
+        window._activeAprendeTab = tabKey;
+        const btns = document.querySelectorAll('.aprende-tab-btn');
+        btns.forEach(b => {
+            if (b.getAttribute('data-tab') === tabKey) b.classList.add('active');
+            else b.classList.remove('active');
+        });
+        const panels = document.querySelectorAll('.aprende-tab-content');
+        panels.forEach(p => {
+            if (p.id === `tab-pane-${tabKey}`) p.style.display = 'block';
+            else p.style.display = 'none';
+        });
+        if (tabKey === 'cerebro') {
+            setTimeout(() => {
+                if (window.initBrain3D) window.initBrain3D();
+            }, 80);
+        }
+    };
+
+    // 3. VISTA APRENDE (Laboratorio 3D Aprendamos del Cerebro, Rutas, Cursos y Biblioteca)
+    const renderAprende = () => {
+        const curTab = window._activeAprendeTab || 'cerebro';
+        return `
+            <div class="view-animate">
+                <!-- Sub-Navegación de Pestañas en Aprende -->
+                <div class="aprende-subnav">
+                    <button class="aprende-tab-btn ${curTab === 'cerebro' ? 'active' : ''}" data-tab="cerebro" onclick="app.switchAprendeTab('cerebro')">
+                        <i class="ph-bold ph-brain"></i> 🧠 Aprendamos del Cerebro (3D)
+                    </button>
+                    <button class="aprende-tab-btn ${curTab === 'rutas' ? 'active' : ''}" data-tab="rutas" onclick="app.switchAprendeTab('rutas')">
+                        <i class="ph-bold ph-map-trifold"></i> 🛣️ Rutas de Aprendizaje
+                    </button>
+                    <button class="aprende-tab-btn ${curTab === 'cursos' ? 'active' : ''}" data-tab="cursos" onclick="app.switchAprendeTab('cursos')">
+                        <i class="ph-bold ph-graduation-cap"></i> 📚 Cursos y Microcursos
+                    </button>
+                    <button class="aprende-tab-btn ${curTab === 'biblioteca' ? 'active' : ''}" data-tab="biblioteca" onclick="app.switchAprendeTab('biblioteca')">
+                        <i class="ph-bold ph-books"></i> 📖 Biblioteca Psicoeduca
+                    </button>
+                </div>
+
+                <!-- PANE 1: APRENDAMOS DEL CEREBRO (3D INTERACTIVO & PROCESOS COGNITIVOS) -->
+                <div id="tab-pane-cerebro" class="aprende-tab-content" style="display: ${curTab === 'cerebro' ? 'block' : 'none'};">
+                    <div class="view-header" style="margin-bottom: 22px;">
+                        <div style="display: inline-flex; align-items: center; gap: 8px; color: var(--color-cyan); font-family: var(--font-tech); font-size: 11.5px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 6px;">
+                            <i class="ph-bold ph-brain"></i> LABORATORIO DE NEUROEDUCACIÓN // MODELO 3D
+                        </div>
+                        <h1 class="view-title">Aprendamos del Cerebro</h1>
+                        <p class="view-subtitle">Explora el encéfalo humano en 3D interactivo, descubre qué procesos cognitivos básicos y avanzados residen en cada región y cómo aplicar la neuroeducación en tu aula.</p>
+                    </div>
+
+                    <!-- Tarjeta de la Consola del Cerebro 3D para Aprender -->
+                    <div class="profile-brain-card" style="margin-bottom: 35px; width: 100%;">
+                        <div class="brain-console-header">
                             <div>
-                                <span class="route-badge">${r.category}</span>
-                                <h3 style="font-size: 22px; color: #fff; margin-top: 8px;">${r.title}</h3>
+                                <span style="font-size: 10.5px; font-weight: 800; color: var(--color-cyan); text-transform: uppercase; letter-spacing: 1.5px; font-family: var(--font-tech); display: block;">
+                                    <i class="ph-bold ph-cube"></i> ENTORNO VIRTUAL DE APRENDIZAJE NEUROLÓGICO
+                                </span>
+                                <h3 style="font-size: 18px; color: #fff; font-family: var(--font-tech); margin-top: 2px;">
+                                    Laboratorio Bioconectoma 3D: Estructuras & Procesos Cognitivos
+                                </h3>
                             </div>
-                            <span style="font-size: 13px; color: var(--warning); font-weight: 800; background: rgba(251,191,36,0.1); padding: 4px 12px; border-radius: 12px;">+${r.xp} XP</span>
+                            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                                <button class="icon-btn" onclick="app.zoomBrain(1.2)" title="Acercar Zoom">
+                                    <i class="ph-bold ph-magnifying-glass-plus"></i>
+                                </button>
+                                <button class="icon-btn" onclick="app.zoomBrain(0.8)" title="Alejar Zoom">
+                                    <i class="ph-bold ph-magnifying-glass-minus"></i>
+                                </button>
+                                <button class="icon-btn" onclick="app.toggleBrainAutoRotate()" id="btn-brain-spin" title="Pausar / Reanudar Rotación" style="color: var(--color-cyan); border-color: var(--color-cyan);">
+                                    <i class="ph-bold ph-arrow-clockwise"></i>
+                                </button>
+                                <button class="icon-btn" onclick="app.resetBrainView()" title="Restablecer Vista Original">
+                                    <i class="ph-bold ph-arrows-in-cardinal"></i>
+                                </button>
+                                <button class="icon-btn" onclick="app.triggerBrainPulse()" title="Disparar Impulso Sináptico">
+                                    <i class="ph-bold ph-lightning"></i>
+                                </button>
+                            </div>
                         </div>
-                        <p style="color: var(--text-secondary); font-size: 14px; margin-bottom: 16px;">${r.desc}</p>
-                        
-                        <div class="route-steps-timeline">
-                            ${r.steps.map(s => `
-                                <div class="route-step-node">
-                                    <span class="step-number">${s.num}</span>
-                                    <div class="step-title">${s.title}</div>
-                                    <div style="font-size: 12px; color: var(--text-secondary);">${s.desc}</div>
+
+                        <!-- Visor 3D Canvas con 560px de altura y fondo negro espacial -->
+                        <div class="brain-canvas-container" id="brain-canvas-wrapper" title="Haz clic sobre cualquier región o arrastra con el cursor para explorar el cerebro en 3D">
+                            <canvas id="brain-3d-canvas"></canvas>
+                            <span class="brain-3d-hint"><i class="ph-bold ph-hand-pointing"></i> Posa el cursor o haz clic en cualquier lóbulo para revelar sus procesos cognitivos • Arrastra 360° • Doble clic para abrir artículo</span>
+                        </div>
+
+                        <!-- Selector de Lóbulos Cerebrales -->
+                        <div class="brain-lobes-selector">
+                            <button class="brain-lobe-btn active" data-lobe="all" onclick="app.focusBrainLobe('all')">
+                                <i class="ph-bold ph-brain"></i> Todo el Cerebro
+                            </button>
+                            <button class="brain-lobe-btn" data-lobe="frontal" onclick="app.focusBrainLobe('frontal')">
+                                <span style="width: 8px; height: 8px; border-radius: 50%; background: #22D3EE;"></span> Frontal (Funciones Ejecutivas)
+                            </button>
+                            <button class="brain-lobe-btn" data-lobe="parietal" onclick="app.focusBrainLobe('parietal')">
+                                <span style="width: 8px; height: 8px; border-radius: 50%; background: #38BDF8;"></span> Parietal (Cálculo & Visoespacial)
+                            </button>
+                            <button class="brain-lobe-btn" data-lobe="temporal" onclick="app.focusBrainLobe('temporal')">
+                                <span style="width: 8px; height: 8px; border-radius: 50%; background: #C084FC;"></span> Temporal (Memoria & Lenguaje)
+                            </button>
+                            <button class="brain-lobe-btn" data-lobe="occipital" onclick="app.focusBrainLobe('occipital')">
+                                <span style="width: 8px; height: 8px; border-radius: 50%; background: #F59E0B;"></span> Occipital (Visión & Lectura)
+                            </button>
+                            <button class="brain-lobe-btn" data-lobe="cerebelo" onclick="app.focusBrainLobe('cerebelo')">
+                                <span style="width: 8px; height: 8px; border-radius: 50%; background: #34D399;"></span> Cerebelo (Lúdica & Automatización)
+                            </button>
+                        </div>
+
+                        <!-- Panel de Procesos Cognitivos y Neuroeducación del Lóbulo Seleccionado -->
+                        <div class="brain-telemetry-readout" id="brain-cognitive-panel" style="padding: 22px; flex-direction: column; align-items: stretch; gap: 16px;">
+                            <!-- Dinámicamente poblado con app.focusBrainLobe() -->
+                        </div>
+                    </div>
+
+                    <!-- Tarjetas Guía Rápidas de Neuroeducación -->
+                    <div class="view-header" style="margin-top: 10px;">
+                        <h2 class="view-title" style="font-size: 20px;">Artículos Académicos de Neuroeducación</h2>
+                        <p class="view-subtitle" style="font-size: 13px;">Profundiza en la evidencia científica detrás de cada proceso cognitivo y su traslación a la didáctica.</p>
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px; margin-bottom: 20px;">
+                        <div class="card avatar-card" style="padding: 20px; cursor: pointer;" onclick="app.openNeuroArticle('frontal')">
+                            <span class="route-badge" style="background: rgba(34,211,238,0.12); color: var(--color-cyan); border-color: rgba(34,211,238,0.3); font-size: 10.5px;">AUTORREGULACIÓN</span>
+                            <h4 style="font-size: 16px; color: #fff; margin: 10px 0 6px;"><i class="ph-bold ph-cpu" style="color: var(--color-cyan);"></i> Funciones Ejecutivas en el Aula</h4>
+                            <p style="font-size: 12.5px; color: var(--text-secondary); line-height: 1.4; margin-bottom: 12px;">Cómo el control inhibitorio y la memoria de trabajo determinan el éxito escolar por encima del CI.</p>
+                            <span style="font-size: 11.5px; color: var(--color-cyan); font-weight: 700; display: inline-flex; align-items: center; gap: 4px;">Leer artículo completo <i class="ph-bold ph-arrow-right"></i></span>
+                        </div>
+                        <div class="card avatar-card" style="padding: 20px; cursor: pointer;" onclick="app.openNeuroArticle('temporal')">
+                            <span class="route-badge" style="background: rgba(192,132,252,0.12); color: #C084FC; border-color: rgba(192,132,252,0.3); font-size: 10.5px;">EMOCIÓN Y APRENDIZAJE</span>
+                            <h4 style="font-size: 16px; color: #fff; margin: 10px 0 6px;"><i class="ph-bold ph-heart" style="color: #C084FC;"></i> El Eje Hipocampo-Amígdala</h4>
+                            <p style="font-size: 12.5px; color: var(--text-secondary); line-height: 1.4; margin-bottom: 12px;">Francisco Mora: "Solo se puede aprender aquello que se ama". La emoción como catalizador de la memoria.</p>
+                            <span style="font-size: 11.5px; color: #C084FC; font-weight: 700; display: inline-flex; align-items: center; gap: 4px;">Leer artículo completo <i class="ph-bold ph-arrow-right"></i></span>
+                        </div>
+                        <div class="card avatar-card" style="padding: 20px; cursor: pointer;" onclick="app.openNeuroArticle('occipital')">
+                            <span class="route-badge" style="background: rgba(245,158,11,0.12); color: var(--warning); border-color: rgba(245,158,11,0.3); font-size: 10.5px;">ALFABETIZACIÓN</span>
+                            <h4 style="font-size: 16px; color: #fff; margin: 10px 0 6px;"><i class="ph-bold ph-eye" style="color: var(--warning);"></i> Reciclaje Neuronal de la Lectura</h4>
+                            <p style="font-size: 12.5px; color: var(--text-secondary); line-height: 1.4; margin-bottom: 12px;">Stanislas Dehaene y la caja de letras del cerebro: cómo convertimos formas visuales en conceptos.</p>
+                            <span style="font-size: 11.5px; color: var(--warning); font-weight: 700; display: inline-flex; align-items: center; gap: 4px;">Leer artículo completo <i class="ph-bold ph-arrow-right"></i></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PANE 2: RUTAS DE APRENDIZAJE -->
+                <div id="tab-pane-rutas" class="aprende-tab-content" style="display: ${curTab === 'rutas' ? 'block' : 'none'};">
+                    <div class="view-header" style="margin-top: 10px;"><h2 class="view-title" style="font-size: 22px;">Rutas de Aprendizaje</h2></div>
+                    <div style="margin-bottom: 40px;">
+                        ${Object.values(routesData).map(r => `
+                            <div class="route-card">
+                                <div class="route-header">
+                                    <div>
+                                        <span class="route-badge">${r.category}</span>
+                                        <h3 style="font-size: 22px; color: #fff; margin-top: 8px;">${r.title}</h3>
+                                    </div>
+                                    <span style="font-size: 13px; color: var(--warning); font-weight: 800; background: rgba(251,191,36,0.1); padding: 4px 12px; border-radius: 12px;">+${r.xp} XP</span>
                                 </div>
-                            `).join('')}
-                        </div>
+                                <p style="color: var(--text-secondary); font-size: 14px; margin-bottom: 16px;">${r.desc}</p>
+                                
+                                <div class="route-steps-timeline">
+                                    ${r.steps.map(s => `
+                                        <div class="route-step-node">
+                                            <span class="step-number">${s.num}</span>
+                                            <div class="step-title">${s.title}</div>
+                                            <div style="font-size: 12px; color: var(--text-secondary);">${s.desc}</div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        `).join('')}
                     </div>
-                `).join('')}
-            </div>
+                </div>
 
-            <!-- Cursos y Microcursos -->
-            <div class="view-header"><h2 class="view-title" style="font-size: 22px;">Cursos y Micro-cursos</h2></div>
-            <div class="grid-container" style="margin-bottom: 40px;">
-                ${Object.values(coursesData).map(c => `
-                    <div class="card avatar-card" onclick="app.startCourse('${c.id}')" style="padding: 0;">
-                        <div style="height: 160px; background: url('${c.image}') center/cover; position: relative;"></div>
-                        <div style="padding: 20px;">
-                            <span style="font-size: 10px; font-weight: 800; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px;">${c.category}</span>
-                            <h3 class="card-title" style="margin: 6px 0 8px;">${c.title}</h3>
-                            <p class="card-desc" style="margin-bottom: 14px;">${c.desc}</p>
-                            <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--text-secondary);"><span>PROGRESO</span><span>${c.progress}%</span></div>
-                            <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: ${c.progress}%;"></div></div>
-                        </div>
+                <!-- PANE 3: CURSOS Y MICROCURSOS -->
+                <div id="tab-pane-cursos" class="aprende-tab-content" style="display: ${curTab === 'cursos' ? 'block' : 'none'};">
+                    <div class="view-header"><h2 class="view-title" style="font-size: 22px;">Cursos y Micro-cursos</h2></div>
+                    <div class="grid-container" style="margin-bottom: 40px;">
+                        ${Object.values(coursesData).map(c => `
+                            <div class="card avatar-card" onclick="app.startCourse('${c.id}')" style="padding: 0;">
+                                <div style="height: 160px; background: url('${c.image}') center/cover; position: relative;"></div>
+                                <div style="padding: 20px;">
+                                    <span style="font-size: 10px; font-weight: 800; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px;">${c.category}</span>
+                                    <h3 class="card-title" style="margin: 6px 0 8px;">${c.title}</h3>
+                                    <p class="card-desc" style="margin-bottom: 14px;">${c.desc}</p>
+                                    <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--text-secondary);"><span>PROGRESO</span><span>${c.progress}%</span></div>
+                                    <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: ${c.progress}%;"></div></div>
+                                </div>
+                            </div>
+                        `).join('')}
                     </div>
-                `).join('')}
-            </div>
+                </div>
 
-            <!-- Biblioteca Psicoeduca -->
-            <div class="view-header"><h2 class="view-title" style="font-size: 22px;">Biblioteca Psicoeduca</h2></div>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
-                ${libraryData.map(lib => `
-                    <div class="card avatar-card" style="padding: 20px;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                            <span class="route-badge" style="font-size: 10px;">${lib.type}</span>
-                            <span style="font-size: 11px; color: var(--text-secondary);">${lib.topic}</span>
-                        </div>
-                        <h4 style="font-size: 16px; color: #fff; margin-bottom: 8px;"><i class="ph ${lib.icon}"></i> ${lib.title}</h4>
-                        <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.4; margin-bottom: 15px;">${lib.desc}</p>
-                        <button class="hero-btn" style="font-size: 12px; padding: 6px 14px; width: 100%; justify-content: center;" onclick="alert('Descargando/Consultando recurso: ${lib.title}')">Acceder a Recurso</button>
+                <!-- PANE 4: BIBLIOTECA PSICOEDUCA -->
+                <div id="tab-pane-biblioteca" class="aprende-tab-content" style="display: ${curTab === 'biblioteca' ? 'block' : 'none'};">
+                    <div class="view-header"><h2 class="view-title" style="font-size: 22px;">Biblioteca Psicoeduca</h2></div>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
+                        ${libraryData.map(lib => `
+                            <div class="card avatar-card" style="padding: 20px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                                    <span class="route-badge" style="font-size: 10px;">${lib.type}</span>
+                                    <span style="font-size: 11px; color: var(--text-secondary);">${lib.topic}</span>
+                                </div>
+                                <h4 style="font-size: 16px; color: #fff; margin-bottom: 8px;"><i class="ph ${lib.icon}"></i> ${lib.title}</h4>
+                                <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.4; margin-bottom: 15px;">${lib.desc}</p>
+                                <button class="hero-btn" style="font-size: 12px; padding: 6px 14px; width: 100%; justify-content: center;" onclick="alert('Descargando/Consultando recurso: ${lib.title}')">Acceder a Recurso</button>
+                            </div>
+                        `).join('')}
                     </div>
-                `).join('')}
+                </div>
             </div>
-        </div>
-    `;
+        `;
+    };
 
     // 4. VISTA PRACTICA (Laboratorio Psicoeduca)
     const renderPractica = () => `
@@ -1544,10 +2145,12 @@ Puedo guiarte en el desarrollo de competencias educativas, liderazgo, empleabili
     const renderProfile = () => {
         let currentLevelObj = gamificationLevels[0];
         let nextLevelObj = gamificationLevels[1] || gamificationLevels[0];
+        let currentLevelIdx = 0;
         for (let i = 0; i < gamificationLevels.length; i++) {
             if (gameState.xp >= gamificationLevels[i].xp) {
                 currentLevelObj = gamificationLevels[i];
                 nextLevelObj = gamificationLevels[i + 1] || gamificationLevels[i];
+                currentLevelIdx = i;
             }
         }
 
@@ -1573,17 +2176,31 @@ Puedo guiarte en el desarrollo de competencias educativas, liderazgo, empleabili
             if (best && best.passed) testsPassedCount++;
         });
         const diagnosticsCount = (gameState.diagnosticResults || []).length;
+        const gender = gameState.avatarGender || 'male';
+
+        // Gear y Atuendo evolutivo desbloqueado según nivel (Tiers 1 a 6)
+        const gearTiers = [
+            { tier: 'Tier 1 // Explorador', items: ['🎒 Mochila de Campo', '👕 Atuendo de Inicio'], aura: 'rgba(34, 211, 238, 0.25)', color: '#22D3EE' },
+            { tier: 'Tier 2 // Aprendiz', items: ['📜 Pergamino de Estudio', '👓 Visor de Datos'], aura: 'rgba(56, 189, 248, 0.35)', color: '#38BDF8' },
+            { tier: 'Tier 3 // Practicante', items: ['🧥 Capa de Facilitador', '📱 Tableta Sináptica'], aura: 'rgba(192, 132, 252, 0.45)', color: '#C084FC' },
+            { tier: 'Tier 4 // Profesional', items: ['⚡ Hombreras de Circuito', '🪄 Cetro Holográfico'], aura: 'rgba(251, 191, 36, 0.55)', color: '#FBBF24' },
+            { tier: 'Tier 5 // Especialista', items: ['👑 Diadema Cuántica', '🔮 Orbes Flotantes'], aura: 'rgba(52, 211, 153, 0.65)', color: '#34D399' },
+            { tier: 'Tier 6 // Gran Mentor', items: ['✨ Alas Celestiales', '🌌 Halo Cósmico de Luz'], aura: 'rgba(245, 158, 11, 0.8)', color: '#F59E0B' }
+        ];
+
+        const activeTier = gearTiers[currentLevelIdx] || gearTiers[0];
+        const avatarSvgHtml = generatePixelAvatarSVG(gender, currentLevelIdx, unlockedBadgesCount);
 
         return `
             <div class="view-animate">
-                <!-- Header de la Consola Neuro Digital -->
+                <!-- Header de la Consola -->
                 <div class="view-header" style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 15px; margin-bottom: 25px;">
                     <div>
                         <div style="display: inline-flex; align-items: center; gap: 8px; color: var(--color-cyan); font-family: var(--font-tech); font-size: 11.5px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 6px;">
-                            <i class="ph-bold ph-brain"></i> NEURO DIGITAL EXPERIENCE // MI PERFIL
+                            <i class="ph-bold ph-game-controller"></i> GAMIFICACIÓN & AVATAR EVOLUTIVO // MI PERFIL
                         </div>
                         <h1 class="view-title">Mi Desarrollo Profesional</h1>
-                        <p class="view-subtitle">Consola de evolución pedagógica, conectoma cerebral 3D y telemetría de competencias docentes.</p>
+                        <p class="view-subtitle">Evolución pedagógica de tu Avatar en Pixel Art, telemetría de competencias docentes y reconocimientos verificados.</p>
                     </div>
                     <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                         <button class="hero-btn" onclick="app.logoutUser()" style="background: rgba(255,255,255,0.08); color: white; font-size: 13px; padding: 10px 18px;">
@@ -1595,128 +2212,131 @@ Puedo guiarte en el desarrollo de competencias educativas, liderazgo, empleabili
                     </div>
                 </div>
 
-                <!-- Grid Principal: Identidad & Cerebro 3D Interactivo -->
-                <div class="profile-neuro-grid">
-                    <!-- Tarjeta 1: Identidad del Educador & Rango Evolutivo -->
-                    <div class="profile-id-card">
+                <!-- CONSOLA DEL AVATAR PIXEL ART EVOLUTIVO -->
+                <div class="pixel-avatar-console">
+                    <!-- Escenario del Avatar Pixel Art -->
+                    <div class="pixel-avatar-stage">
+                        <!-- Aura de energía sináptica radiante -->
+                        <div class="pixel-aura" style="background: radial-gradient(circle, ${activeTier.aura} 0%, transparent 70%);"></div>
+
+                        <!-- Chispas y destellos flotantes -->
+                        <div class="pixel-sparkle" style="top: 25%; left: 20%; animation-delay: 0s;"></div>
+                        <div class="pixel-sparkle" style="top: 60%; right: 22%; animation-delay: 0.8s; width: 8px; height: 8px; box-shadow: 0 0 10px ${activeTier.color};"></div>
+                        <div class="pixel-sparkle" style="top: 35%; right: 18%; animation-delay: 1.4s;"></div>
+                        ${currentLevelIdx >= 3 ? `<div class="pixel-sparkle" style="top: 75%; left: 24%; animation-delay: 1.9s; box-shadow: 0 0 12px #FDE047;"></div>` : ''}
+
+                        <!-- Badge de Nivel Flotante en el Escenario -->
+                        <div style="position: absolute; top: 16px; left: 16px; z-index: 10;">
+                            <span class="avatar-tier-badge" style="background: rgba(8, 13, 27, 0.8); border: 1px solid ${activeTier.color}; color: ${activeTier.color};">
+                                <i class="ph-fill ph-star"></i> Nivel ${currentLevelIdx + 1}: ${currentLevelObj.name}
+                            </span>
+                        </div>
+
+                        <!-- Sprite SVG de Pixel Art auténtico 16-bit -->
+                        <div id="pixel-avatar-wrapper" style="position: relative; z-index: 5;">
+                            ${avatarSvgHtml}
+                        </div>
+
+                        <!-- Pedestal Tecnológico -->
+                        <div class="pixel-avatar-pedestal" style="box-shadow: 0 0 25px ${activeTier.color}; border-color: ${activeTier.color};"></div>
+                    </div>
+
+                    <!-- Consola de Personalización y Evolución -->
+                    <div style="display: flex; flex-direction: column; justify-content: space-between;">
                         <div>
-                            <div style="display: flex; align-items: center; gap: 20px; margin-bottom: 22px;">
-                                <div style="width: 80px; height: 80px; border-radius: 50%; background: radial-gradient(circle, rgba(34,211,238,0.3) 0%, rgba(37,99,235,0.2) 100%); border: 2px solid var(--color-cyan); padding: 3px; box-shadow: 0 0 25px rgba(34, 211, 238, 0.4); flex-shrink: 0; position: relative;">
-                                    <img src="https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(gameState.userName || 'Estudiante')}" style="width: 100%; height: 100%; border-radius: 50%;">
-                                    <span style="position: absolute; bottom: 0; right: 0; width: 14px; height: 14px; background: var(--success); border: 2px solid var(--bg-surface); border-radius: 50%; box-shadow: 0 0 10px var(--success);"></span>
-                                </div>
-                                <div style="flex: 1; min-width: 0;">
-                                    <span style="font-size: 11px; font-weight: 800; color: var(--color-cyan); text-transform: uppercase; letter-spacing: 1.2px; font-family: var(--font-tech); display: block; margin-bottom: 4px;">Educador Registrado</span>
-                                    <div style="display: flex; align-items: center; gap: 8px;">
-                                        <input type="text" value="${gameState.userName}" onchange="app.updateName(this.value)" title="Haz clic para editar tu nombre" style="background: rgba(8, 13, 27, 0.6); border: 1px solid var(--border-subtle); color: #FFFFFF; padding: 8px 12px; border-radius: 10px; font-size: 17px; font-weight: 700; width: 100%; max-width: 220px; font-family: var(--font-tech);">
-                                    </div>
+                            <!-- Header de la Consola -->
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px;">
+                                <div>
+                                    <span style="font-size: 11px; font-weight: 800; color: var(--color-cyan); text-transform: uppercase; letter-spacing: 1.2px; font-family: var(--font-tech); display: block; margin-bottom: 2px;">
+                                        IDENTIDAD & ATUENDO EVOLUTIVO
+                                    </span>
+                                    <h3 style="font-size: 20px; color: #fff; font-family: var(--font-tech); margin: 0;">
+                                        Avatar: ${gameState.userName}
+                                    </h3>
                                 </div>
                             </div>
 
-                            <!-- Rango y Barra de Energía XP -->
-                            <div style="background: rgba(8, 13, 27, 0.6); border: 1px solid var(--border-subtle); border-radius: 16px; padding: 18px; margin-bottom: 20px;">
+                            <!-- Selector de Género (Hombre / Mujer) con Persistencia -->
+                            <div style="margin-bottom: 20px;">
+                                <span style="font-size: 11px; font-weight: 800; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 8px;">
+                                    Seleccionar Género del Avatar:
+                                </span>
+                                <div style="display: flex; gap: 10px;">
+                                    <button class="gender-toggle-btn ${gender === 'male' ? 'active' : ''}" onclick="app.setAvatarGender('male')">
+                                        <i class="ph-bold ph-gender-male"></i> Avatar Masculino
+                                    </button>
+                                    <button class="gender-toggle-btn ${gender === 'female' ? 'active' : ''}" onclick="app.setAvatarGender('female')">
+                                        <i class="ph-bold ph-gender-female"></i> Avatar Femenino
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Barra de XP y Progreso al Siguiente Nivel -->
+                            <div style="background: rgba(8, 13, 27, 0.6); border: 1px solid var(--border-subtle); border-radius: 16px; padding: 16px; margin-bottom: 18px;">
                                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                                    <span style="font-size: 11.5px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; font-weight: 700;">Nivel Evolutivo</span>
-                                    <span style="color: var(--warning); font-family: var(--font-tech); font-weight: 800; font-size: 13px;"><i class="ph-fill ph-star"></i> ${currentLevelObj.name}</span>
+                                    <span style="font-size: 11.5px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; font-weight: 700;">Progreso de Rango</span>
+                                    <span style="color: ${activeTier.color}; font-family: var(--font-tech); font-weight: 800; font-size: 13px;">
+                                        ${gameState.xp || 0} XP
+                                    </span>
                                 </div>
-                                <div style="font-size: 28px; font-weight: 800; color: var(--color-cyan); font-family: var(--font-tech); margin-bottom: 6px;">
-                                    ${gameState.xp || 0} <small style="font-size: 13px; color: var(--text-secondary); font-weight: 600;">XP Acumulados</small>
-                                </div>
-                                
                                 <div style="display: flex; justify-content: space-between; font-size: 11.5px; color: var(--text-muted); margin-bottom: 6px;">
-                                    <span>Próximo Hito: <strong>${nextLevelObj.name}</strong></span>
+                                    <span>Siguiente Evolución: <strong>${nextLevelObj.name}</strong></span>
                                     <span>${progressPct}%</span>
                                 </div>
                                 <div class="progress-bar-bg" style="height: 8px; background: rgba(255,255,255,0.06); border-radius: 6px;">
-                                    <div class="progress-bar-fill" style="width: ${progressPct}%; background: linear-gradient(90deg, var(--primary), var(--color-cyan)); box-shadow: 0 0 10px var(--color-cyan);"></div>
+                                    <div class="progress-bar-fill" style="width: ${progressPct}%; background: linear-gradient(90deg, var(--primary), ${activeTier.color}); box-shadow: 0 0 10px ${activeTier.color};"></div>
+                                </div>
+                            </div>
+
+                            <!-- Equipamiento e Indumentaria Desbloqueada -->
+                            <div style="margin-bottom: 18px;">
+                                <span style="font-size: 11px; font-weight: 800; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 8px;">
+                                    Equipamiento y Atuendo Desbloqueado:
+                                </span>
+                                <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                                    ${gearTiers.slice(0, currentLevelIdx + 1).flatMap(t => t.items).map(item => `
+                                        <span class="avatar-gear-pill active">
+                                            <i class="ph-bold ph-check" style="color: ${activeTier.color}; font-size: 11px;"></i> ${item}
+                                        </span>
+                                    `).join('')}
+                                    ${gearTiers.slice(currentLevelIdx + 1).flatMap(t => t.items).map(item => `
+                                        <span class="avatar-gear-pill" style="opacity: 0.5;">
+                                            <i class="ph-bold ph-lock" style="font-size: 11px;"></i> ${item}
+                                        </span>
+                                    `).join('')}
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Selector de Objetivo en la Tarjeta de Identidad -->
+                        <!-- Botón de Pulso Especial / Celebración -->
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.06);">
+                            <button class="hero-btn hero-btn-cyan" onclick="app.triggerAvatarSpecialEffect()" style="padding: 10px 18px; font-size: 13px;">
+                                <i class="ph-bold ph-sparkle"></i> Desatar Pulso de Evolución
+                            </button>
+                            <span style="font-size: 12px; color: var(--text-muted);">
+                                <i class="ph-bold ph-lightning" style="color: var(--color-cyan);"></i> ${unlockedBadgesCount} insignias sincronizadas
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tarjeta de Identidad y Meta Pedagógica -->
+                <div class="profile-id-card" style="margin-bottom: 30px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
                         <div>
+                            <span style="font-size: 11px; font-weight: 800; color: var(--color-cyan); text-transform: uppercase; letter-spacing: 1.2px; font-family: var(--font-tech); display: block; margin-bottom: 4px;">Nombre del Educador</span>
+                            <input type="text" value="${gameState.userName}" onchange="app.updateName(this.value)" title="Haz clic para editar tu nombre" style="background: rgba(8, 13, 27, 0.6); border: 1px solid var(--border-subtle); color: #FFFFFF; padding: 8px 12px; border-radius: 10px; font-size: 16px; font-weight: 700; width: 100%; max-width: 240px; font-family: var(--font-tech);">
+                        </div>
+                        <div style="flex: 1; min-width: 260px;">
                             <span style="font-size: 11.5px; font-weight: 800; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 8px;">Meta Pedagógica Principal:</span>
-                            <div style="display: flex; flex-direction: column; gap: 6px;">
-                                ${objectivesList.slice(0, 3).map(obj => `
-                                    <div class="objective-pill ${gameState.userObjective === obj ? 'active' : ''}" onclick="app.setUserObjective('${obj}')" style="padding: 9px 12px; font-size: 12.5px;">
+                            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                                ${objectivesList.map(obj => `
+                                    <div class="objective-pill ${gameState.userObjective === obj ? 'active' : ''}" onclick="app.setUserObjective('${obj}')" style="padding: 7px 12px; font-size: 12px;">
                                         <i class="ph-bold ${gameState.userObjective === obj ? 'ph-check-circle' : 'ph-circle'}" style="color: ${gameState.userObjective === obj ? 'var(--color-cyan)' : 'var(--text-muted)'};"></i>
                                         <span>${obj}</span>
                                     </div>
                                 `).join('')}
                             </div>
-                        </div>
-                    </div>
-
-                    <!-- Tarjeta 2: Consola Holográfica del Cerebro 3D Interactivo -->
-                    <div class="profile-brain-card">
-                        <div class="brain-console-header">
-                            <div>
-                                <span style="font-size: 10.5px; font-weight: 800; color: var(--color-cyan); text-transform: uppercase; letter-spacing: 1.5px; font-family: var(--font-tech); display: block;">
-                                    <i class="ph-bold ph-cube"></i> MODELO BIOCONECTOMA 3D
-                                </span>
-                                <h3 style="font-size: 18px; color: #fff; font-family: var(--font-tech); margin-top: 2px;">
-                                    Mapeo Neuronal de Competencias
-                                </h3>
-                            </div>
-                            <div style="display: flex; gap: 8px;">
-                                <button class="icon-btn" onclick="app.zoomBrain(1.2)" title="Acercar Zoom (Zoom In)">
-                                    <i class="ph-bold ph-magnifying-glass-plus"></i>
-                                </button>
-                                <button class="icon-btn" onclick="app.zoomBrain(0.8)" title="Alejar Zoom (Zoom Out)">
-                                    <i class="ph-bold ph-magnifying-glass-minus"></i>
-                                </button>
-                                <button class="icon-btn" onclick="app.toggleBrainAutoRotate()" id="btn-brain-spin" title="Pausar / Reanudar Rotación Automática" style="color: var(--color-cyan); border-color: var(--color-cyan);">
-                                    <i class="ph-bold ph-arrow-clockwise"></i>
-                                </button>
-                                <button class="icon-btn" onclick="app.resetBrainView()" title="Restablecer Vista Original">
-                                    <i class="ph-bold ph-arrows-in-cardinal"></i>
-                                </button>
-                                <button class="icon-btn" onclick="app.triggerBrainPulse()" title="Disparar Pulso Sináptico">
-                                    <i class="ph-bold ph-lightning"></i>
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Visor Interactivo 3D Canvas -->
-                        <div class="brain-canvas-container" id="brain-canvas-wrapper" title="Haz clic y arrastra con el cursor para girar el cerebro en 3D">
-                            <canvas id="brain-3d-canvas"></canvas>
-                            <span class="brain-3d-hint"><i class="ph-bold ph-hand-pointing"></i> Arrastra para rotar en 360° • Rueda para Zoom</span>
-                        </div>
-
-                        <!-- Selector de Lóbulos Cerebrales -->
-                        <div class="brain-lobes-selector">
-                            <button class="brain-lobe-btn active" data-lobe="all" onclick="app.focusBrainLobe('all')">
-                                <i class="ph-bold ph-brain"></i> Todo el Conectoma
-                            </button>
-                            <button class="brain-lobe-btn" data-lobe="frontal" onclick="app.focusBrainLobe('frontal')">
-                                <span style="width: 8px; height: 8px; border-radius: 50%; background: #22D3EE;"></span> Frontal (DUA)
-                            </button>
-                            <button class="brain-lobe-btn" data-lobe="parietal" onclick="app.focusBrainLobe('parietal')">
-                                <span style="width: 8px; height: 8px; border-radius: 50%; background: #38BDF8;"></span> Parietal (Didáctica)
-                            </button>
-                            <button class="brain-lobe-btn" data-lobe="temporal" onclick="app.focusBrainLobe('temporal')">
-                                <span style="width: 8px; height: 8px; border-radius: 50%; background: #C084FC;"></span> Temporal (Andragogía)
-                            </button>
-                            <button class="brain-lobe-btn" data-lobe="occipital" onclick="app.focusBrainLobe('occipital')">
-                                <span style="width: 8px; height: 8px; border-radius: 50%; background: #F59E0B;"></span> Occipital (Evaluación)
-                            </button>
-                            <button class="brain-lobe-btn" data-lobe="cerebelo" onclick="app.focusBrainLobe('cerebelo')">
-                                <span style="width: 8px; height: 8px; border-radius: 50%; background: #34D399;"></span> Cerebelo (Lúdica)
-                            </button>
-                        </div>
-
-                        <!-- Panel de Telemetría Dinámica del Lóbulo Seleccionado -->
-                        <div class="brain-telemetry-readout" id="brain-telemetry-panel">
-                            <div style="display: flex; align-items: center; gap: 10px;">
-                                <i class="ph-bold ph-brain" style="font-size: 22px; color: var(--color-cyan);"></i>
-                                <div>
-                                    <strong style="color: #fff; font-family: var(--font-tech); font-size: 13.5px;">Visión Global del Conectoma</strong>
-                                    <div style="color: var(--text-secondary); font-size: 12px;">Integración Holística de Competencias Docentes</div>
-                                </div>
-                            </div>
-                            <span class="telemetry-tag" style="color: var(--color-cyan); background: rgba(34,211,238,0.1); padding: 4px 10px; border-radius: 8px; border: 1px solid rgba(34,211,238,0.25);">
-                                Conectividad Sináptica Óptima
-                            </span>
                         </div>
                     </div>
                 </div>
@@ -2573,31 +3193,101 @@ Puedo guiarte en el desarrollo de competencias educativas, liderazgo, empleabili
         let lastY = 0;
         let pulseTime = -1;
 
+        // 10. RAYCASTER & INTERACCIÓN DE LÓBULOS (HOVER & CLIC NEUROEDUCATIVO)
+        const raycaster = new THREE.Raycaster();
+        const mouse2D = new THREE.Vector2();
+        let hoveredLobe = null;
+        let downPos = { x: 0, y: 0 };
+
+        const getIntersectedLobe = (clientX, clientY) => {
+            const rect = canvas.getBoundingClientRect();
+            if (!rect || rect.width === 0 || rect.height === 0) return null;
+            mouse2D.x = ((clientX - rect.left) / rect.width) * 2 - 1;
+            mouse2D.y = -((clientY - rect.top) / rect.height) * 2 + 1;
+            raycaster.setFromCamera(mouse2D, camera);
+            const intersects = raycaster.intersectObjects(cortexMeshes, true);
+            if (intersects && intersects.length > 0) {
+                const hit = intersects[0];
+                if (hit.object.userData && hit.object.userData.isCerebelo) {
+                    return 'cerebelo';
+                }
+                const geo = hit.object.geometry;
+                if (geo && geo.userData && geo.userData.lobeTags && hit.face) {
+                    const lobe = geo.userData.lobeTags[hit.face.a];
+                    if (lobe) return lobe;
+                }
+                const point = hit.point;
+                if (point.z > 0.8 && point.y > -0.8) return 'frontal';
+                if (point.z <= 0.8 && point.z > -1.2 && point.y > 0.3) return 'parietal';
+                if (point.z <= -1.2 && point.y > -1.35) return 'occipital';
+                if (Math.abs(point.x) > 1.35) return 'temporal';
+                return 'frontal';
+            }
+            return null;
+        };
+
         // Listeners interactivos de arrastre del ratón / touch
         const onDown = (e) => {
             isDragging = true;
             lastX = e.clientX || (e.touches && e.touches[0].clientX) || 0;
             lastY = e.clientY || (e.touches && e.touches[0].clientY) || 0;
+            downPos.x = lastX;
+            downPos.y = lastY;
             canvas.style.cursor = 'grabbing';
         };
 
         const onMove = (e) => {
-            if (!isDragging) return;
             const curX = e.clientX || (e.touches && e.touches[0].clientX) || 0;
             const curY = e.clientY || (e.touches && e.touches[0].clientY) || 0;
-            const dx = curX - lastX;
-            const dy = curY - lastY;
-            lastX = curX;
-            lastY = curY;
 
-            targetRotY += dx * 0.007;
-            targetRotX += dy * 0.007;
-            targetRotX = Math.max(-1.1, Math.min(1.1, targetRotX));
+            if (isDragging) {
+                const dx = curX - lastX;
+                const dy = curY - lastY;
+                lastX = curX;
+                lastY = curY;
+
+                targetRotY += dx * 0.007;
+                targetRotX += dy * 0.007;
+                targetRotX = Math.max(-1.1, Math.min(1.1, targetRotX));
+            } else {
+                // Detección de zona sobre la que se posa el cursor (Hover)
+                const detectedLobe = getIntersectedLobe(curX, curY);
+                if (detectedLobe && detectedLobe !== hoveredLobe) {
+                    hoveredLobe = detectedLobe;
+                    canvas.style.cursor = 'pointer';
+                    if (window.app && window.app.updateCognitivePanel) {
+                        window.app.updateCognitivePanel(detectedLobe, false);
+                    }
+                } else if (!detectedLobe && hoveredLobe) {
+                    hoveredLobe = null;
+                    canvas.style.cursor = 'grab';
+                }
+            }
         };
 
-        const onUp = () => {
+        const onUp = (e) => {
+            const upX = (e && e.clientX) || lastX;
+            const upY = (e && e.clientY) || lastY;
+            const dist = Math.hypot(upX - downPos.x, upY - downPos.y);
             isDragging = false;
             canvas.style.cursor = 'grab';
+
+            // Si fue un clic (sin arrastre mayor a 6px), enfocar la zona seleccionada
+            if (dist < 6) {
+                const clickedLobe = getIntersectedLobe(upX, upY);
+                if (clickedLobe && window.app && window.app.focusBrainLobe) {
+                    window.app.focusBrainLobe(clickedLobe);
+                }
+            }
+        };
+
+        const onDblClick = (e) => {
+            const curX = e.clientX || 0;
+            const curY = e.clientY || 0;
+            const targetLobe = getIntersectedLobe(curX, curY) || window._currentBrainLobe || 'all';
+            if (window.app && window.app.openNeuroArticle) {
+                window.app.openNeuroArticle(targetLobe);
+            }
         };
 
         const onWheel = (e) => {
@@ -2609,6 +3299,7 @@ Puedo guiarte en el desarrollo de competencias educativas, liderazgo, empleabili
         canvas.addEventListener('pointerdown', onDown);
         window.addEventListener('pointermove', onMove);
         window.addEventListener('pointerup', onUp);
+        canvas.addEventListener('dblclick', onDblClick);
         canvas.addEventListener('wheel', onWheel, { passive: false });
 
         // Redimensionamiento responsivo
@@ -2740,6 +3431,13 @@ Puedo guiarte en el desarrollo de competencias educativas, liderazgo, empleabili
         };
 
         window._brainThreeInstance.animId = requestAnimationFrame(animate);
+
+        // Inicializar panel cognitivo con la visión global
+        setTimeout(() => {
+            if (window.app && window.app.focusBrainLobe) {
+                window.app.focusBrainLobe('all');
+            }
+        }, 50);
     };
 
     // Zoom interactivo para el cerebro 3D
@@ -2788,16 +3486,79 @@ Puedo guiarte en el desarrollo de competencias educativas, liderazgo, empleabili
         if (window._brainThreeInstance) {
             window._brainThreeInstance.triggerPulse();
         }
-        const panel = document.getElementById('brain-telemetry-panel');
+        const panel = document.getElementById('brain-cognitive-panel');
         if (panel) {
             panel.style.boxShadow = '0 0 25px rgba(34, 211, 238, 0.6)';
             setTimeout(() => { panel.style.boxShadow = 'none'; }, 600);
         }
     };
 
+    // Actualizar Panel de Procesos Cognitivos y Neuroeducación
+    window.app.updateCognitivePanel = (lobeKey, isFixed = false) => {
+        const article = (window.neuroArticlesData && window.neuroArticlesData[lobeKey]) || window.neuroArticlesData.all;
+        if (!article) return;
+        const panel = document.getElementById('brain-cognitive-panel');
+        if (!panel) return;
+
+        panel.innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 14px;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <div style="width: 42px; height: 42px; border-radius: 12px; background: rgba(255,255,255,0.06); display: flex; align-items: center; justify-content: center; font-size: 22px; color: ${article.color}; border: 1px solid ${article.color}50; box-shadow: 0 0 15px ${article.color}30;">
+                        <i class="ph-bold ${article.icon}"></i>
+                    </div>
+                    <div>
+                        <div style="display: inline-flex; align-items: center; gap: 6px; font-size: 10.5px; font-family: var(--font-tech); text-transform: uppercase; letter-spacing: 1.2px; color: ${article.color}; font-weight: 800;">
+                            <i class="ph-bold ph-crosshair"></i> ${article.badge}
+                        </div>
+                        <h3 style="font-size: 18px; color: #fff; font-family: var(--font-tech); margin: 2px 0 0;">
+                            ${article.title}
+                        </h3>
+                    </div>
+                </div>
+                <button class="hero-btn" onclick="app.openNeuroArticle('${lobeKey}')" style="background: linear-gradient(135deg, var(--primary), var(--color-cyan)); color: #020617; font-weight: 800; border: none; font-size: 12.5px; padding: 9px 18px; box-shadow: 0 0 20px rgba(34, 211, 238, 0.4);">
+                    <i class="ph-bold ph-book-open-text"></i> Leer Artículo en Profundidad
+                </button>
+            </div>
+
+            <!-- Grilla de Procesos Cognitivos Básicos y Avanzados -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px;">
+                <!-- Procesos Cognitivos Básicos -->
+                <div style="background: rgba(8, 13, 27, 0.65); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 14px 16px;">
+                    <span style="font-size: 11px; font-family: var(--font-tech); text-transform: uppercase; letter-spacing: 1px; color: var(--color-cyan); font-weight: 800; display: flex; align-items: center; gap: 6px; margin-bottom: 6px;">
+                        <i class="ph-bold ph-waveform"></i> Procesos Cognitivos Básicos
+                    </span>
+                    <p style="font-size: 13px; color: #E2E8F0; line-height: 1.45; margin: 0;">
+                        ${article.basicProcesses}
+                    </p>
+                </div>
+
+                <!-- Procesos Cognitivos Avanzados / Superiores -->
+                <div style="background: rgba(8, 13, 27, 0.65); border: 1px solid rgba(192, 132, 252, 0.25); border-radius: 14px; padding: 14px 16px;">
+                    <span style="font-size: 11px; font-family: var(--font-tech); text-transform: uppercase; letter-spacing: 1px; color: #C084FC; font-weight: 800; display: flex; align-items: center; gap: 6px; margin-bottom: 6px;">
+                        <i class="ph-bold ph-cpu"></i> Procesos Cognitivos Superiores
+                    </span>
+                    <p style="font-size: 13px; color: #E2E8F0; line-height: 1.45; margin: 0;">
+                        ${article.advancedProcesses}
+                    </p>
+                </div>
+            </div>
+
+            <!-- Aplicación Neuroeducativa en Aula -->
+            <div style="background: linear-gradient(135deg, rgba(34, 211, 238, 0.08), rgba(37, 99, 235, 0.04)); border: 1px solid rgba(34, 211, 238, 0.25); border-radius: 14px; padding: 14px 16px;">
+                <span style="font-size: 11px; font-family: var(--font-tech); text-transform: uppercase; letter-spacing: 1px; color: var(--color-cyan); font-weight: 800; display: flex; align-items: center; gap: 6px; margin-bottom: 6px;">
+                    <i class="ph-bold ph-chalkboard-teacher"></i> Aplicación Neuroeducativa en el Aula
+                </span>
+                <p style="font-size: 13px; color: #E2E8F0; line-height: 1.5; margin: 0;">
+                    ${article.classroomApplication}
+                </p>
+            </div>
+        `;
+    };
+
     // Enfocar lóbulo cerebral específico e iluminar sus conexiones en 3D
     window.app.focusBrainLobe = (lobeKey) => {
         try { playSound('click'); } catch(e) {}
+        window._currentBrainLobe = lobeKey;
 
         // Actualizar estado activo en botones
         const buttons = document.querySelectorAll('.brain-lobe-btn');
@@ -2824,92 +3585,108 @@ Puedo guiarte en el desarrollo de competencias educativas, liderazgo, empleabili
             }
         }
 
-        // Consultar progreso real del usuario para la telemetría dinámica
-        const bestFormativa = window.EvaluationStorageService ? EvaluationStorageService.getBestAttempt('formativa') : null;
-        const bestDidactica = window.EvaluationStorageService ? EvaluationStorageService.getBestAttempt('didactica') : null;
-        const bestAndragogia = window.EvaluationStorageService ? EvaluationStorageService.getBestAttempt('andragogia') : null;
-        const bestPedagogia = window.EvaluationStorageService ? EvaluationStorageService.getBestAttempt('pedagogia') : null;
-        const unlockedBadges = gameState.unlockedBadges || [];
+        // Actualizar panel cognitivo
+        window.app.updateCognitivePanel(lobeKey, true);
+    };
 
-        const telemetryData = {
-            all: {
-                icon: 'ph-brain',
-                color: '#22D3EE',
-                title: 'Visión Global del Conectoma',
-                subtitle: 'Integración Holística de Competencias Docentes (4 Verticales)',
-                tag: 'Conectividad Sináptica Óptima',
-                status: `${gameState.xp || 0} XP • Nivel ${gameState.level || 'Explorador'}`
-            },
-            frontal: {
-                icon: 'ph-cpu',
-                color: '#22D3EE',
-                title: 'Lóbulo Frontal // Funciones Ejecutivas & DUA',
-                subtitle: 'Planificación curricular, autorregulación y accesibilidad universal.',
-                tag: (unlockedBadges.includes('neuroeducador') || unlockedBadges.includes('diseno_instruccional'))
-                    ? 'Maestría DUA Verificada' 
-                    : 'En Desarrollo • ' + (gameState.xp || 0) + ' XP',
-                status: 'Neuroeducación y Diseño Instruccional'
-            },
-            parietal: {
-                icon: 'ph-presentation-chart',
-                color: '#38BDF8',
-                title: 'Lóbulo Parietal // Didáctica Activa & Métodos',
-                subtitle: 'Estructuración de secuencias didácticas y metodologías activas.',
-                tag: bestDidactica && bestDidactica.passed 
-                    ? `Estratega Aprobado (${bestDidactica.score}/100)` 
-                    : (bestDidactica ? `Puntaje: ${bestDidactica.score}/100 • Requiere Práctica` : 'Evaluación de Didáctica Disponible'),
-                status: bestDidactica && bestDidactica.passed ? 'Competencia Demostrada' : 'Recomendado: 40 Preguntas de Didáctica'
-            },
-            temporal: {
-                icon: 'ph-users-four',
-                color: '#C084FC',
-                title: 'Lóbulo Temporal // Andragogía & Aprendizaje Adulto',
-                subtitle: 'Facilitación experiencial, comunicación asertiva y mediación pedagógica.',
-                tag: bestAndragogia && bestAndragogia.passed 
-                    ? `Mentor Certificado (${bestAndragogia.score}/100)` 
-                    : (bestAndragogia ? `Puntaje: ${bestAndragogia.score}/100` : 'Ruta Train the Trainer'),
-                status: unlockedBadges.includes('comunicacion') ? 'Comunicación Asertiva Desbloqueada' : 'En Consolidación'
-            },
-            occipital: {
-                icon: 'ph-pencil-line',
-                color: '#F59E0B',
-                title: 'Lóbulo Occipital // Evaluación Formativa & Rúbricas',
-                subtitle: 'Retroalimentación continua, diseño de rúbricas y analítica del aprendizaje.',
-                tag: bestFormativa && bestFormativa.passed 
-                    ? `Maestro de Evaluación (${bestFormativa.score}/100)` 
-                    : (bestFormativa ? `Puntaje: ${bestFormativa.score}/100` : 'Instrumento Diagnóstico Listo'),
-                status: bestFormativa && bestFormativa.passed ? 'Aprobado con 80+' : 'Pendiente de Validación'
-            },
-            cerebelo: {
-                icon: 'ph-game-controller',
-                color: '#34D399',
-                title: 'Cerebelo & Tronco // Lúdica, Gamificación & Dinamismo',
-                subtitle: 'Coordinación metodológica, aprendizaje basado en juegos y simulación.',
-                tag: `${(gameState.diagnosticResults || []).length} Diagnósticos Situacionales Completados`,
-                status: `${gameState.testsCompleted || 0} Evaluaciones Realizadas • Dinamismo Alto`
-            }
-        };
+    // Modal de Lectura en Profundidad de Neuroeducación
+    window.app.openNeuroArticle = (lobeKey) => {
+        try { playSound('click'); } catch(e) {}
+        const article = (window.neuroArticlesData && window.neuroArticlesData[lobeKey]) || window.neuroArticlesData.all;
+        if (!article) return;
 
-        const tInfo = telemetryData[lobeKey] || telemetryData.all;
-        const panel = document.getElementById('brain-telemetry-panel');
-        if (panel) {
-            panel.innerHTML = `
-                <div style="display: flex; align-items: center; gap: 12px;">
-                    <div style="width: 38px; height: 38px; border-radius: 10px; background: rgba(255,255,255,0.06); display: flex; align-items: center; justify-content: center; font-size: 20px; color: ${tInfo.color}; border: 1px solid ${tInfo.color}40;">
-                        <i class="ph-bold ${tInfo.icon}"></i>
-                    </div>
-                    <div>
-                        <strong style="color: #fff; font-family: var(--font-tech); font-size: 14px;">${tInfo.title}</strong>
-                        <div style="color: var(--text-secondary); font-size: 12px; margin-top: 2px;">${tInfo.subtitle}</div>
+        const modal = document.getElementById('neuro-article-modal');
+        const iconEl = document.getElementById('modal-article-icon');
+        const tagEl = document.getElementById('modal-article-tag');
+        const titleEl = document.getElementById('modal-article-title');
+        const bodyEl = document.getElementById('modal-article-body');
+
+        if (iconEl) iconEl.innerHTML = `<i class="ph-bold ${article.icon}"></i>`;
+        if (tagEl) tagEl.textContent = article.tag;
+        if (titleEl) titleEl.textContent = article.title;
+        if (bodyEl) {
+            bodyEl.innerHTML = `
+                <div style="margin-bottom: 24px; padding-bottom: 18px; border-bottom: 1px solid rgba(255,255,255,0.08);">
+                    <p style="font-size: 16px; color: #E2E8F0; line-height: 1.6; margin-bottom: 14px;">
+                        ${article.subtitle}
+                    </p>
+                    <div style="display: flex; gap: 12px; flex-wrap: wrap; font-size: 12px; color: var(--text-secondary);">
+                        <span><i class="ph-bold ph-clock"></i> ${article.readingTime}</span>
+                        <span>•</span>
+                        <span><i class="ph-bold ph-brain"></i> Región: ${article.lobe}</span>
+                        <span>•</span>
+                        <span style="color: ${article.color}; font-weight: 700;"><i class="ph-bold ph-shield-check"></i> PsicoEduca Academy // Neurociencia Rigurosa</span>
                     </div>
                 </div>
-                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                    <small style="color: var(--text-muted); font-size: 11px;">${tInfo.status}</small>
-                    <span class="telemetry-tag" style="color: ${tInfo.color}; background: ${tInfo.color}15; padding: 4px 10px; border-radius: 8px; border: 1px solid ${tInfo.color}40;">
-                        ${tInfo.tag}
-                    </span>
+
+                <!-- Resumen de Procesos -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-bottom: 28px;">
+                    <div style="background: rgba(34, 211, 238, 0.08); border: 1px solid rgba(34, 211, 238, 0.25); border-radius: 12px; padding: 16px;">
+                        <strong style="color: var(--color-cyan); font-size: 12px; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 6px;">Procesos Básicos:</strong>
+                        <div style="font-size: 13.5px; color: #CBD5E1; line-height: 1.45;">${article.basicProcesses}</div>
+                    </div>
+                    <div style="background: rgba(192, 132, 252, 0.08); border: 1px solid rgba(192, 132, 252, 0.25); border-radius: 12px; padding: 16px;">
+                        <strong style="color: #C084FC; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 6px;">Procesos Superiores:</strong>
+                        <div style="font-size: 13.5px; color: #CBD5E1; line-height: 1.45;">${article.advancedProcesses}</div>
+                    </div>
                 </div>
+
+                ${article.bodyHtml}
             `;
+        }
+
+        if (modal) {
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+    };
+
+    window.app.closeNeuroArticle = () => {
+        try { playSound('click'); } catch(e) {}
+        const modal = document.getElementById('neuro-article-modal');
+        if (modal) {
+            modal.style.display = 'none';
+            document.body.style.overflow = '';
+        }
+    };
+
+    // Cambiar Género del Avatar Pixel Art con Persistencia
+    window.app.setAvatarGender = (gender) => {
+        try { playSound('click'); } catch(e) {}
+        gameState.avatarGender = gender;
+        saveGameState();
+        if (views.profile) {
+            contentArea.innerHTML = views.profile();
+        }
+    };
+
+    // Desatar Pulso de Evolución del Avatar (Animación, Partículas & Feedback)
+    window.app.triggerAvatarSpecialEffect = () => {
+        try { playSound('streak'); } catch(e) {}
+        const wrapper = document.getElementById('pixel-avatar-wrapper');
+        if (wrapper) {
+            wrapper.classList.remove('animating-jump');
+            void wrapper.offsetWidth;
+            wrapper.classList.add('animating-jump');
+            setTimeout(() => {
+                wrapper.classList.remove('animating-jump');
+            }, 1000);
+        }
+
+        const stage = document.querySelector('.pixel-avatar-stage');
+        if (stage) {
+            const burst = document.createElement('div');
+            burst.style.position = 'absolute';
+            burst.style.inset = '0';
+            burst.style.background = 'radial-gradient(circle, rgba(34, 211, 238, 0.4) 0%, transparent 70%)';
+            burst.style.pointerEvents = 'none';
+            burst.style.transition = 'opacity 0.6s ease';
+            burst.style.opacity = '1';
+            stage.appendChild(burst);
+            setTimeout(() => {
+                burst.style.opacity = '0';
+                setTimeout(() => burst.remove(), 600);
+            }, 300);
         }
     };
 
@@ -3291,6 +4068,12 @@ Puedo guiarte en el desarrollo de competencias educativas, liderazgo, empleabili
         resetBrainView: window.app.resetBrainView,
         triggerBrainPulse: window.app.triggerBrainPulse,
         focusBrainLobe: window.app.focusBrainLobe,
+        updateCognitivePanel: window.app.updateCognitivePanel,
+        openNeuroArticle: window.app.openNeuroArticle,
+        closeNeuroArticle: window.app.closeNeuroArticle,
+        setAvatarGender: window.app.setAvatarGender,
+        triggerAvatarSpecialEffect: window.app.triggerAvatarSpecialEffect,
+        switchAprendeTab: window.app.switchAprendeTab,
         filterBadges: window.app.filterBadges,
         zoomBrain: window.app.zoomBrain
     });

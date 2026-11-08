@@ -71,8 +71,8 @@
                     <span class="nav-synapse-glow"></span>
                 </a>
                 <a href="#aprende" class="nav-link" data-target="aprende">
-                    <i class="ph-bold ph-books"></i>
-                    <span>Rutas de Aprendizaje</span>
+                    <i class="ph-bold ph-brain"></i>
+                    <span>Aprendamos del Cerebro</span>
                     <span class="nav-synapse-glow"></span>
                 </a>
 
@@ -271,6 +271,37 @@
 
             <div id="kb-items-list" style="display: flex; flex-direction: column; gap: 12px;">
                 <!-- Cargado dinámicamente -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Lectura en Profundidad: Aprendamos del Cerebro (Neuroeducación) -->
+    <div id="neuro-article-modal" class="neuro-modal-overlay" style="display: none;">
+        <div class="neuro-modal-card">
+            <div class="neuro-modal-header">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <div id="modal-article-icon" class="modal-article-icon">
+                        <i class="ph-bold ph-brain"></i>
+                    </div>
+                    <div>
+                        <span id="modal-article-tag" class="modal-article-tag">NEUROEDUCACIÓN // PROCESOS COGNITIVOS</span>
+                        <h2 id="modal-article-title" class="modal-article-title">Título del Artículo</h2>
+                    </div>
+                </div>
+                <button class="modal-close-btn" onclick="app.closeNeuroArticle()" aria-label="Cerrar artículo">
+                    <i class="ph-bold ph-x"></i>
+                </button>
+            </div>
+            <div id="modal-article-body" class="neuro-modal-body">
+                <!-- Contenido dinámico del artículo neuroeducativo -->
+            </div>
+            <div class="neuro-modal-footer">
+                <button class="hero-btn" onclick="app.closeNeuroArticle()" style="background: rgba(255,255,255,0.08); color: #fff;">
+                    <i class="ph-bold ph-arrow-left"></i> Volver al Modelo 3D
+                </button>
+                <button class="hero-btn" onclick="window.print()" style="background: rgba(34, 211, 238, 0.12); color: var(--color-cyan); border-color: var(--color-cyan);">
+                    <i class="ph-bold ph-printer"></i> Imprimir / Guardar PDF
+                </button>
             </div>
         </div>
     </div>
