@@ -1659,6 +1659,12 @@ Puedo guiarte en el desarrollo de competencias educativas, liderazgo, empleabili
                                 </h3>
                             </div>
                             <div style="display: flex; gap: 8px;">
+                                <button class="icon-btn" onclick="app.zoomBrain(1.2)" title="Acercar Zoom (Zoom In)">
+                                    <i class="ph-bold ph-magnifying-glass-plus"></i>
+                                </button>
+                                <button class="icon-btn" onclick="app.zoomBrain(0.8)" title="Alejar Zoom (Zoom Out)">
+                                    <i class="ph-bold ph-magnifying-glass-minus"></i>
+                                </button>
                                 <button class="icon-btn" onclick="app.toggleBrainAutoRotate()" id="btn-brain-spin" title="Pausar / Reanudar Rotación Automática" style="color: var(--color-cyan); border-color: var(--color-cyan);">
                                     <i class="ph-bold ph-arrow-clockwise"></i>
                                 </button>
@@ -1674,7 +1680,7 @@ Puedo guiarte en el desarrollo de competencias educativas, liderazgo, empleabili
                         <!-- Visor Interactivo 3D Canvas -->
                         <div class="brain-canvas-container" id="brain-canvas-wrapper" title="Haz clic y arrastra con el cursor para girar el cerebro en 3D">
                             <canvas id="brain-3d-canvas"></canvas>
-                            <span class="brain-3d-hint"><i class="ph-bold ph-hand-pointing"></i> Arrastra para girar en 3D</span>
+                            <span class="brain-3d-hint"><i class="ph-bold ph-hand-pointing"></i> Arrastra para rotar en 360° • Rueda para Zoom</span>
                         </div>
 
                         <!-- Selector de Lóbulos Cerebrales -->
@@ -2237,686 +2243,524 @@ Puedo guiarte en el desarrollo de competencias educativas, liderazgo, empleabili
     window.initBrain3D = () => {
         const canvas = document.getElementById('brain-3d-canvas');
         if (!canvas) return;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) return;
 
-        if (brainAnimId) {
-            cancelAnimationFrame(brainAnimId);
-            brainAnimId = null;
+        // Limpiar instancia previa de Three.js si existía
+        if (window._brainThreeInstance) {
+            try {
+                if (window._brainThreeInstance.animId) cancelAnimationFrame(window._brainThreeInstance.animId);
+                if (window._brainThreeInstance.renderer) window._brainThreeInstance.renderer.dispose();
+            } catch(e) {}
+            window._brainThreeInstance = null;
         }
 
-        // Configuración de resolución de alta densidad (Retina / High DPI)
-        const setupCanvasSize = () => {
-            const container = canvas.parentElement;
-            if (!container) return;
-            const dpr = Math.min(window.devicePixelRatio || 1, 2);
-            const w = container.clientWidth || 600;
-            const h = container.clientHeight || 380;
-            canvas.width = w * dpr;
-            canvas.height = h * dpr;
-            canvas.style.width = w + 'px';
-            canvas.style.height = h + 'px';
-            ctx.setTransform(1, 0, 0, 1, 0, 0);
-            ctx.scale(dpr, dpr);
-            return { w, h };
+        const container = canvas.parentElement;
+        const getDims = () => {
+            const w = container ? container.clientWidth : 800;
+            const h = container ? container.clientHeight : 560;
+            return { w: Math.max(300, w), h: Math.max(400, h) };
         };
 
-        let { w, h } = setupCanvasSize() || { w: 600, h: 380 };
+        const { w, h } = getDims();
 
-        // Metadatos de Lóbulos Anatómicos y Especialidades Pedagógicas
-        const lobeMetadata = {
-            all: { name: 'Conectoma Integral', dim: 'Evolución Holística Docente', color: '#22D3EE' },
-            frontal: { name: 'Lóbulo Frontal', dim: 'Funciones Ejecutivas & DUA', color: '#22D3EE' },
-            parietal: { name: 'Lóbulo Parietal', dim: 'Didáctica Activa & Métodos', color: '#38BDF8' },
-            temporal: { name: 'Lóbulo Temporal', dim: 'Andragogía & Mediación', color: '#C084FC' },
-            occipital: { name: 'Lóbulo Occipital', dim: 'Evaluación Formativa & Rúbricas', color: '#F59E0B' },
-            cerebelo: { name: 'Cerebelo & Tronco', dim: 'Lúdica & Gamificación', color: '#34D399' }
+        // Si Three.js no estuviera cargado, usar fallback seguro
+        if (typeof THREE === 'undefined') {
+            const ctx = canvas.getContext('2d');
+            if (ctx) {
+                ctx.fillStyle = '#000000';
+                ctx.fillRect(0, 0, w, h);
+                ctx.fillStyle = '#22D3EE';
+                ctx.font = '700 16px "Space Grotesk", sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('Cargando motor WebGL 3D...', w / 2, h / 2);
+            }
+            return;
+        }
+
+        // 1. CONFIGURACIÓN DEL RENDERER WEBGL (Fondo Negro Puro e Iluminación PBR)
+        const renderer = new THREE.WebGLRenderer({
+            canvas: canvas,
+            antialias: true,
+            alpha: false,
+            powerPreference: 'high-performance'
+        });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        renderer.setSize(w, h, false);
+        renderer.setClearColor(0x000000, 1.0); // Fondo negro espacial puro y absoluto
+
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x000000);
+
+        // Cámara de perspectiva amplia para visualización clara y grande
+        const camera = new THREE.PerspectiveCamera(38, w / h, 0.1, 100);
+        camera.position.set(0, 0.9, 10.8);
+
+        // 2. SISTEMA DE ILUMINACIÓN MULTI-FUENTE PARA MÁXIMA DEFINICIÓN 3D
+        const ambientLight = new THREE.AmbientLight(0x0a1628, 2.0);
+        scene.add(ambientLight);
+
+        // Luz principal direccional frontal con brillo especular
+        const keyLight = new THREE.DirectionalLight(0xffffff, 2.2);
+        keyLight.position.set(6, 9, 8);
+        scene.add(keyLight);
+
+        // Luz de relleno cian desde el lado opuesto
+        const fillLight = new THREE.DirectionalLight(0x22d3ee, 1.6);
+        fillLight.position.set(-8, 3, 5);
+        scene.add(fillLight);
+
+        // Luz de silueta / borde posterior (Rim Light) para resaltar contornos volumétricos
+        const rimLight = new THREE.DirectionalLight(0x38bdf8, 3.2);
+        rimLight.position.set(0, 5, -9);
+        scene.add(rimLight);
+
+        // Luz inferior sutil
+        const underLight = new THREE.DirectionalLight(0x1e293b, 1.2);
+        underLight.position.set(0, -7, 2);
+        scene.add(underLight);
+
+        // 3. GRUPO RAÍZ DEL CEREBRO 3D (Escalado amplio y centrado)
+        const brainRoot = new THREE.Group();
+        brainRoot.scale.set(1.18, 1.18, 1.18);
+        scene.add(brainRoot);
+
+        // Paleta oficial de colores de los lóbulos
+        const lobeColors = {
+            frontal: new THREE.Color(0x22D3EE),   // Cyan
+            parietal: new THREE.Color(0x38BDF8),  // Sky Blue
+            temporal: new THREE.Color(0xC084FC),  // Purple
+            occipital: new THREE.Color(0xF59E0B), // Amber
+            cerebelo: new THREE.Color(0x34D399),  // Emerald
+            tronco: new THREE.Color(0x94A3B8),    // Slate Pearl
+            dimmed: new THREE.Color(0x131D33)     // Dark Slate para lóbulos inactivos
         };
 
-        // =========================================================================
-        // MODELADO VOLUMÉTRICO 3D DEL CEREBRO (Dual Hemispheres, Gyri & Sulci)
-        // =========================================================================
-        const nodes = [];
-        const ribbons = []; // Curvas de contorno cortical volumétrico (3D Gyri Traces)
-        const hemGap = 3.2; // Cisura interhemisférica longitudinal
+        const cortexMeshes = [];
+        const hemisphereGeometries = [];
 
-        // Función constructora de nodos anatómicos con vector normal para iluminación 3D
-        const addNode = (x, y, z, lobe, side, baseRadius = 2.4) => {
-            const centerX = side === 'left' ? -15 : (side === 'right' ? 15 : 0);
-            const centerY = -4;
-            const centerZ = 0;
-            // Vector normal outward desde el centro de su hemisferio
-            const nx = x - centerX;
-            const ny = y - centerY;
-            const nz = z - centerZ;
-            const len = Math.sqrt(nx * nx + ny * ny + nz * nz) || 1;
+        // Generador de geometría anatómica de hemisferio cerebral con circunvoluciones y surcos reales
+        const createHemisphere = (isRight) => {
+            const side = isRight ? 1 : -1;
+            const geo = new THREE.SphereGeometry(2.7, 72, 54);
+            const pos = geo.attributes.position;
+            const v = new THREE.Vector3();
+            const colors = [];
+            const lobeTags = [];
 
-            const nodeObj = {
-                id: nodes.length,
-                x, y, z,
-                origX: x, origY: y, origZ: z,
-                nx: nx / len, ny: ny / len, nz: nz / len,
-                lobe,
-                side,
-                color: lobeMetadata[lobe].color,
-                radius: baseRadius,
-                pulsePhase: Math.random() * Math.PI * 2
-            };
-            nodes.push(nodeObj);
-            return nodeObj;
+            for (let i = 0; i < pos.count; i++) {
+                v.fromBufferAttribute(pos, i);
+
+                // Proporciones anatómicas humanas reales
+                // Aplanamiento y separación en la cara medial interna (cisura longitudinal)
+                if (isRight) v.x = Math.max(0.12, v.x * 0.95) + 0.16;
+                else v.x = Math.min(-0.12, v.x * 0.95) - 0.16;
+
+                // Elongación anteroposterior (eje frontal-occipital)
+                v.z *= 1.34;
+                // Bóveda dorsal redondeada y base más cóncava
+                v.y = v.y > 0 ? v.y * 1.16 : v.y * 0.92;
+
+                // Curvatura del lóbulo temporal (abultamiento lateral e inferior hacia adelante)
+                if (v.z > -0.6 && v.z < 1.3 && v.y < 0.25) {
+                    v.x += side * 0.52 * Math.cos(v.y * 1.3);
+                    v.y -= 0.35;
+                }
+
+                // Curvatura del polo frontal anterior
+                if (v.z > 1.2) v.y += 0.05;
+                // Curvatura del polo occipital posterior descendente
+                if (v.z < -1.4) v.y -= 0.12;
+
+                // Modelado de surcos profundos (Sulci) y circunvoluciones (Gyri) anatómicas
+                const len = v.length();
+                const norm = v.clone().normalize();
+                const theta = Math.atan2(v.z, v.x);
+                const phi = Math.acos(Math.max(-1, Math.min(1, v.y / len)));
+
+                // Surcos mayores primarios (Surco central de Rolando y cisura de Silvio)
+                const s1 = Math.sin(theta * 5.2 + Math.sin(phi * 4.2) * 1.5);
+                const s2 = Math.cos(phi * 6.5 + Math.cos(theta * 4.0) * 1.3);
+                // Convoluciones finas secundarias
+                const g1 = Math.sin(v.x * 4.0) * Math.cos(v.y * 4.0) * Math.sin(v.z * 4.0);
+                const g2 = Math.cos(v.x * 7.2 + v.z * 6.2) * 0.32;
+                const g3 = Math.sin(v.y * 8.2 + v.x * 5.2) * 0.22;
+
+                const foldDisplacement = (s1 * 0.22 + s2 * 0.18 + g1 * 0.26 + g2 * 0.12 + g3 * 0.09);
+                v.addScaledVector(norm, foldDisplacement);
+                pos.setXYZ(i, v.x, v.y, v.z);
+
+                // Clasificación de lóbulo según coordenadas anatómicas
+                let lobe = 'frontal';
+                if (v.z > 0.75 && v.y > -0.75) lobe = 'frontal';
+                else if (v.z <= 0.75 && v.z > -1.15 && v.y > 0.3) lobe = 'parietal';
+                else if (v.z <= -1.15 && v.y > -1.35) lobe = 'occipital';
+                else if (Math.abs(v.x) > 1.35 && v.y <= 0.3 && v.z > -1.4) lobe = 'temporal';
+                else lobe = v.z > 0 ? 'frontal' : 'parietal';
+
+                lobeTags.push(lobe);
+                const c = lobeColors[lobe];
+                colors.push(c.r, c.g, c.b);
+            }
+
+            geo.computeVertexNormals();
+            geo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+            geo.userData = { lobeTags, baseColors: [...colors] };
+            hemisphereGeometries.push(geo);
+
+            // Capa 1: Superficie sólida cortical anatómica (PBR con reflejos y rugosidad biológica)
+            const solidMat = new THREE.MeshStandardMaterial({
+                vertexColors: true,
+                roughness: 0.38,
+                metalness: 0.15,
+                emissive: new THREE.Color(0x061124),
+                emissiveIntensity: 0.35
+            });
+            const mesh = new THREE.Mesh(geo, solidMat);
+            brainRoot.add(mesh);
+            cortexMeshes.push(mesh);
+
+            // Capa 2: Malla sináptica holográfica brillante sobrepuesta en la corteza
+            const wireMat = new THREE.MeshBasicMaterial({
+                color: 0x22d3ee,
+                wireframe: true,
+                transparent: true,
+                opacity: 0.16,
+                blending: THREE.AdditiveBlending
+            });
+            const wireMesh = new THREE.Mesh(geo, wireMat);
+            wireMesh.scale.set(1.014, 1.014, 1.014);
+            brainRoot.add(wireMesh);
         };
 
-        // Generar ambos hemisferios cerebrales (Izquierdo: sideSign=-1, Derecho: sideSign=1)
+        // Generar ambos hemisferios cerebrales
+        createHemisphere(false); // Hemisferio Izquierdo
+        createHemisphere(true);  // Hemisferio Derecho
+
+        // 4. HEMISFERIOS CEREBELOSOS (Cerebelo con folia transversal estriada)
         [-1, 1].forEach(sideSign => {
-            const sideName = sideSign > 0 ? 'right' : 'left';
-            const sX = sideSign;
-
-            // 1. LÓBULO FRONTAL (Anterior y superior: corteza prefrontal, convexidad frontal)
-            const frontalRibbonA = [];
-            const frontalRibbonB = [];
-            for (let i = 0; i < 28; i++) {
-                const u = i / 27;
-                const theta = u * Math.PI * 0.58; // De frontal a vertex
-                const phi = (i * 1.618) % 1;
-                // Ondulaciones orgánicas de surcos y circunvoluciones cerebrales (Gyri)
-                const gyrusFold = Math.sin(u * 8) * 1.8 + Math.cos(phi * 6) * 1.2;
-                const radX = (21 + gyrusFold) * Math.sin(theta);
-                const radY = (28 + gyrusFold) * Math.cos(theta * 0.8) + (phi - 0.5) * 8;
-                const radZ = 8 + (34 + gyrusFold) * Math.cos(theta);
-
-                const px = sX * (hemGap + radX);
-                const py = Math.max(-10, radY);
-                const pz = radZ;
-
-                const n = addNode(px, py, pz, 'frontal', sideName, 2.3 + Math.random() * 0.8);
-                if (i % 2 === 0) frontalRibbonA.push(n);
-                else frontalRibbonB.push(n);
+            const cerGeo = new THREE.SphereGeometry(1.05, 48, 36);
+            const cerPos = cerGeo.attributes.position;
+            const cV = new THREE.Vector3();
+            for (let i = 0; i < cerPos.count; i++) {
+                cV.fromBufferAttribute(cerPos, i);
+                cV.x *= 1.25;
+                cV.z *= 0.9;
+                // Estrías transversales de la folia cerebelosa
+                const folia = Math.sin(cV.y * 32.0) * 0.08;
+                cV.x += folia * 0.4;
+                cV.z += folia * 0.5;
+                cerPos.setXYZ(i, cV.x, cV.y, cV.z);
             }
-            if (frontalRibbonA.length > 3) ribbons.push({ nodes: frontalRibbonA, color: '#22D3EE', lobe: 'frontal' });
-            if (frontalRibbonB.length > 3) ribbons.push({ nodes: frontalRibbonB, color: '#22D3EE', lobe: 'frontal' });
+            cerGeo.computeVertexNormals();
 
-            // 2. LÓBULO PARIETAL (Superior y dorsal: corona cerebral, surco intraparietal)
-            const parietalRibbon = [];
-            for (let i = 0; i < 24; i++) {
-                const u = i / 23;
-                const theta = u * Math.PI * 0.65;
-                const phi = (i * 1.414) % 1;
-                const fold = Math.sin(u * 9) * 1.5;
-                const px = sX * (hemGap + (24 + fold) * Math.cos(phi * 0.7));
-                const py = 12 + (20 + fold) * Math.sin(theta) + (phi - 0.5) * 6;
-                const pz = 6 - (28 + fold) * Math.cos(theta * 0.8);
-
-                const n = addNode(px, py, pz, 'parietal', sideName, 2.2 + Math.random() * 0.8);
-                if (i % 2 === 0) parietalRibbon.push(n);
-            }
-            if (parietalRibbon.length > 3) ribbons.push({ nodes: parietalRibbon, color: '#38BDF8', lobe: 'parietal' });
-
-            // 3. LÓBULO TEMPORAL (Lateral e inferior: polo temporal, circunvolución temporal media)
-            const temporalRibbon = [];
-            for (let i = 0; i < 22; i++) {
-                const u = i / 21;
-                const theta = u * Math.PI * 0.85;
-                const fold = Math.sin(u * 7) * 1.4;
-                const px = sX * (hemGap + 16 + (14 + fold) * Math.sin(theta));
-                const py = -14 + fold + Math.cos(theta * 2) * 5;
-                const pz = -16 + (30 + fold) * u;
-
-                const n = addNode(px, py, pz, 'temporal', sideName, 2.2 + Math.random() * 0.8);
-                temporalRibbon.push(n);
-            }
-            if (temporalRibbon.length > 3) ribbons.push({ nodes: temporalRibbon, color: '#C084FC', lobe: 'temporal' });
-
-            // 4. LÓBULO OCCIPITAL (Posterior: polo occipital, corteza visual primaria)
-            const occipitalRibbon = [];
-            for (let i = 0; i < 20; i++) {
-                const u = i / 19;
-                const theta = u * Math.PI * 0.7;
-                const fold = Math.sin(u * 6) * 1.2;
-                const px = sX * (hemGap + (16 + fold) * Math.sin(theta));
-                const py = -6 + (16 + fold) * Math.cos(theta) * 0.8;
-                const pz = -25 - (18 + fold) * Math.cos(theta * 0.5);
-
-                const n = addNode(px, py, pz, 'occipital', sideName, 2.2 + Math.random() * 0.8);
-                occipitalRibbon.push(n);
-            }
-            if (occipitalRibbon.length > 3) ribbons.push({ nodes: occipitalRibbon, color: '#F59E0B', lobe: 'occipital' });
-
-            // 5. CEREBELO (Inferior posterior: hemisferio cerebeloso con folia transversal estriada)
-            const cerebeloRibbonA = [];
-            const cerebeloRibbonB = [];
-            for (let i = 0; i < 20; i++) {
-                const u = i / 19;
-                const theta = u * Math.PI * 2;
-                const folia = Math.sin(theta * 5) * 1.1; // Pliegues de folia cerebelosa
-                const px = sX * (hemGap + 2 + (13 + folia) * Math.cos(theta) * 0.85);
-                const py = -30 + Math.sin(theta) * 7;
-                const pz = -14 - (1 - u) * 18 + folia;
-
-                const n = addNode(px, py, pz, 'cerebelo', sideName, 2.0 + Math.random() * 0.6);
-                if (i % 2 === 0) cerebeloRibbonA.push(n);
-                else cerebeloRibbonB.push(n);
-            }
-            if (cerebeloRibbonA.length > 3) ribbons.push({ nodes: cerebeloRibbonA, color: '#34D399', lobe: 'cerebelo' });
-            if (cerebeloRibbonB.length > 3) ribbons.push({ nodes: cerebeloRibbonB, color: '#34D399', lobe: 'cerebelo' });
+            const cerMat = new THREE.MeshStandardMaterial({
+                color: lobeColors.cerebelo,
+                roughness: 0.45,
+                metalness: 0.1,
+                emissive: new THREE.Color(0x062818),
+                emissiveIntensity: 0.4
+            });
+            const cerMesh = new THREE.Mesh(cerGeo, cerMat);
+            cerMesh.position.set(sideSign * 1.22, -2.35, -1.85);
+            cerMesh.userData = { isCerebelo: true };
+            brainRoot.add(cerMesh);
+            cortexMeshes.push(cerMesh);
         });
 
-        // 6. TRONCO ENCEFÁLICO & CUERPO CALLOSO (Eje central vertical e interhemisférico)
-        for (let i = 0; i < 12; i++) {
-            const u = i / 11;
-            // Tronco encefálico descendente
-            addNode(
-                (Math.sin(u * 5) * 1.5),
-                -24 - u * 20,
-                -6 + Math.cos(u * 4) * 2,
-                'cerebelo',
-                'center',
-                2.5
-            );
-            // Fibras comisurales del Cuerpo Calloso (puente entre hemisferios)
-            addNode(
-                (u - 0.5) * 7.5,
-                4 + Math.sin(u * Math.PI) * 7,
-                -12 + u * 24,
-                'frontal',
-                'center',
-                2.2
-            );
+        // 5. TRONCO ENCEFÁLICO (Brainstem vertical)
+        const stemGeo = new THREE.CylinderGeometry(0.55, 0.42, 2.2, 32);
+        const stemMat = new THREE.MeshStandardMaterial({
+            color: lobeColors.tronco,
+            roughness: 0.5,
+            metalness: 0.1,
+            emissive: new THREE.Color(0x0a101d),
+            emissiveIntensity: 0.3
+        });
+        const stemMesh = new THREE.Mesh(stemGeo, stemMat);
+        stemMesh.position.set(0, -2.6, -0.6);
+        stemMesh.rotation.x = -0.15;
+        brainRoot.add(stemMesh);
+
+        // 6. CUERPO CALLOSO Y TRACTOS SINÁPTICOS INTERHEMISFÉRICOS
+        const tractsGroup = new THREE.Group();
+        for (let i = 0; i < 16; i++) {
+            const u = i / 15;
+            const curve = new THREE.CatmullRomCurve3([
+                new THREE.Vector3(-0.9, -0.2 + Math.sin(u * Math.PI) * 0.8, -1.2 + u * 2.4),
+                new THREE.Vector3(0, 0.4 + Math.sin(u * Math.PI) * 1.2, -1.2 + u * 2.4),
+                new THREE.Vector3(0.9, -0.2 + Math.sin(u * Math.PI) * 0.8, -1.2 + u * 2.4)
+            ]);
+            const pts = curve.getPoints(24);
+            const tractGeo = new THREE.BufferGeometry().setFromPoints(pts);
+            const tractMat = new THREE.LineBasicMaterial({
+                color: 0x38BDF8,
+                transparent: true,
+                opacity: 0.5,
+                blending: THREE.AdditiveBlending
+            });
+            tractsGroup.add(new THREE.Line(tractGeo, tractMat));
         }
+        brainRoot.add(tractsGroup);
 
-        // =========================================================================
-        // RED DE FILAMENTOS SINÁPTICOS (Aristas volumétricas conectadas)
-        // =========================================================================
-        const edges = [];
-        const maxDist = 18;
-        const maxConns = 4;
-        const nodeEdgeCounts = new Array(nodes.length).fill(0);
-
-        for (let i = 0; i < nodes.length; i++) {
-            for (let j = i + 1; j < nodes.length; j++) {
-                if (nodeEdgeCounts[i] >= maxConns || nodeEdgeCounts[j] >= maxConns) continue;
-                const a = nodes[i];
-                const b = nodes[j];
-                const dx = a.x - b.x;
-                const dy = a.y - b.y;
-                const dz = a.z - b.z;
-                const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
-
-                const canConnect = (a.side === b.side && dist < maxDist) || 
-                                   (a.side !== b.side && Math.abs(a.x - b.x) < 10 && dist < 22);
-
-                if (canConnect) {
-                    edges.push({
-                        from: i,
-                        to: j,
-                        dist,
-                        color: a.lobe === b.lobe ? a.color : '#38BDF8',
-                        lobe: a.lobe === b.lobe ? a.lobe : 'multi'
-                    });
-                    nodeEdgeCounts[i]++;
-                    nodeEdgeCounts[j]++;
-                }
-            }
+        // 7. IMPULSOS ELÉCTRICOS SINÁPTICOS (Action Potentials en 3D)
+        const sparkCount = 48;
+        const sparkPositions = new Float32Array(sparkCount * 3);
+        const sparkVelocities = [];
+        for (let k = 0; k < sparkCount; k++) {
+            const rad = 2.7 + Math.random() * 0.5;
+            const th = Math.random() * Math.PI * 2;
+            const ph = Math.random() * Math.PI;
+            sparkPositions[k * 3] = rad * Math.sin(ph) * Math.cos(th);
+            sparkPositions[k * 3 + 1] = rad * Math.cos(ph);
+            sparkPositions[k * 3 + 2] = rad * Math.sin(ph) * Math.sin(th) * 1.3;
+            sparkVelocities.push({
+                th, ph,
+                speedTh: (Math.random() - 0.5) * 0.02,
+                speedPh: (Math.random() - 0.5) * 0.02
+            });
         }
+        const sparkGeo = new THREE.BufferGeometry();
+        sparkGeo.setAttribute('position', new THREE.BufferAttribute(sparkPositions, 3));
+        const sparkMat = new THREE.PointsMaterial({
+            color: 0xFFFFFF,
+            size: 0.16,
+            transparent: true,
+            opacity: 0.9,
+            blending: THREE.AdditiveBlending
+        });
+        const sparkPoints = new THREE.Points(sparkGeo, sparkMat);
+        brainRoot.add(sparkPoints);
 
-        // Impulsos sinápticos activos (Action Potentials viajando en 3D)
-        const pulses = [];
-        const pulseCount = 22;
-        for (let k = 0; k < pulseCount; k++) {
-            if (edges.length > 0) {
-                pulses.push({
-                    edgeIdx: Math.floor(Math.random() * edges.length),
-                    progress: Math.random(),
-                    speed: 0.008 + Math.random() * 0.014,
-                    dir: Math.random() > 0.5 ? 1 : -1,
-                    size: 2.2 + Math.random() * 1.6
-                });
-            }
-        }
+        // 8. PEDESTAL HOLOGRÁFICO Y RADAR DE PISO (Y = -4.5)
+        const floorGroup = new THREE.Group();
+        floorGroup.position.y = -4.2;
 
-        // Listeners interactivos del visor de rotación 3D
-        let mouseX = -999;
-        let mouseY = -999;
+        [2.5, 4.2, 5.8].forEach((r, idx) => {
+            const ringGeo = new THREE.RingGeometry(r - 0.02, r, 64);
+            const ringMat = new THREE.MeshBasicMaterial({
+                color: 0x22D3EE,
+                transparent: true,
+                opacity: 0.18 - idx * 0.04,
+                side: THREE.DoubleSide
+            });
+            const ringMesh = new THREE.Mesh(ringGeo, ringMat);
+            ringMesh.rotation.x = Math.PI / 2;
+            floorGroup.add(ringMesh);
+        });
 
-        const onPointerDown = (e) => {
-            brainState.isDragging = true;
-            brainState.lastX = e.clientX;
-            brainState.lastY = e.clientY;
+        // Sombra suave proyectada bajo el cerebro
+        const shadowGeo = new THREE.CircleGeometry(3.6, 48);
+        const shadowMat = new THREE.MeshBasicMaterial({
+            color: 0x000000,
+            transparent: true,
+            opacity: 0.75,
+            side: THREE.DoubleSide
+        });
+        const shadowMesh = new THREE.Mesh(shadowGeo, shadowMat);
+        shadowMesh.rotation.x = Math.PI / 2;
+        shadowMesh.position.y = 0.01;
+        floorGroup.add(shadowMesh);
+        scene.add(floorGroup);
+
+        // 9. VARIABLES DE CONTROL DE CÁMARA Y ROTACIÓN
+        let rotX = 0.18;
+        let rotY = -0.45;
+        let targetRotX = 0.18;
+        let targetRotY = -0.45;
+        let targetZoom = 10.8;
+        let autoRotate = true;
+        let isDragging = false;
+        let lastX = 0;
+        let lastY = 0;
+        let pulseTime = -1;
+
+        // Listeners interactivos de arrastre del ratón / touch
+        const onDown = (e) => {
+            isDragging = true;
+            lastX = e.clientX || (e.touches && e.touches[0].clientX) || 0;
+            lastY = e.clientY || (e.touches && e.touches[0].clientY) || 0;
             canvas.style.cursor = 'grabbing';
         };
 
-        const onPointerMove = (e) => {
-            const rect = canvas.getBoundingClientRect();
-            mouseX = e.clientX - rect.left;
-            mouseY = e.clientY - rect.top;
+        const onMove = (e) => {
+            if (!isDragging) return;
+            const curX = e.clientX || (e.touches && e.touches[0].clientX) || 0;
+            const curY = e.clientY || (e.touches && e.touches[0].clientY) || 0;
+            const dx = curX - lastX;
+            const dy = curY - lastY;
+            lastX = curX;
+            lastY = curY;
 
-            if (!brainState.isDragging) return;
-            const deltaX = e.clientX - brainState.lastX;
-            const deltaY = e.clientY - brainState.lastY;
-            brainState.lastX = e.clientX;
-            brainState.lastY = e.clientY;
-
-            brainState.targetRotY += deltaX * 0.008;
-            brainState.targetRotX += deltaY * 0.008;
-            brainState.targetRotX = Math.max(-1.15, Math.min(1.15, brainState.targetRotX));
+            targetRotY += dx * 0.007;
+            targetRotX += dy * 0.007;
+            targetRotX = Math.max(-1.1, Math.min(1.1, targetRotX));
         };
 
-        const onPointerUp = () => {
-            brainState.isDragging = false;
+        const onUp = () => {
+            isDragging = false;
             canvas.style.cursor = 'grab';
         };
 
-        canvas.onpointerdown = onPointerDown;
-        window.addEventListener('pointermove', onPointerMove);
-        window.addEventListener('pointerup', onPointerUp);
-
-        // Click en nodo interactivo para enfocar su lóbulo
-        canvas.onclick = () => {
-            if (brainState.hoveredNode) {
-                try { playSound('click'); } catch(e) {}
-                window.app.focusBrainLobe(brainState.hoveredNode.lobe);
-            }
+        const onWheel = (e) => {
+            e.preventDefault();
+            const delta = e.deltaY * 0.008;
+            targetZoom = Math.max(6.5, Math.min(16.0, targetZoom + delta));
         };
 
-        // =========================================================================
-        // MOTOR DE RENDERIZADO 3D CON PERSPECTIVA & ILUMINACIÓN VOLUMÉTRICA
-        // =========================================================================
-        let time = 0;
-        // Vector de luz direccional en el espacio 3D (desde arriba a la izquierda y frontal)
-        const lightDir = { x: -0.38, y: 0.62, z: 0.68 };
-        const lightLen = Math.sqrt(lightDir.x * lightDir.x + lightDir.y * lightDir.y + lightDir.z * lightDir.z);
-        lightDir.x /= lightLen; lightDir.y /= lightLen; lightDir.z /= lightLen;
+        canvas.addEventListener('pointerdown', onDown);
+        window.addEventListener('pointermove', onMove);
+        window.addEventListener('pointerup', onUp);
+        canvas.addEventListener('wheel', onWheel, { passive: false });
 
-        const renderLoop = () => {
+        // Redimensionamiento responsivo
+        const onResize = () => {
+            const dims = getDims();
+            camera.aspect = dims.w / dims.h;
+            camera.updateProjectionMatrix();
+            renderer.setSize(dims.w, dims.h, false);
+        };
+        window.addEventListener('resize', onResize);
+
+        // 10. FUNCIÓN PARA ILUMINAR / ENFOCAR LÓBULO ESPECÍFICO EN 3D
+        const updateLobeFocusIn3D = (lobeKey) => {
+            hemisphereGeometries.forEach(geo => {
+                const colorAttr = geo.attributes.color;
+                const { lobeTags, baseColors } = geo.userData;
+                const colors = colorAttr.array;
+
+                for (let i = 0; i < lobeTags.length; i++) {
+                    const tag = lobeTags[i];
+                    const isTarget = (lobeKey === 'all' || tag === lobeKey);
+                    const idx = i * 3;
+
+                    if (isTarget) {
+                        // Resaltar con brillo intenso
+                        const boost = lobeKey === 'all' ? 1.0 : 1.45;
+                        colors[idx] = Math.min(1.0, baseColors[idx] * boost);
+                        colors[idx + 1] = Math.min(1.0, baseColors[idx + 1] * boost);
+                        colors[idx + 2] = Math.min(1.0, baseColors[idx + 2] * boost);
+                    } else {
+                        // Atenuar lóbulos no seleccionados
+                        colors[idx] = lobeColors.dimmed.r;
+                        colors[idx + 1] = lobeColors.dimmed.g;
+                        colors[idx + 2] = lobeColors.dimmed.b;
+                    }
+                }
+                colorAttr.needsUpdate = true;
+            });
+
+            // Actualizar material del cerebelo
+            cortexMeshes.forEach(m => {
+                if (m.userData && m.userData.isCerebelo) {
+                    if (lobeKey === 'all' || lobeKey === 'cerebelo') {
+                        m.material.color.copy(lobeColors.cerebelo);
+                        m.material.emissive.set(0x062818);
+                    } else {
+                        m.material.color.copy(lobeColors.dimmed);
+                        m.material.emissive.set(0x020610);
+                    }
+                }
+            });
+        };
+
+        // 11. BUCLE DE RENDERIZADO WEBGL (60 FPS)
+        let clock = new THREE.Clock();
+
+        const animate = () => {
             const liveCanvas = document.getElementById('brain-3d-canvas');
             if (!liveCanvas) {
-                window.removeEventListener('pointermove', onPointerMove);
-                window.removeEventListener('pointerup', onPointerUp);
+                window.removeEventListener('pointermove', onMove);
+                window.removeEventListener('pointerup', onUp);
+                window.removeEventListener('resize', onResize);
                 return;
             }
 
-            time += 0.025;
+            const dt = clock.getDelta();
+            const elapsed = clock.getElapsedTime();
 
-            // Auto-rotación holográfica suave
-            if (brainState.autoRotate && !brainState.isDragging) {
-                brainState.targetRotY += 0.004;
+            // Auto-rotación holográfica si el usuario no está arrastrando
+            if (autoRotate && !isDragging) {
+                targetRotY += 0.0035;
             }
 
-            // Suavizado cinético (damping)
-            brainState.rotX += (brainState.targetRotX - brainState.rotX) * 0.08;
-            brainState.rotY += (brainState.targetRotY - brainState.rotY) * 0.08;
+            // Damping suave cinético
+            rotX += (targetRotX - rotX) * 0.08;
+            rotY += (targetRotY - rotY) * 0.08;
+            camera.position.z += (targetZoom - camera.position.z) * 0.1;
 
-            const curW = canvas.clientWidth || w;
-            const curH = canvas.clientHeight || h;
-            const cx = curW / 2;
-            const cy = curH / 2;
+            brainRoot.rotation.x = rotX;
+            brainRoot.rotation.y = rotY;
 
-            // 1. FONDO NEGRO PURO Y SÓLIDO (Evita totalmente traslapes con el fondo de la página)
-            ctx.fillStyle = '#000000';
-            ctx.fillRect(0, 0, curW, curH);
-
-            // Viñeta oscura radial sutil
-            const bgGrad = ctx.createRadialGradient(cx, cy, 20, cx, cy, Math.max(curW, curH) * 0.65);
-            bgGrad.addColorStop(0, '#050a18');
-            bgGrad.addColorStop(0.55, '#01030a');
-            bgGrad.addColorStop(1, '#000000');
-            ctx.fillStyle = bgGrad;
-            ctx.fillRect(0, 0, curW, curH);
-
-            // Matrices de rotación
-            const cosY = Math.cos(brainState.rotY);
-            const sinY = Math.sin(brainState.rotY);
-            const cosX = Math.cos(brainState.rotX);
-            const sinX = Math.sin(brainState.rotX);
-
-            const fov = 270;
-            const depthOffset = 110;
-            const modelScale = 2.45;
-
-            // Función de proyección 3D
-            const project3D = (px, py, pz) => {
-                // Rotación en Y (Yaw)
-                const x1 = px * cosY - pz * sinY;
-                const z1 = px * sinY + pz * cosY;
-                // Rotación en X (Pitch)
-                const y2 = py * cosX - z1 * sinX;
-                const z2 = py * sinX + z1 * cosX;
-
-                const scale = fov / (fov + z2 + depthOffset);
-                return {
-                    x: cx + x1 * scale * modelScale,
-                    y: cy - y2 * scale * modelScale,
-                    scale,
-                    depth: z2,
-                    x1, y2, z2
-                };
-            };
-
-            // 2. PEDESTAL HOLOGRÁFICO EN EL PISO 3D (Perspectiva a Y = -52)
-            const groundY = -50;
-            const groundRings = [28, 48, 68];
-            ctx.save();
-            groundRings.forEach((r, idx) => {
-                ctx.beginPath();
-                const steps = 36;
-                for (let s = 0; s <= steps; s++) {
-                    const ang = (s / steps) * Math.PI * 2;
-                    const pt = project3D(Math.cos(ang) * r, groundY, Math.sin(ang) * r);
-                    if (s === 0) ctx.moveTo(pt.x, pt.y);
-                    else ctx.lineTo(pt.x, pt.y);
-                }
-                ctx.strokeStyle = `rgba(34, 211, 238, ${0.12 - idx * 0.03})`;
-                ctx.lineWidth = 1;
-                ctx.stroke();
-            });
-
-            // Ejes en cruz sobre el pedestal
-            [-60, 60].forEach(coord => {
-                const pX1 = project3D(-50, groundY, 0);
-                const pX2 = project3D(50, groundY, 0);
-                const pZ1 = project3D(0, groundY, -50);
-                const pZ2 = project3D(0, groundY, 50);
-
-                ctx.beginPath();
-                ctx.moveTo(pX1.x, pX1.y); ctx.lineTo(pX2.x, pX2.y);
-                ctx.moveTo(pZ1.x, pZ1.y); ctx.lineTo(pZ2.x, pZ2.y);
-                ctx.strokeStyle = 'rgba(34, 211, 238, 0.08)';
-                ctx.lineWidth = 0.8;
-                ctx.stroke();
-            });
-
-            // Sombra difusa dinámica del cerebro sobre el pedestal
-            const shadowCenter = project3D(0, groundY, 0);
-            const shadowGrad = ctx.createRadialGradient(shadowCenter.x, shadowCenter.y, 4, shadowCenter.x, shadowCenter.y, 70 * shadowCenter.scale);
-            shadowGrad.addColorStop(0, 'rgba(0, 0, 0, 0.85)');
-            shadowGrad.addColorStop(0.7, 'rgba(0, 0, 0, 0.45)');
-            shadowGrad.addColorStop(1, 'transparent');
-            ctx.fillStyle = shadowGrad;
-            ctx.beginPath();
-            ctx.arc(shadowCenter.x, shadowCenter.y, 70 * shadowCenter.scale, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.restore();
-
-            // 3. PROYECCIÓN DE TODOS LOS NODOS ANATÓMICOS CON CÁLCULO DE LUZ
-            const projectedNodes = new Array(nodes.length);
-            for (let i = 0; i < nodes.length; i++) {
-                const n = nodes[i];
-                const pt = project3D(n.x, n.y, n.z);
-
-                // Rotar el vector normal outward a coordenadas de vista para iluminación
-                const nx1 = n.nx * cosY - n.nz * sinY;
-                const nz1 = n.nx * sinY + n.nz * cosY;
-                const ny2 = n.ny * cosX - nz1 * sinX;
-                const nz2 = n.ny * sinX + nz1 * cosX;
-
-                // Producto punto para luz difusa
-                const dotLight = nx1 * lightDir.x + ny2 * lightDir.y + nz2 * lightDir.z;
-                const diffuse = Math.max(0.18, 0.25 + 0.75 * Math.max(0, dotLight));
-
-                // Destello especular en dirección al espectador
-                const specular = Math.pow(Math.max(0, nz2), 10) * 0.7;
-
-                projectedNodes[i] = {
-                    node: n,
-                    projX: pt.x,
-                    projY: pt.y,
-                    scale: pt.scale,
-                    depth: pt.depth,
-                    diffuse,
-                    specular,
-                    nz2,
-                    distFromCenter: Math.sqrt(n.x * n.x + n.y * n.y + n.z * n.z)
-                };
+            // Animación de chispas sinápticas (Action Potentials)
+            const posArr = sparkGeo.attributes.position.array;
+            for (let k = 0; k < sparkCount; k++) {
+                const vel = sparkVelocities[k];
+                vel.th += vel.speedTh;
+                vel.ph += vel.speedPh;
+                const rad = 2.85 + Math.sin(elapsed * 3.0 + k) * 0.15;
+                posArr[k * 3] = rad * Math.sin(vel.ph) * Math.cos(vel.th);
+                posArr[k * 3 + 1] = rad * Math.cos(vel.ph);
+                posArr[k * 3 + 2] = rad * Math.sin(vel.ph) * Math.sin(vel.th) * 1.32;
             }
+            sparkGeo.attributes.position.needsUpdate = true;
 
-            // Manejo de onda concéntrica (Shockwave de triggerBrainPulse)
-            if (brainState.pulseRadius >= 0) {
-                brainState.pulseRadius += 2.2;
-                if (brainState.pulseRadius > 85) brainState.pulseRadius = -1;
-            }
-
-            // Detección de nodo hover con cursor
-            let closestNode = null;
-            let closestDist = 14;
-            for (let i = 0; i < projectedNodes.length; i++) {
-                const pn = projectedNodes[i];
-                const dx = pn.projX - mouseX;
-                const dy = pn.projY - mouseY;
-                const d = Math.sqrt(dx * dx + dy * dy);
-                if (d < closestDist) {
-                    closestDist = d;
-                    closestNode = pn.node;
-                }
-            }
-            brainState.hoveredNode = closestNode;
-
-            // 4. DIBUJAR CURVAS DE CONTORNO VOLUMÉTRICO (Gyri & Sulci Ribbons)
-            ribbons.forEach(rib => {
-                const isLobeActive = brainState.activeLobe === 'all' || rib.lobe === brainState.activeLobe;
-                ctx.beginPath();
-                let started = false;
-                for (let k = 0; k < rib.nodes.length; k++) {
-                    const pn = projectedNodes[rib.nodes[k].id];
-                    if (!pn) continue;
-                    if (!started) { ctx.moveTo(pn.projX, pn.projY); started = true; }
-                    else ctx.lineTo(pn.projX, pn.projY);
-                }
-                ctx.strokeStyle = rib.color;
-                ctx.globalAlpha = isLobeActive ? 0.35 : 0.08;
-                ctx.lineWidth = isLobeActive ? 1.4 : 0.7;
-                ctx.stroke();
-            });
-
-            // 5. DIBUJAR FILAMENTOS SINÁPTICOS CON PROFUNDIDAD
-            for (let i = 0; i < edges.length; i++) {
-                const edge = edges[i];
-                const pA = projectedNodes[edge.from];
-                const pB = projectedNodes[edge.to];
-                if (!pA || !pB) continue;
-
-                const isLobeActive = brainState.activeLobe === 'all' || 
-                                    pA.node.lobe === brainState.activeLobe || 
-                                    pB.node.lobe === brainState.activeLobe;
-
-                // Atenuación de líneas en la parte posterior (Depth Fog)
-                const avgDepth = (pA.depth + pB.depth) * 0.5;
-                const depthFade = Math.max(0.12, Math.min(1.0, (avgDepth + 60) / 100));
-
-                let alpha = (pA.scale + pB.scale) * 0.22 * depthFade;
-                if (!isLobeActive) alpha *= 0.12;
-
-                ctx.beginPath();
-                ctx.moveTo(pA.projX, pA.projY);
-                ctx.lineTo(pB.projX, pB.projY);
-                ctx.strokeStyle = edge.color;
-                ctx.globalAlpha = Math.max(0.04, Math.min(0.85, alpha));
-                ctx.lineWidth = isLobeActive ? (1.0 + depthFade * 0.6) : 0.5;
-                ctx.stroke();
-            }
-
-            // 6. IMPULSOS SINÁPTICOS (Action Potentials viajando por el espacio 3D)
-            for (let k = 0; k < pulses.length; k++) {
-                const pulse = pulses[k];
-                pulse.progress += pulse.speed * pulse.dir;
-                if (pulse.progress > 1) {
-                    pulse.progress = 0;
-                    pulse.edgeIdx = Math.floor(Math.random() * edges.length);
-                } else if (pulse.progress < 0) {
-                    pulse.progress = 1;
-                    pulse.edgeIdx = Math.floor(Math.random() * edges.length);
-                }
-
-                const edge = edges[pulse.edgeIdx];
-                if (!edge) continue;
-                const pA = projectedNodes[edge.from];
-                const pB = projectedNodes[edge.to];
-                if (!pA || !pB) continue;
-
-                const isLobeActive = brainState.activeLobe === 'all' || 
-                                    pA.node.lobe === brainState.activeLobe || 
-                                    pB.node.lobe === brainState.activeLobe;
-
-                const px = pA.projX + (pB.projX - pA.projX) * pulse.progress;
-                const py = pA.projY + (pB.projY - pA.projY) * pulse.progress;
-                const pulseScale = (pA.scale + pB.scale) * 0.5;
-
-                ctx.beginPath();
-                ctx.arc(px, py, pulse.size * pulseScale, 0, Math.PI * 2);
-                ctx.fillStyle = isLobeActive ? '#FFFFFF' : 'rgba(255,255,255,0.25)';
-                ctx.globalAlpha = isLobeActive ? 0.95 : 0.2;
-                ctx.shadowColor = '#22D3EE';
-                ctx.shadowBlur = isLobeActive ? 14 : 2;
-                ctx.fill();
-            }
-
-            // 7. DIBUJAR NODOS ORDENADOS POR PROFUNDIDAD (Painter's algorithm para verdadero 3D)
-            const sortedNodes = [...projectedNodes].sort((a, b) => a.depth - b.depth);
-
-            for (let i = 0; i < sortedNodes.length; i++) {
-                const pn = sortedNodes[i];
-                const n = pn.node;
-                const isLobeActive = brainState.activeLobe === 'all' || n.lobe === brainState.activeLobe;
-                const isHovered = brainState.hoveredNode && brainState.hoveredNode.id === n.id;
-
-                // Efecto de pulso concéntrico
-                let pulseEnergy = 0;
-                if (brainState.pulseRadius >= 0) {
-                    const diff = Math.abs(pn.distFromCenter - brainState.pulseRadius);
-                    if (diff < 8) pulseEnergy = (1 - diff / 8) * 1.6;
-                }
-
-                // Tamaño con perspectiva real + energía de luz
-                const nodeRadius = (n.radius + (isHovered ? 3.5 : 0) + pulseEnergy * 2) * pn.scale * 1.5;
-
-                // Atenuación de opacidad según profundidad Z (Atmospheric depth)
-                const depthAlpha = Math.max(0.18, Math.min(1.0, (pn.depth + 60) / 100));
-                const finalAlpha = isLobeActive ? (depthAlpha * pn.diffuse + (isHovered ? 0.4 : 0)) : 0.12;
-
-                ctx.beginPath();
-                ctx.arc(pn.projX, pn.projY, Math.max(1, nodeRadius), 0, Math.PI * 2);
-                ctx.fillStyle = isHovered ? '#FFFFFF' : n.color;
-                ctx.globalAlpha = Math.min(1.0, finalAlpha);
-                ctx.shadowColor = n.color;
-                ctx.shadowBlur = isLobeActive ? (isHovered ? 18 : Math.floor(10 * pn.diffuse)) : 0;
-                ctx.fill();
-
-                // Destello especular en el centro (sensación de esfera volumétrica 3D)
-                if (isLobeActive && (pn.nz2 > 0.1 || isHovered)) {
-                    ctx.beginPath();
-                    ctx.arc(pn.projX - nodeRadius * 0.25, pn.projY - nodeRadius * 0.25, Math.max(0.8, nodeRadius * 0.4), 0, Math.PI * 2);
-                    ctx.fillStyle = '#FFFFFF';
-                    ctx.globalAlpha = Math.min(1.0, 0.45 + pn.specular * 0.55);
-                    ctx.shadowBlur = 0;
-                    ctx.fill();
-                }
-
-                // Halo de energía en nodos activos o frontales
-                if (isLobeActive && (isHovered || pn.scale > 0.88 || pulseEnergy > 0.3)) {
-                    ctx.beginPath();
-                    ctx.arc(pn.projX, pn.projY, nodeRadius * 1.7, 0, Math.PI * 2);
-                    ctx.strokeStyle = n.color;
-                    ctx.globalAlpha = (isHovered ? 0.85 : 0.25) * finalAlpha;
-                    ctx.lineWidth = 1;
-                    ctx.stroke();
+            // Manejo de onda de pulso sináptico concéntrico
+            if (pulseTime >= 0) {
+                pulseTime += dt * 2.2;
+                const flash = Math.sin(pulseTime * Math.PI) * 0.8;
+                cortexMeshes.forEach(m => {
+                    if (m.material && m.material.emissiveIntensity !== undefined) {
+                        m.material.emissiveIntensity = 0.35 + Math.max(0, flash);
+                    }
+                });
+                if (pulseTime >= 1.0) {
+                    pulseTime = -1;
+                    cortexMeshes.forEach(m => {
+                        if (m.material && m.material.emissiveIntensity !== undefined) {
+                            m.material.emissiveIntensity = 0.35;
+                        }
+                    });
                 }
             }
 
-            ctx.shadowBlur = 0;
-            ctx.globalAlpha = 1;
-
-            // 8. BRÚJULA / GIMBAL DE ORIENTACIÓN 3D EN LA ESQUINA INFERIOR IZQUIERDA
-            const gX = 40;
-            const gY = curH - 42;
-            const gLen = 22;
-            const axes = [
-                { x: 1, y: 0, z: 0, color: '#EF4444', label: 'X' }, // Eje X (Rojo)
-                { x: 0, y: 1, z: 0, color: '#10B981', label: 'Y' }, // Eje Y (Verde)
-                { x: 0, y: 0, z: 1, color: '#22D3EE', label: 'Z' }  // Eje Z (Cyan)
-            ];
-            ctx.save();
-            ctx.font = '700 9px "Space Grotesk", monospace';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            axes.forEach(axis => {
-                // Rotar cada vector unitario
-                const x1 = axis.x * cosY - axis.z * sinY;
-                const z1 = axis.x * sinY + axis.z * cosY;
-                const y2 = axis.y * cosX - z1 * sinX;
-
-                const endX = gX + x1 * gLen;
-                const endY = gY - y2 * gLen;
-
-                ctx.beginPath();
-                ctx.moveTo(gX, gY);
-                ctx.lineTo(endX, endY);
-                ctx.strokeStyle = axis.color;
-                ctx.lineWidth = 1.8;
-                ctx.stroke();
-
-                ctx.fillStyle = axis.color;
-                ctx.fillText(axis.label, endX + x1 * 7, endY - y2 * 7);
-            });
-            ctx.fillStyle = '#64748B';
-            ctx.fillText('3D GIMBAL', gX + 16, gY + 18);
-            ctx.restore();
-
-            // 9. TELEMETRÍA HOLOGRÁFICA EN LA ESQUINA SUPERIOR IZQUIERDA
-            ctx.save();
-            ctx.font = '700 10px "Space Grotesk", monospace';
-            ctx.fillStyle = 'rgba(34, 211, 238, 0.75)';
-            ctx.fillText(`CONECTOMA 3D // VISTA ${brainState.activeLobe.toUpperCase()}`, 16, 22);
-            ctx.font = '500 9.5px "Space Grotesk", monospace';
-            ctx.fillStyle = 'rgba(148, 163, 184, 0.6)';
-            const degY = Math.round((((brainState.rotY % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2)) * (180 / Math.PI));
-            const degX = Math.round(brainState.rotX * (180 / Math.PI));
-            ctx.fillText(`YAW: ${degY}° • PITCH: ${degX}° • PROFUNDIDAD: ACTIVA`, 16, 36);
-            ctx.restore();
-
-            // 10. TOOLTIP HOLOGRÁFICO AL HACER HOVER EN UN NODO
-            if (brainState.hoveredNode) {
-                const hNode = brainState.hoveredNode;
-                const pn = projectedNodes[hNode.id];
-                if (pn) {
-                    const meta = lobeMetadata[hNode.lobe];
-                    const tooltipText = `${meta.name}: ${meta.dim}`;
-                    ctx.font = '600 11px "Space Grotesk", sans-serif';
-                    const textWidth = ctx.measureText(tooltipText).width;
-                    const boxW = textWidth + 24;
-                    const boxH = 28;
-                    const boxX = Math.min(curW - boxW - 10, Math.max(10, pn.projX - boxW / 2));
-                    const boxY = Math.max(10, pn.projY - boxH - 12);
-
-                    ctx.fillStyle = 'rgba(3, 7, 18, 0.95)';
-                    ctx.strokeStyle = meta.color;
-                    ctx.lineWidth = 1.3;
-                    ctx.shadowColor = meta.color;
-                    ctx.shadowBlur = 10;
-                    ctx.beginPath();
-                    if (ctx.roundRect) ctx.roundRect(boxX, boxY, boxW, boxH, 8);
-                    else ctx.rect(boxX, boxY, boxW, boxH);
-                    ctx.fill();
-                    ctx.stroke();
-
-                    ctx.shadowBlur = 0;
-                    ctx.fillStyle = '#FFFFFF';
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle';
-                    ctx.fillText(tooltipText, boxX + boxW / 2, boxY + boxH / 2);
-                }
-            }
-
-            brainAnimId = requestAnimationFrame(renderLoop);
+            renderer.render(scene, camera);
+            window._brainThreeInstance.animId = requestAnimationFrame(animate);
         };
 
-        renderLoop();
+        window._brainThreeInstance = {
+            renderer,
+            scene,
+            camera,
+            animId: null,
+            setTargetRot: (rx, ry) => { targetRotX = rx; targetRotY = ry; },
+            setZoom: (z) => { targetZoom = Math.max(6.5, Math.min(16.0, z)); },
+            getZoom: () => targetZoom,
+            toggleAutoRotate: () => { autoRotate = !autoRotate; return autoRotate; },
+            triggerPulse: () => { pulseTime = 0; },
+            updateLobeFocus: updateLobeFocusIn3D
+        };
+
+        window._brainThreeInstance.animId = requestAnimationFrame(animate);
+    };
+
+    // Zoom interactivo para el cerebro 3D
+    window.app.zoomBrain = (factor) => {
+        try { playSound('click'); } catch(e) {}
+        if (window._brainThreeInstance) {
+            const curZ = window._brainThreeInstance.getZoom();
+            window._brainThreeInstance.setZoom(curZ / factor);
+        }
     };
 
     // Alternar auto-rotación del cerebro 3D
     window.app.toggleBrainAutoRotate = () => {
         try { playSound('click'); } catch(e) {}
-        brainState.autoRotate = !brainState.autoRotate;
+        let isAuto = true;
+        if (window._brainThreeInstance) {
+            isAuto = window._brainThreeInstance.toggleAutoRotate();
+        }
         const btn = document.getElementById('btn-brain-spin');
         if (btn) {
-            if (brainState.autoRotate) {
+            if (isAuto) {
                 btn.style.color = 'var(--color-cyan)';
                 btn.style.borderColor = 'var(--color-cyan)';
                 btn.classList.add('active');
@@ -2931,15 +2775,19 @@ Puedo guiarte en el desarrollo de competencias educativas, liderazgo, empleabili
     // Restablecer ángulo y vista original del cerebro 3D
     window.app.resetBrainView = () => {
         try { playSound('click'); } catch(e) {}
-        brainState.targetRotX = 0.2;
-        brainState.targetRotY = -0.4;
+        if (window._brainThreeInstance) {
+            window._brainThreeInstance.setTargetRot(0.18, -0.45);
+            window._brainThreeInstance.setZoom(10.8);
+        }
         window.app.focusBrainLobe('all');
     };
 
     // Disparar pulso sináptico concéntrico
     window.app.triggerBrainPulse = () => {
         try { playSound('streak'); } catch(e) {}
-        brainState.pulseRadius = 0;
+        if (window._brainThreeInstance) {
+            window._brainThreeInstance.triggerPulse();
+        }
         const panel = document.getElementById('brain-telemetry-panel');
         if (panel) {
             panel.style.boxShadow = '0 0 25px rgba(34, 211, 238, 0.6)';
@@ -2947,10 +2795,9 @@ Puedo guiarte en el desarrollo de competencias educativas, liderazgo, empleabili
         }
     };
 
-    // Enfocar lóbulo cerebral específico e iluminar sus conexiones
+    // Enfocar lóbulo cerebral específico e iluminar sus conexiones en 3D
     window.app.focusBrainLobe = (lobeKey) => {
         try { playSound('click'); } catch(e) {}
-        brainState.activeLobe = lobeKey;
 
         // Actualizar estado activo en botones
         const buttons = document.querySelectorAll('.brain-lobe-btn');
@@ -2959,25 +2806,22 @@ Puedo guiarte en el desarrollo de competencias educativas, liderazgo, empleabili
             else btn.classList.remove('active');
         });
 
-        // Orientar el cerebro 3D hacia el ángulo óptimo para observar el lóbulo
-        if (lobeKey === 'all') {
-            brainState.targetRotX = 0.2;
-            brainState.targetRotY = -0.4;
-        } else if (lobeKey === 'frontal') {
-            brainState.targetRotX = 0.05;
-            brainState.targetRotY = 0.0; // Vista frontal
-        } else if (lobeKey === 'parietal') {
-            brainState.targetRotX = 0.72; // Vista superior
-            brainState.targetRotY = -0.2;
-        } else if (lobeKey === 'temporal') {
-            brainState.targetRotX = 0.1;
-            brainState.targetRotY = 1.5; // Vista lateral
-        } else if (lobeKey === 'occipital') {
-            brainState.targetRotX = 0.2;
-            brainState.targetRotY = Math.PI; // Vista posterior
-        } else if (lobeKey === 'cerebelo') {
-            brainState.targetRotX = -0.45; // Vista inferior posterior
-            brainState.targetRotY = 2.8;
+        // Orientar el cerebro 3D e iluminar el lóbulo seleccionado
+        if (window._brainThreeInstance) {
+            window._brainThreeInstance.updateLobeFocus(lobeKey);
+            if (lobeKey === 'all') {
+                window._brainThreeInstance.setTargetRot(0.18, -0.45);
+            } else if (lobeKey === 'frontal') {
+                window._brainThreeInstance.setTargetRot(0.04, 0.0);
+            } else if (lobeKey === 'parietal') {
+                window._brainThreeInstance.setTargetRot(0.55, -0.2);
+            } else if (lobeKey === 'temporal') {
+                window._brainThreeInstance.setTargetRot(0.05, 1.55);
+            } else if (lobeKey === 'occipital') {
+                window._brainThreeInstance.setTargetRot(0.18, Math.PI);
+            } else if (lobeKey === 'cerebelo') {
+                window._brainThreeInstance.setTargetRot(-0.45, 2.8);
+            }
         }
 
         // Consultar progreso real del usuario para la telemetría dinámica
@@ -3447,7 +3291,8 @@ Puedo guiarte en el desarrollo de competencias educativas, liderazgo, empleabili
         resetBrainView: window.app.resetBrainView,
         triggerBrainPulse: window.app.triggerBrainPulse,
         focusBrainLobe: window.app.focusBrainLobe,
-        filterBadges: window.app.filterBadges
+        filterBadges: window.app.filterBadges,
+        zoomBrain: window.app.zoomBrain
     });
 });
 
