@@ -748,6 +748,11 @@ document.addEventListener('DOMContentLoaded', () => {
             if (views[target]) {
                 contentArea.innerHTML = views[target](param);
                 window.scrollTo(0, 0);
+                if (target === 'profile') {
+                    setTimeout(() => {
+                        if (window.initBrain3D) window.initBrain3D();
+                    }, 60);
+                }
             }
         },
 
@@ -1535,12 +1540,22 @@ Puedo guiarte en el desarrollo de competencias educativas, liderazgo, empleabili
         </div>
     `;
 
-    // 7. VISTA MI DESARROLLO (Perfil, Insignias, Objetivo)
+    // 7. VISTA MI DESARROLLO (Neuro Digital Experience // 3D Brain & Gamified Profile)
     const renderProfile = () => {
         let currentLevelObj = gamificationLevels[0];
+        let nextLevelObj = gamificationLevels[1] || gamificationLevels[0];
         for (let i = 0; i < gamificationLevels.length; i++) {
-            if (gameState.xp >= gamificationLevels[i].xp) currentLevelObj = gamificationLevels[i];
+            if (gameState.xp >= gamificationLevels[i].xp) {
+                currentLevelObj = gamificationLevels[i];
+                nextLevelObj = gamificationLevels[i + 1] || gamificationLevels[i];
+            }
         }
+
+        const xpNeeded = nextLevelObj.xp - currentLevelObj.xp;
+        const xpCurrent = gameState.xp - currentLevelObj.xp;
+        const progressPct = nextLevelObj.xp > currentLevelObj.xp 
+            ? Math.min(100, Math.max(0, Math.round((xpCurrent / xpNeeded) * 100))) 
+            : 100;
 
         const objectivesList = [
             "Mejorar como docente",
@@ -1550,96 +1565,288 @@ Puedo guiarte en el desarrollo de competencias educativas, liderazgo, empleabili
             "Prepararme para liderar equipos"
         ];
 
+        // Stats gamificadas en tiempo real
+        const unlockedBadgesCount = (gameState.unlockedBadges || []).length;
+        let testsPassedCount = 0;
+        ['formativa', 'pedagogia', 'andragogia', 'didactica'].forEach(k => {
+            const best = window.EvaluationStorageService ? EvaluationStorageService.getBestAttempt(k) : null;
+            if (best && best.passed) testsPassedCount++;
+        });
+        const diagnosticsCount = (gameState.diagnosticResults || []).length;
+
         return `
             <div class="view-animate">
-                <div class="view-header" style="display: flex; justify-content: space-between; align-items: flex-end;">
+                <!-- Header de la Consola Neuro Digital -->
+                <div class="view-header" style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 15px; margin-bottom: 25px;">
                     <div>
-                        <h1 class="view-title">Mi Desarrollo Profesional</h1>
-                        <p class="view-subtitle">Monitorea tu nivel evolutivo, insignias obtenidas y objetivos de carrera.</p>
-                    </div>
-                    <div style="display: flex; gap: 10px;">
-                        <button class="hero-btn" onclick="app.logoutUser()" style="background: rgba(255,255,255,0.08); color: white; font-size: 13px; padding: 10px 18px;"><i class="ph-bold ph-sign-out"></i> Cambiar Usuario</button>
-                        <button class="hero-btn" onclick="app.resetProgress()" style="background: var(--error); color: white; font-size: 13px; padding: 10px 18px;"><i class="ph-bold ph-warning"></i> Reiniciar Progreso</button>
-                    </div>
-                </div>
-                
-                <!-- Perfil Header -->
-                <div style="background: var(--bg-card); border-radius: 20px; border: 1px solid rgba(255,255,255,0.08); padding: 30px; margin-bottom: 30px; display: flex; align-items: center; gap: 30px; flex-wrap: wrap;">
-                    <div style="width: 120px; height: 120px; border-radius: 50%; background: var(--primary); padding: 4px; box-shadow: 0 0 25px rgba(13, 138, 188, 0.4); flex-shrink: 0;">
-                        <img src="https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(gameState.userName || 'Estudiante')}" style="width: 100%; height: 100%; border-radius: 50%;">
-                    </div>
-                    <div style="flex: 1; min-width: 240px;">
-                        <p style="font-size: 12px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px;">Nivel Evolutivo Actual</p>
-                        <h2 style="font-size: 32px; color: var(--primary); margin-bottom: 12px; display: flex; align-items: center; gap: 10px;"><i class="ph-fill ph-star"></i> ${currentLevelObj.name}</h2>
-                        <label style="display: block; font-size: 11px; color: var(--text-secondary); margin-bottom: 6px; text-transform: uppercase;">Nombre de Perfil:</label>
-                        <input type="text" value="${gameState.userName}" onchange="app.updateName(this.value)" style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 10px 16px; border-radius: 10px; font-size: 16px; width: 280px; font-family: 'Outfit', sans-serif;">
-                    </div>
-                    <div style="text-align: right;">
-                        <div style="font-size: 44px; color: var(--warning); font-weight: 800;">${gameState.xp}</div>
-                        <div style="color: var(--text-secondary); font-size: 12px; text-transform: uppercase; font-weight: 700;">Puntos XP Acumulados</div>
-                    </div>
-                </div>
-
-                <!-- Selector: Mi Objetivo Actual -->
-                <div class="view-header"><h2 class="view-title" style="font-size: 22px;">Mi Objetivo Actual de Desarrollo</h2></div>
-                <div class="objective-pills-grid" style="margin-bottom: 40px;">
-                    ${objectivesList.map(obj => `
-                        <div class="objective-pill ${gameState.userObjective === obj ? 'active' : ''}" onclick="app.setUserObjective('${obj}')">
-                            <i class="ph-bold ${gameState.userObjective === obj ? 'ph-check-circle' : 'ph-circle'}"></i> ${obj}
+                        <div style="display: inline-flex; align-items: center; gap: 8px; color: var(--color-cyan); font-family: var(--font-tech); font-size: 11.5px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 6px;">
+                            <i class="ph-bold ph-brain"></i> NEURO DIGITAL EXPERIENCE // MI PERFIL
                         </div>
-                    `).join('')}
+                        <h1 class="view-title">Mi Desarrollo Profesional</h1>
+                        <p class="view-subtitle">Consola de evolución pedagógica, conectoma cerebral 3D y telemetría de competencias docentes.</p>
+                    </div>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <button class="hero-btn" onclick="app.logoutUser()" style="background: rgba(255,255,255,0.08); color: white; font-size: 13px; padding: 10px 18px;">
+                            <i class="ph-bold ph-sign-out"></i> Cambiar Usuario
+                        </button>
+                        <button class="hero-btn" onclick="app.resetProgress()" style="background: var(--error); color: white; font-size: 13px; padding: 10px 18px;">
+                            <i class="ph-bold ph-warning"></i> Reiniciar Progreso
+                        </button>
+                    </div>
                 </div>
 
-                <!-- Insignias de Desarrollo -->
-                <div class="view-header"><h2 class="view-title" style="font-size: 22px;">Mis Insignias Obtenidas</h2></div>
-                <div class="badge-grid" style="margin-bottom: 40px;">
+                <!-- Grid Principal: Identidad & Cerebro 3D Interactivo -->
+                <div class="profile-neuro-grid">
+                    <!-- Tarjeta 1: Identidad del Educador & Rango Evolutivo -->
+                    <div class="profile-id-card">
+                        <div>
+                            <div style="display: flex; align-items: center; gap: 20px; margin-bottom: 22px;">
+                                <div style="width: 80px; height: 80px; border-radius: 50%; background: radial-gradient(circle, rgba(34,211,238,0.3) 0%, rgba(37,99,235,0.2) 100%); border: 2px solid var(--color-cyan); padding: 3px; box-shadow: 0 0 25px rgba(34, 211, 238, 0.4); flex-shrink: 0; position: relative;">
+                                    <img src="https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(gameState.userName || 'Estudiante')}" style="width: 100%; height: 100%; border-radius: 50%;">
+                                    <span style="position: absolute; bottom: 0; right: 0; width: 14px; height: 14px; background: var(--success); border: 2px solid var(--bg-surface); border-radius: 50%; box-shadow: 0 0 10px var(--success);"></span>
+                                </div>
+                                <div style="flex: 1; min-width: 0;">
+                                    <span style="font-size: 11px; font-weight: 800; color: var(--color-cyan); text-transform: uppercase; letter-spacing: 1.2px; font-family: var(--font-tech); display: block; margin-bottom: 4px;">Educador Registrado</span>
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        <input type="text" value="${gameState.userName}" onchange="app.updateName(this.value)" title="Haz clic para editar tu nombre" style="background: rgba(8, 13, 27, 0.6); border: 1px solid var(--border-subtle); color: #FFFFFF; padding: 8px 12px; border-radius: 10px; font-size: 17px; font-weight: 700; width: 100%; max-width: 220px; font-family: var(--font-tech);">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Rango y Barra de Energía XP -->
+                            <div style="background: rgba(8, 13, 27, 0.6); border: 1px solid var(--border-subtle); border-radius: 16px; padding: 18px; margin-bottom: 20px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                    <span style="font-size: 11.5px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; font-weight: 700;">Nivel Evolutivo</span>
+                                    <span style="color: var(--warning); font-family: var(--font-tech); font-weight: 800; font-size: 13px;"><i class="ph-fill ph-star"></i> ${currentLevelObj.name}</span>
+                                </div>
+                                <div style="font-size: 28px; font-weight: 800; color: var(--color-cyan); font-family: var(--font-tech); margin-bottom: 6px;">
+                                    ${gameState.xp || 0} <small style="font-size: 13px; color: var(--text-secondary); font-weight: 600;">XP Acumulados</small>
+                                </div>
+                                
+                                <div style="display: flex; justify-content: space-between; font-size: 11.5px; color: var(--text-muted); margin-bottom: 6px;">
+                                    <span>Próximo Hito: <strong>${nextLevelObj.name}</strong></span>
+                                    <span>${progressPct}%</span>
+                                </div>
+                                <div class="progress-bar-bg" style="height: 8px; background: rgba(255,255,255,0.06); border-radius: 6px;">
+                                    <div class="progress-bar-fill" style="width: ${progressPct}%; background: linear-gradient(90deg, var(--primary), var(--color-cyan)); box-shadow: 0 0 10px var(--color-cyan);"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Selector de Objetivo en la Tarjeta de Identidad -->
+                        <div>
+                            <span style="font-size: 11.5px; font-weight: 800; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 8px;">Meta Pedagógica Principal:</span>
+                            <div style="display: flex; flex-direction: column; gap: 6px;">
+                                ${objectivesList.slice(0, 3).map(obj => `
+                                    <div class="objective-pill ${gameState.userObjective === obj ? 'active' : ''}" onclick="app.setUserObjective('${obj}')" style="padding: 9px 12px; font-size: 12.5px;">
+                                        <i class="ph-bold ${gameState.userObjective === obj ? 'ph-check-circle' : 'ph-circle'}" style="color: ${gameState.userObjective === obj ? 'var(--color-cyan)' : 'var(--text-muted)'};"></i>
+                                        <span>${obj}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tarjeta 2: Consola Holográfica del Cerebro 3D Interactivo -->
+                    <div class="profile-brain-card">
+                        <div class="brain-console-header">
+                            <div>
+                                <span style="font-size: 10.5px; font-weight: 800; color: var(--color-cyan); text-transform: uppercase; letter-spacing: 1.5px; font-family: var(--font-tech); display: block;">
+                                    <i class="ph-bold ph-cube"></i> MODELO BIOCONECTOMA 3D
+                                </span>
+                                <h3 style="font-size: 18px; color: #fff; font-family: var(--font-tech); margin-top: 2px;">
+                                    Mapeo Neuronal de Competencias
+                                </h3>
+                            </div>
+                            <div style="display: flex; gap: 8px;">
+                                <button class="icon-btn" onclick="app.toggleBrainAutoRotate()" id="btn-brain-spin" title="Pausar / Reanudar Rotación Automática" style="color: var(--color-cyan); border-color: var(--color-cyan);">
+                                    <i class="ph-bold ph-arrow-clockwise"></i>
+                                </button>
+                                <button class="icon-btn" onclick="app.resetBrainView()" title="Restablecer Vista Original">
+                                    <i class="ph-bold ph-arrows-in-cardinal"></i>
+                                </button>
+                                <button class="icon-btn" onclick="app.triggerBrainPulse()" title="Disparar Pulso Sináptico">
+                                    <i class="ph-bold ph-lightning"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Visor Interactivo 3D Canvas -->
+                        <div class="brain-canvas-container" id="brain-canvas-wrapper" title="Haz clic y arrastra con el cursor para girar el cerebro en 3D">
+                            <canvas id="brain-3d-canvas"></canvas>
+                            <span class="brain-3d-hint"><i class="ph-bold ph-hand-pointing"></i> Arrastra para girar en 3D</span>
+                        </div>
+
+                        <!-- Selector de Lóbulos Cerebrales -->
+                        <div class="brain-lobes-selector">
+                            <button class="brain-lobe-btn active" data-lobe="all" onclick="app.focusBrainLobe('all')">
+                                <i class="ph-bold ph-brain"></i> Todo el Conectoma
+                            </button>
+                            <button class="brain-lobe-btn" data-lobe="frontal" onclick="app.focusBrainLobe('frontal')">
+                                <span style="width: 8px; height: 8px; border-radius: 50%; background: #22D3EE;"></span> Frontal (DUA)
+                            </button>
+                            <button class="brain-lobe-btn" data-lobe="parietal" onclick="app.focusBrainLobe('parietal')">
+                                <span style="width: 8px; height: 8px; border-radius: 50%; background: #38BDF8;"></span> Parietal (Didáctica)
+                            </button>
+                            <button class="brain-lobe-btn" data-lobe="temporal" onclick="app.focusBrainLobe('temporal')">
+                                <span style="width: 8px; height: 8px; border-radius: 50%; background: #C084FC;"></span> Temporal (Andragogía)
+                            </button>
+                            <button class="brain-lobe-btn" data-lobe="occipital" onclick="app.focusBrainLobe('occipital')">
+                                <span style="width: 8px; height: 8px; border-radius: 50%; background: #F59E0B;"></span> Occipital (Evaluación)
+                            </button>
+                            <button class="brain-lobe-btn" data-lobe="cerebelo" onclick="app.focusBrainLobe('cerebelo')">
+                                <span style="width: 8px; height: 8px; border-radius: 50%; background: #34D399;"></span> Cerebelo (Lúdica)
+                            </button>
+                        </div>
+
+                        <!-- Panel de Telemetría Dinámica del Lóbulo Seleccionado -->
+                        <div class="brain-telemetry-readout" id="brain-telemetry-panel">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <i class="ph-bold ph-brain" style="font-size: 22px; color: var(--color-cyan);"></i>
+                                <div>
+                                    <strong style="color: #fff; font-family: var(--font-tech); font-size: 13.5px;">Visión Global del Conectoma</strong>
+                                    <div style="color: var(--text-secondary); font-size: 12px;">Integración Holística de Competencias Docentes</div>
+                                </div>
+                            </div>
+                            <span class="telemetry-tag" style="color: var(--color-cyan); background: rgba(34,211,238,0.1); padding: 4px 10px; border-radius: 8px; border: 1px solid rgba(34,211,238,0.25);">
+                                Conectividad Sináptica Óptima
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Telemetría de Avances Gamificados (4 Cards en HUD) -->
+                <div class="view-header" style="margin-bottom: 18px;">
+                    <h2 class="view-title" style="font-size: 22px;">Telemetría de Avances Gamificados</h2>
+                    <p class="view-subtitle" style="font-size: 13.5px;">Indicadores de desempeño cognitivo, rigor académico y acumulación de maestría.</p>
+                </div>
+
+                <div class="cognitive-hud-grid" style="margin-bottom: 40px;">
+                    <div class="hud-metric-card">
+                        <div class="hud-icon-box" style="background: rgba(34, 211, 238, 0.12); color: var(--color-cyan); border-color: rgba(34, 211, 238, 0.3);">
+                            <i class="ph-bold ph-lightning"></i>
+                        </div>
+                        <div>
+                            <div class="hud-metric-val" style="color: var(--color-cyan);">${gameState.xp || 0} XP</div>
+                            <div class="hud-metric-label">Energía Sináptica Total</div>
+                        </div>
+                    </div>
+
+                    <div class="hud-metric-card">
+                        <div class="hud-icon-box" style="background: rgba(52, 211, 153, 0.12); color: var(--success); border-color: rgba(52, 211, 153, 0.3);">
+                            <i class="ph-bold ph-seal-check"></i>
+                        </div>
+                        <div>
+                            <div class="hud-metric-val" style="color: var(--success);">${testsPassedCount} / 4</div>
+                            <div class="hud-metric-label">Evaluaciones Aprobadas (80+)</div>
+                        </div>
+                    </div>
+
+                    <div class="hud-metric-card">
+                        <div class="hud-icon-box" style="background: rgba(245, 158, 11, 0.12); color: var(--warning); border-color: rgba(245, 158, 11, 0.3);">
+                            <i class="ph-bold ph-clipboard-text"></i>
+                        </div>
+                        <div>
+                            <div class="hud-metric-val" style="color: var(--warning);">${diagnosticsCount}</div>
+                            <div class="hud-metric-label">Diagnósticos Situacionales</div>
+                        </div>
+                    </div>
+
+                    <div class="hud-metric-card">
+                        <div class="hud-icon-box" style="background: rgba(192, 132, 252, 0.12); color: #C084FC; border-color: rgba(192, 132, 252, 0.3);">
+                            <i class="ph-bold ph-medal"></i>
+                        </div>
+                        <div>
+                            <div class="hud-metric-val" style="color: #C084FC;">${unlockedBadgesCount} / ${badgesData.length}</div>
+                            <div class="hud-metric-label">Insignias Desbloqueadas</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Matriz de Medallas e Insignias de Desarrollo -->
+                <div class="view-header" style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 12px; margin-bottom: 16px;">
+                    <div>
+                        <h2 class="view-title" style="font-size: 22px;">Insignias de Competencia & Medallas de Honor</h2>
+                        <p class="view-subtitle" style="font-size: 13.5px;">Reconocimientos verificados de habilidades pedagógicas y destreza en aula.</p>
+                    </div>
+                </div>
+
+                <!-- Filtros Interactivos de Medallas -->
+                <div class="badge-filter-pills">
+                    <button class="badge-filter-btn active" data-filter="all" onclick="app.filterBadges('all')">
+                        Todas (${badgesData.length})
+                    </button>
+                    <button class="badge-filter-btn" data-filter="unlocked" onclick="app.filterBadges('unlocked')">
+                        <i class="ph-bold ph-check"></i> Desbloqueadas (${unlockedBadgesCount})
+                    </button>
+                    <button class="badge-filter-btn" data-filter="locked" onclick="app.filterBadges('locked')">
+                        <i class="ph-bold ph-lock"></i> Por Desbloquear (${badgesData.length - unlockedBadgesCount})
+                    </button>
+                    <button class="badge-filter-btn" data-filter="eval" onclick="app.filterBadges('eval')">
+                        <i class="ph-bold ph-medal"></i> Instrumentos de Evaluación (7)
+                    </button>
+                </div>
+
+                <div class="badge-grid" id="profile-badges-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 16px; margin-bottom: 45px;">
                     ${badgesData.map(b => {
                         const isUnlocked = gameState.unlockedBadges && gameState.unlockedBadges.includes(b.id);
+                        const isEvalBadge = ['maestro_evaluacion', 'arquitecto_aprendizaje', 'mentor_aprendizaje', 'estratega_didactico', 'primer_paso_pedagogico', 'dominio_integral', 'excelencia_pedagogica'].includes(b.id);
                         return `
-                            <div class="badge-card ${isUnlocked ? 'unlocked' : 'locked'}">
-                                <div class="badge-icon-box"><i class="ph-bold ${b.icon}"></i></div>
-                                <div class="badge-name">${b.name}</div>
-                                <div class="badge-status">${isUnlocked ? 'Desbloqueada' : 'Por desbloquear'}</div>
+                            <div class="neuro-badge-card ${isUnlocked ? 'unlocked' : 'locked'}" data-unlocked="${isUnlocked}" data-eval="${isEvalBadge}">
+                                <div>
+                                    <div class="badge-icon-box" style="width: 58px; height: 58px; border-radius: 16px; margin: 0 auto 12px; display: flex; align-items: center; justify-content: center; font-size: 28px; background: rgba(34, 211, 238, 0.1); color: var(--color-cyan); border: 1px solid var(--border-subtle);">
+                                        <i class="ph-bold ${b.icon}"></i>
+                                    </div>
+                                    <div style="font-size: 14px; font-weight: 700; color: #FFFFFF; font-family: var(--font-tech); margin-bottom: 4px;">${b.name}</div>
+                                    <p style="font-size: 11.5px; color: var(--text-secondary); line-height: 1.4; margin-bottom: 12px;">${b.desc}</p>
+                                </div>
+                                <div style="display: inline-flex; align-items: center; justify-content: center; gap: 6px; font-size: 11.5px; font-weight: 700; padding: 4px 10px; border-radius: 8px; ${isUnlocked ? 'color: var(--success); background: rgba(52, 211, 153, 0.12); border: 1px solid rgba(52, 211, 153, 0.3);' : 'color: var(--text-muted); background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);'}">
+                                    <i class="ph-bold ${isUnlocked ? 'ph-seal-check' : 'ph-lock'}"></i>
+                                    <span>${isUnlocked ? 'Desbloqueada' : 'Por Desbloquear'}</span>
+                                </div>
                             </div>
                         `;
                     }).join('')}
                 </div>
 
-                <!-- Historial de los Cuatro Instrumentos de Evaluación -->
-                <div class="view-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <!-- Historial de los Cuatro Instrumentos de Evaluación Pedagógica -->
+                <div class="view-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; flex-wrap: wrap; gap: 12px;">
                     <div>
-                        <h2 class="view-title" style="font-size: 22px;">Mis Evaluaciones Docentes (4 Instrumentos)</h2>
-                        <p class="view-subtitle" style="font-size: 13px;">Diagnósticos por dimensiones, evolución de puntajes y medallas obtenidas.</p>
+                        <h2 class="view-title" style="font-size: 22px;">Desempeño en Instrumentos de Evaluación</h2>
+                        <p class="view-subtitle" style="font-size: 13.5px;">Progreso en los 4 instrumentos diagnósticos estandarizados (40 preguntas cada uno).</p>
                     </div>
-                    <button class="hero-btn" onclick="EvaluationEngine.renderHistoryView()" style="font-size: 12px; padding: 8px 16px;">
-                        <i class="ph-bold ph-chart-line-up"></i> Historial Completo y Evolución
+                    <button class="hero-btn" onclick="EvaluationEngine.renderHistoryView()" style="font-size: 13px; padding: 10px 18px; background: rgba(34, 211, 238, 0.1); border-color: var(--border-glow); color: var(--color-cyan);">
+                        <i class="ph-bold ph-chart-line-up"></i> Historial Completo & Evolución
                     </button>
                 </div>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 40px;">
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; margin-bottom: 45px;">
                     ${['formativa', 'pedagogia', 'andragogia', 'didactica'].map(k => {
                         const inst = window.EVALUATIONS_DATA ? EVALUATIONS_DATA.instruments[k] : testsData[k];
                         const best = window.EvaluationStorageService ? EvaluationStorageService.getBestAttempt(k) : null;
                         const hasMedal = gameState.unlockedBadges && gameState.unlockedBadges.includes(inst.badgeId);
                         return `
-                            <div class="card avatar-card" style="padding: 18px; border: 1px solid rgba(255,255,255,0.08); display: flex; flex-direction: column; justify-content: space-between;">
+                            <div class="card" style="padding: 22px; border: 1px solid var(--border-subtle); display: flex; flex-direction: column; justify-content: space-between;">
                                 <div>
-                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                                        <div style="font-size: 24px; color: var(--primary);"><i class="ph ${inst.icon}"></i></div>
-                                        ${hasMedal ? `<span style="color: var(--warning); font-size: 16px;" title="Medalla desbloqueada"><i class="ph-fill ph-medal"></i></span>` : `<span style="color: var(--text-secondary); font-size: 14px;" title="Medalla por desbloquear"><i class="ph ph-lock"></i></span>`}
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                                        <div class="card-icon-wrapper" style="width: 44px; height: 44px; font-size: 22px; margin-bottom: 0;">
+                                            <i class="ph ${inst.icon}"></i>
+                                        </div>
+                                        ${hasMedal ? `<span style="color: var(--warning); font-size: 18px;" title="Medalla desbloqueada"><i class="ph-fill ph-medal"></i></span>` : `<span style="color: var(--text-muted); font-size: 16px;" title="Medalla por desbloquear (80+ pts)"><i class="ph ph-lock"></i></span>`}
                                     </div>
-                                    <h4 style="font-size: 15px; color: #fff; margin-bottom: 6px;">${inst.title}</h4>
-                                    <div style="font-size: 13px; font-weight: 800; color: ${best ? (best.passed ? 'var(--success)' : 'var(--warning)') : 'var(--text-secondary)'};">
-                                        ${best ? `${best.score} pts (${best.masteryLevel})` : 'Sin evaluar'}
+                                    <h4 style="font-size: 16px; color: #fff; font-family: var(--font-tech); margin-bottom: 6px;">${inst.title}</h4>
+                                    <div style="font-size: 13.5px; font-weight: 800; color: ${best ? (best.passed ? 'var(--success)' : 'var(--warning)') : 'var(--text-muted)'}; margin-bottom: 12px;">
+                                        ${best ? `${best.score} pts • ${best.masteryLevel}` : 'Sin evaluar'}
                                     </div>
                                 </div>
-                                <div style="margin-top: 12px;">
+                                <div>
                                     ${best ? `
-                                        <button class="hero-btn" onclick="EvaluationEngine.viewPastAttempt('${best.id}')" style="width: 100%; justify-content: center; font-size: 11.5px; padding: 6px 10px; background: rgba(255,255,255,0.08);">
-                                            Ver Informe
+                                        <button class="hero-btn" onclick="EvaluationEngine.viewPastAttempt('${best.id}')" style="width: 100%; justify-content: center; font-size: 12px; padding: 8px 12px; background: rgba(255,255,255,0.06); color: white;">
+                                            <i class="ph-bold ph-file-text"></i> Ver Informe Detallado
                                         </button>
                                     ` : `
-                                        <button class="hero-btn" onclick="EvaluationEngine.startTest('${k}')" style="width: 100%; justify-content: center; font-size: 11.5px; padding: 6px 10px;">
-                                            Iniciar Test
+                                        <button class="hero-btn" onclick="EvaluationEngine.startTest('${k}')" style="width: 100%; justify-content: center; font-size: 12px; padding: 8px 12px;">
+                                            <i class="ph-bold ph-play"></i> Iniciar Evaluación
                                         </button>
                                     `}
                                 </div>
@@ -1649,33 +1856,34 @@ Puedo guiarte en el desarrollo de competencias educativas, liderazgo, empleabili
                 </div>
 
                 <!-- Historial de Diagnósticos Situacionales -->
-                <div class="view-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <div class="view-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
                     <div>
                         <h2 class="view-title" style="font-size: 22px;">Mis Diagnósticos Situacionales</h2>
-                        <p class="view-subtitle" style="font-size: 13px;">Historial de evaluaciones de perfil completadas y recomendaciones.</p>
+                        <p class="view-subtitle" style="font-size: 13.5px;">Historial de autoevaluaciones de perfil y mapas de recomendaciones.</p>
                     </div>
-                    <button class="hero-btn" onclick="app.navigate('evaluate')" style="font-size: 12px; padding: 8px 16px;">
+                    <button class="hero-btn hero-btn-emerald" onclick="app.navigate('evaluate')" style="font-size: 12px; padding: 9px 18px;">
                         <i class="ph-bold ph-plus-circle"></i> Nuevo Diagnóstico
                     </button>
                 </div>
+
                 ${(gameState.diagnosticResults && gameState.diagnosticResults.length > 0) ? `
                     <div style="display: flex; flex-direction: column; gap: 16px; margin-bottom: 40px;">
                         ${gameState.diagnosticResults.map(res => `
-                            <div class="card avatar-card" style="padding: 24px; border: 1px solid rgba(255,255,255,0.1);">
+                            <div class="card" style="padding: 24px; border: 1px solid var(--border-subtle);">
                                 <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; flex-wrap: wrap; gap: 10px;">
                                     <div>
                                         <span class="route-badge" style="font-size: 11px;">${res.testName}</span>
-                                        <h3 style="color: #fff; font-size: 19px; margin-top: 6px;">Nivel: <span style="color: var(--primary);">${res.nivel}</span></h3>
+                                        <h3 style="color: #fff; font-size: 19px; font-family: var(--font-tech); margin-top: 6px;">Nivel: <span style="color: var(--color-cyan);">${res.nivel}</span></h3>
                                     </div>
                                     <div style="text-align: right;">
                                         <span style="font-size: 12px; color: var(--text-secondary);"><i class="ph ph-calendar"></i> ${res.date}</span>
-                                        <div style="font-size: 14px; font-weight: 800; color: var(--warning); margin-top: 4px;">Puntuación: ${res.score} / ${res.maxScore || 24}</div>
+                                        <div style="font-size: 14px; font-weight: 800; color: var(--warning); margin-top: 4px; font-family: var(--font-tech);">Puntuación: ${res.score} / ${res.maxScore || 24}</div>
                                     </div>
                                 </div>
                                 <p style="color: var(--text-secondary); font-size: 13.5px; line-height: 1.5; margin-bottom: 14px;">${res.diag}</p>
                                 ${res.recomendacion ? `
-                                    <details style="background: rgba(0,0,0,0.25); padding: 12px 16px; border-radius: 12px; font-size: 13px; color: var(--text-primary); cursor: pointer; border: 1px solid rgba(255,255,255,0.06);">
-                                        <summary style="font-weight: 700; color: var(--accent);">Ver Recomendaciones Prácticas</summary>
+                                    <details style="background: rgba(8, 13, 27, 0.6); padding: 12px 16px; border-radius: 12px; font-size: 13px; color: var(--text-primary); cursor: pointer; border: 1px solid var(--border-subtle);">
+                                        <summary style="font-weight: 700; color: var(--color-cyan); font-family: var(--font-tech);">Ver Recomendaciones Prácticas</summary>
                                         <div style="margin-top: 10px; line-height: 1.6; color: var(--text-secondary);">${res.recomendacion}</div>
                                     </details>
                                 ` : ''}
@@ -1683,9 +1891,9 @@ Puedo guiarte en el desarrollo de competencias educativas, liderazgo, empleabili
                         `).join('')}
                     </div>
                 ` : `
-                    <div class="card avatar-card" style="text-align: center; padding: 35px 20px; margin-bottom: 40px;">
-                        <i class="ph-bold ph-clipboard-text" style="font-size: 44px; color: var(--text-secondary); margin-bottom: 12px; opacity: 0.6;"></i>
-                        <p style="color: var(--text-secondary); font-size: 14px; max-width: 500px; margin: 0 auto 18px;">Aún no has completado un diagnóstico situacional. Realiza uno para identificar tu perfil pedagógico y obtener un plan de acción personalizado.</p>
+                    <div class="card" style="text-align: center; padding: 40px 20px; margin-bottom: 40px;">
+                        <i class="ph-bold ph-clipboard-text" style="font-size: 48px; color: var(--color-cyan); margin-bottom: 12px; opacity: 0.7;"></i>
+                        <p style="color: var(--text-secondary); font-size: 14px; max-width: 500px; margin: 0 auto 20px;">Aún no has completado un diagnóstico situacional. Realiza uno para identificar tu perfil pedagógico y obtener recomendaciones de desarrollo.</p>
                         <button class="hero-btn" onclick="app.navigate('evaluate')"><i class="ph-bold ph-scan"></i> Realizar un Diagnóstico</button>
                     </div>
                 `}
@@ -2006,6 +2214,691 @@ Puedo guiarte en el desarrollo de competencias educativas, liderazgo, empleabili
         };
         window.app.nextQuestion = () => { playSound('click'); currentQ++; renderQuestion(); };
         renderQuestion();
+    };
+
+    // =========================================================================
+    // CONSOLA NEURO DIGITAL 3D: MODELO BIOCONECTOMA CEREBRAL & TELEMETRÍA GAMIFICADA
+    // =========================================================================
+    let brainAnimId = null;
+    let brainState = {
+        rotX: 0.2,
+        rotY: -0.4,
+        targetRotX: 0.2,
+        targetRotY: -0.4,
+        autoRotate: true,
+        activeLobe: 'all',
+        isDragging: false,
+        lastX: 0,
+        lastY: 0,
+        hoveredNode: null,
+        pulseRadius: -1
+    };
+
+    window.initBrain3D = () => {
+        const canvas = document.getElementById('brain-3d-canvas');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+
+        if (brainAnimId) {
+            cancelAnimationFrame(brainAnimId);
+            brainAnimId = null;
+        }
+
+        // Configuración de resolución de alta densidad (Retina / High DPI)
+        const setupCanvasSize = () => {
+            const container = canvas.parentElement;
+            if (!container) return;
+            const dpr = Math.min(window.devicePixelRatio || 1, 2);
+            const w = container.clientWidth || 600;
+            const h = container.clientHeight || 320;
+            canvas.width = w * dpr;
+            canvas.height = h * dpr;
+            canvas.style.width = w + 'px';
+            canvas.style.height = h + 'px';
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
+            ctx.scale(dpr, dpr);
+            return { w, h };
+        };
+
+        let { w, h } = setupCanvasSize() || { w: 600, h: 320 };
+
+        // Definición de Lóbulos Anatómicos y Metadatos Pedagógicos
+        const lobeMetadata = {
+            all: {
+                name: 'Conectoma Integral',
+                dim: 'Evolución Holística Docente',
+                color: '#22D3EE'
+            },
+            frontal: {
+                name: 'Lóbulo Frontal',
+                dim: 'Funciones Ejecutivas & DUA',
+                color: '#22D3EE'
+            },
+            parietal: {
+                name: 'Lóbulo Parietal',
+                dim: 'Didáctica Activa & Métodos',
+                color: '#38BDF8'
+            },
+            temporal: {
+                name: 'Lóbulo Temporal',
+                dim: 'Andragogía & Mediación',
+                color: '#C084FC'
+            },
+            occipital: {
+                name: 'Lóbulo Occipital',
+                dim: 'Evaluación Formativa & Rúbricas',
+                color: '#F59E0B'
+            },
+            cerebelo: {
+                name: 'Cerebelo & Tronco',
+                dim: 'Lúdica & Gamificación',
+                color: '#34D399'
+            }
+        };
+
+        // Generación matemática de la red de nodos del cerebro (3D Point Cloud)
+        const nodes = [];
+        const hemisphereOffset = 18; // Distancia entre hemisferios
+
+        // Generar puntos anatómicos estructurados por lóbulo
+        const generateLobeNodes = (lobeKey, countPerSide, biasFunc) => {
+            [-1, 1].forEach(side => {
+                for (let i = 0; i < countPerSide; i++) {
+                    const u = i / countPerSide;
+                    const v = (i * 1.618) % 1; // Distribución áurea
+                    const baseCoords = biasFunc(u, v, side);
+                    nodes.push({
+                        id: nodes.length,
+                        lobe: lobeKey,
+                        side: side > 0 ? 'right' : 'left',
+                        x: baseCoords.x,
+                        y: baseCoords.y,
+                        z: baseCoords.z,
+                        origX: baseCoords.x,
+                        origY: baseCoords.y,
+                        origZ: baseCoords.z,
+                        color: lobeMetadata[lobeKey].color,
+                        radius: 2.2 + Math.random() * 1.5,
+                        pulsePhase: Math.random() * Math.PI * 2,
+                        energy: 0
+                    });
+                }
+            });
+        };
+
+        // 1. Frontal: Anterior y superior
+        generateLobeNodes('frontal', 18, (u, v, side) => {
+            const angle = u * Math.PI * 0.7 - 0.2;
+            const elevation = v * 28 - 2;
+            const rad = 28 + Math.sin(u * 5) * 2;
+            return {
+                x: side * (hemisphereOffset * 0.65 + Math.cos(elevation * 0.05) * rad * 0.7 * Math.sin(u * Math.PI)),
+                y: elevation,
+                z: 10 + Math.cos(angle) * 32
+            };
+        });
+
+        // 2. Parietal: Superior posterior
+        generateLobeNodes('parietal', 16, (u, v, side) => {
+            const rad = 30 + Math.cos(v * 4) * 2;
+            const theta = u * Math.PI * 0.8;
+            return {
+                x: side * (hemisphereOffset * 0.75 + Math.sin(theta) * rad * 0.65),
+                y: 12 + Math.cos(theta) * 18 + v * 8,
+                z: -5 - u * 24
+            };
+        });
+
+        // 3. Temporal: Lateral e inferior
+        generateLobeNodes('temporal', 14, (u, v, side) => {
+            const theta = u * Math.PI * 0.9;
+            return {
+                x: side * (hemisphereOffset + 14 + Math.sin(theta) * 10),
+                y: -16 + v * 14 + Math.sin(theta * 2) * 3,
+                z: -18 + u * 32
+            };
+        });
+
+        // 4. Occipital: Posterior
+        generateLobeNodes('occipital', 12, (u, v, side) => {
+            const theta = u * Math.PI;
+            return {
+                x: side * (hemisphereOffset * 0.6 + Math.sin(theta) * 16),
+                y: -12 + v * 20,
+                z: -32 - Math.cos(theta * 0.5) * 16
+            };
+        });
+
+        // 5. Cerebelo: Inferior y posterior
+        generateLobeNodes('cerebelo', 12, (u, v, side) => {
+            const theta = u * Math.PI * 2;
+            const rad = 14 + v * 5;
+            return {
+                x: side * (hemisphereOffset * 0.65 + Math.cos(theta) * rad * 0.8),
+                y: -28 + Math.sin(theta) * 8 - v * 4,
+                z: -16 - (1 - v) * 16
+            };
+        });
+
+        // 6. Conexiones Interhemisféricas del Cuerpo Calloso (Corpus Callosum)
+        for (let i = 0; i < 10; i++) {
+            const u = i / 10;
+            nodes.push({
+                id: nodes.length,
+                lobe: 'frontal',
+                side: 'center',
+                x: (u - 0.5) * 8,
+                y: 2 + Math.sin(u * Math.PI) * 6,
+                z: -15 + u * 26,
+                origX: (u - 0.5) * 8,
+                origY: 2 + Math.sin(u * Math.PI) * 6,
+                origZ: -15 + u * 26,
+                color: '#E8F0FC',
+                radius: 2,
+                pulsePhase: Math.random() * Math.PI * 2,
+                energy: 0
+            });
+        }
+
+        // Generar filamentos sinápticos conectomas (aristas)
+        const edges = [];
+        const maxDist = 20;
+        const maxConnectionsPerNode = 4;
+        const nodeEdgeCounts = new Array(nodes.length).fill(0);
+
+        for (let i = 0; i < nodes.length; i++) {
+            for (let j = i + 1; j < nodes.length; j++) {
+                if (nodeEdgeCounts[i] >= maxConnectionsPerNode || nodeEdgeCounts[j] >= maxConnectionsPerNode) continue;
+                const a = nodes[i];
+                const b = nodes[j];
+                const dx = a.x - b.x;
+                const dy = a.y - b.y;
+                const dz = a.z - b.z;
+                const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
+                const canConnect = (a.side === b.side && dist < maxDist) || 
+                                   (a.side !== b.side && Math.abs(a.x - b.x) < 14 && dist < 24);
+                if (canConnect) {
+                    edges.push({
+                        from: i,
+                        to: j,
+                        dist: dist,
+                        color: a.lobe === b.lobe ? a.color : '#38BDF8'
+                    });
+                    nodeEdgeCounts[i]++;
+                    nodeEdgeCounts[j]++;
+                }
+            }
+        }
+
+        // Paquetes de impulsos sinápticos activos viajando por las aristas
+        const pulses = [];
+        const pulseCount = 18;
+        for (let k = 0; k < pulseCount; k++) {
+            if (edges.length > 0) {
+                pulses.push({
+                    edgeIdx: Math.floor(Math.random() * edges.length),
+                    progress: Math.random(),
+                    speed: 0.007 + Math.random() * 0.012,
+                    dir: Math.random() > 0.5 ? 1 : -1,
+                    size: 2.2 + Math.random() * 1.5
+                });
+            }
+        }
+
+        // Listeners interactivos del visor de rotación 3D
+        let mouseX = -999;
+        let mouseY = -999;
+
+        const onPointerDown = (e) => {
+            brainState.isDragging = true;
+            brainState.lastX = e.clientX;
+            brainState.lastY = e.clientY;
+            canvas.style.cursor = 'grabbing';
+        };
+
+        const onPointerMove = (e) => {
+            const rect = canvas.getBoundingClientRect();
+            mouseX = e.clientX - rect.left;
+            mouseY = e.clientY - rect.top;
+
+            if (!brainState.isDragging) return;
+            const deltaX = e.clientX - brainState.lastX;
+            const deltaY = e.clientY - brainState.lastY;
+            brainState.lastX = e.clientX;
+            brainState.lastY = e.clientY;
+
+            brainState.targetRotY += deltaX * 0.008;
+            brainState.targetRotX += deltaY * 0.008;
+            brainState.targetRotX = Math.max(-1.1, Math.min(1.1, brainState.targetRotX));
+        };
+
+        const onPointerUp = () => {
+            brainState.isDragging = false;
+            canvas.style.cursor = 'grab';
+        };
+
+        canvas.onpointerdown = onPointerDown;
+        window.addEventListener('pointermove', onPointerMove);
+        window.addEventListener('pointerup', onPointerUp);
+
+        // Click en nodo interactivo para enfocar su lóbulo
+        canvas.onclick = () => {
+            if (brainState.hoveredNode) {
+                try { playSound('click'); } catch(e) {}
+                window.app.focusBrainLobe(brainState.hoveredNode.lobe);
+            }
+        };
+
+        // Render Loop 3D
+        let time = 0;
+        const renderLoop = () => {
+            // Verificar si el canvas sigue presente en el DOM
+            const liveCanvas = document.getElementById('brain-3d-canvas');
+            if (!liveCanvas) {
+                window.removeEventListener('pointermove', onPointerMove);
+                window.removeEventListener('pointerup', onPointerUp);
+                return;
+            }
+
+            time += 0.03;
+
+            // Auto-rotación sutil si no está arrastrando
+            if (brainState.autoRotate && !brainState.isDragging) {
+                brainState.targetRotY += 0.004;
+            }
+
+            // Suavizado cinético (damping)
+            brainState.rotX += (brainState.targetRotX - brainState.rotX) * 0.08;
+            brainState.rotY += (brainState.targetRotY - brainState.rotY) * 0.08;
+
+            const curW = canvas.clientWidth || w;
+            const curH = canvas.clientHeight || h;
+            const cx = curW / 2;
+            const cy = curH / 2;
+
+            ctx.clearRect(0, 0, curW, curH);
+
+            // Proyección trigonométrica 3D
+            const cosY = Math.cos(brainState.rotY);
+            const sinY = Math.sin(brainState.rotY);
+            const cosX = Math.cos(brainState.rotX);
+            const sinX = Math.sin(brainState.rotX);
+
+            const fov = 260;
+            const depthOffset = 110;
+
+            // Proyectar todos los nodos
+            const projectedNodes = new Array(nodes.length);
+            for (let i = 0; i < nodes.length; i++) {
+                const n = nodes[i];
+                // Rotación en Y (Yaw)
+                const x1 = n.x * cosY - n.z * sinY;
+                const z1 = n.x * sinY + n.z * cosY;
+                // Rotación en X (Pitch)
+                const y2 = n.y * cosX - z1 * sinX;
+                const z2 = n.y * sinX + z1 * cosX;
+
+                const scale = fov / (fov + z2 + depthOffset);
+                const projX = cx + x1 * scale * 2.2;
+                const projY = cy - y2 * scale * 2.2;
+
+                projectedNodes[i] = {
+                    node: n,
+                    projX,
+                    projY,
+                    scale,
+                    depth: z2,
+                    distFromCenter: Math.sqrt(n.x * n.x + n.y * n.y + n.z * n.z)
+                };
+            }
+
+            // Manejo de onda concéntrica (Shockwave de triggerBrainPulse)
+            if (brainState.pulseRadius >= 0) {
+                brainState.pulseRadius += 2.2;
+                if (brainState.pulseRadius > 85) {
+                    brainState.pulseRadius = -1;
+                }
+            }
+
+            // Detectar nodo hover
+            let closestNode = null;
+            let closestDist = 14;
+            for (let i = 0; i < projectedNodes.length; i++) {
+                const pn = projectedNodes[i];
+                const dx = pn.projX - mouseX;
+                const dy = pn.projY - mouseY;
+                const d = Math.sqrt(dx * dx + dy * dy);
+                if (d < closestDist) {
+                    closestDist = d;
+                    closestNode = pn.node;
+                }
+            }
+            brainState.hoveredNode = closestNode;
+
+            // 1. Dibujar Filamentos Sinápticos (Edges) con profundidad
+            for (let i = 0; i < edges.length; i++) {
+                const edge = edges[i];
+                const pA = projectedNodes[edge.from];
+                const pB = projectedNodes[edge.to];
+                if (!pA || !pB) continue;
+
+                const isLobeActive = brainState.activeLobe === 'all' || 
+                                    pA.node.lobe === brainState.activeLobe || 
+                                    pB.node.lobe === brainState.activeLobe;
+
+                let alpha = (pA.scale + pB.scale) * 0.18;
+                if (!isLobeActive) alpha *= 0.12;
+
+                ctx.beginPath();
+                ctx.moveTo(pA.projX, pA.projY);
+                ctx.lineTo(pB.projX, pB.projY);
+                ctx.strokeStyle = edge.color;
+                ctx.globalAlpha = Math.max(0.04, Math.min(0.85, alpha));
+                ctx.lineWidth = isLobeActive ? 1.3 : 0.6;
+                ctx.stroke();
+            }
+
+            // 2. Dibujar Impulsos Sinápticos Activos (Action Potentials)
+            for (let k = 0; k < pulses.length; k++) {
+                const pulse = pulses[k];
+                pulse.progress += pulse.speed * pulse.dir;
+                if (pulse.progress > 1) {
+                    pulse.progress = 0;
+                    pulse.edgeIdx = Math.floor(Math.random() * edges.length);
+                } else if (pulse.progress < 0) {
+                    pulse.progress = 1;
+                    pulse.edgeIdx = Math.floor(Math.random() * edges.length);
+                }
+
+                const edge = edges[pulse.edgeIdx];
+                if (!edge) continue;
+                const pA = projectedNodes[edge.from];
+                const pB = projectedNodes[edge.to];
+                if (!pA || !pB) continue;
+
+                const isLobeActive = brainState.activeLobe === 'all' || 
+                                    pA.node.lobe === brainState.activeLobe || 
+                                    pB.node.lobe === brainState.activeLobe;
+
+                const px = pA.projX + (pB.projX - pA.projX) * pulse.progress;
+                const py = pA.projY + (pB.projY - pA.projY) * pulse.progress;
+                const pulseScale = (pA.scale + pB.scale) * 0.5;
+
+                ctx.beginPath();
+                ctx.arc(px, py, pulse.size * pulseScale, 0, Math.PI * 2);
+                ctx.fillStyle = isLobeActive ? '#FFFFFF' : 'rgba(255,255,255,0.2)';
+                ctx.globalAlpha = isLobeActive ? 0.95 : 0.2;
+                ctx.shadowColor = '#22D3EE';
+                ctx.shadowBlur = isLobeActive ? 12 : 2;
+                ctx.fill();
+            }
+
+            // 3. Dibujar Nodos del Conectoma ordenados por profundidad (Painter's algorithm)
+            const sortedNodes = [...projectedNodes].sort((a, b) => b.depth - a.depth);
+
+            for (let i = 0; i < sortedNodes.length; i++) {
+                const pn = sortedNodes[i];
+                const n = pn.node;
+                const isLobeActive = brainState.activeLobe === 'all' || n.lobe === brainState.activeLobe;
+                const isHovered = brainState.hoveredNode && brainState.hoveredNode.id === n.id;
+
+                // Efecto de pulso concéntrico
+                let pulseEnergy = 0;
+                if (brainState.pulseRadius >= 0) {
+                    const diff = Math.abs(pn.distFromCenter - brainState.pulseRadius);
+                    if (diff < 8) {
+                        pulseEnergy = (1 - diff / 8) * 1.5;
+                    }
+                }
+
+                const nodeRadius = (n.radius + (isHovered ? 3.5 : 0) + pulseEnergy * 2) * pn.scale * 1.5;
+                const baseAlpha = (pn.scale * 0.9);
+                const finalAlpha = isLobeActive ? Math.min(1, baseAlpha + (isHovered ? 0.4 : 0)) : 0.14;
+
+                ctx.beginPath();
+                ctx.arc(pn.projX, pn.projY, Math.max(1, nodeRadius), 0, Math.PI * 2);
+                ctx.fillStyle = isHovered ? '#FFFFFF' : n.color;
+                ctx.globalAlpha = finalAlpha;
+                ctx.shadowColor = n.color;
+                ctx.shadowBlur = isLobeActive ? (isHovered ? 16 : 8) : 0;
+                ctx.fill();
+
+                // Halo exterior en nodos activos
+                if (isLobeActive && (isHovered || pn.scale > 0.85 || pulseEnergy > 0.3)) {
+                    ctx.beginPath();
+                    ctx.arc(pn.projX, pn.projY, nodeRadius * 1.8, 0, Math.PI * 2);
+                    ctx.strokeStyle = n.color;
+                    ctx.globalAlpha = (isHovered ? 0.8 : 0.25) * finalAlpha;
+                    ctx.lineWidth = 1;
+                    ctx.stroke();
+                }
+            }
+
+            // Resetear sombras para dibujo 2D
+            ctx.shadowBlur = 0;
+            ctx.globalAlpha = 1;
+
+            // 4. Tooltip Holográfico si hay nodo seleccionado con cursor
+            if (brainState.hoveredNode) {
+                const hNode = brainState.hoveredNode;
+                const pn = projectedNodes[hNode.id];
+                if (pn) {
+                    const meta = lobeMetadata[hNode.lobe];
+                    const tooltipText = `${meta.name}: ${meta.dim}`;
+                    ctx.font = '600 11px "Space Grotesk", sans-serif';
+                    const textWidth = ctx.measureText(tooltipText).width;
+                    const boxW = textWidth + 24;
+                    const boxH = 28;
+                    const boxX = Math.min(curW - boxW - 10, Math.max(10, pn.projX - boxW / 2));
+                    const boxY = Math.max(10, pn.projY - boxH - 12);
+
+                    // Caja holográfica
+                    ctx.fillStyle = 'rgba(8, 13, 27, 0.9)';
+                    ctx.strokeStyle = meta.color;
+                    ctx.lineWidth = 1.2;
+                    ctx.shadowColor = meta.color;
+                    ctx.shadowBlur = 8;
+                    ctx.beginPath();
+                    if (ctx.roundRect) ctx.roundRect(boxX, boxY, boxW, boxH, 8);
+                    else ctx.rect(boxX, boxY, boxW, boxH);
+                    ctx.fill();
+                    ctx.stroke();
+
+                    // Texto del tooltip
+                    ctx.shadowBlur = 0;
+                    ctx.fillStyle = '#FFFFFF';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(tooltipText, boxX + boxW / 2, boxY + boxH / 2);
+                }
+            }
+
+            brainAnimId = requestAnimationFrame(renderLoop);
+        };
+
+        renderLoop();
+    };
+
+    // Alternar auto-rotación del cerebro 3D
+    window.app.toggleBrainAutoRotate = () => {
+        try { playSound('click'); } catch(e) {}
+        brainState.autoRotate = !brainState.autoRotate;
+        const btn = document.getElementById('btn-brain-spin');
+        if (btn) {
+            if (brainState.autoRotate) {
+                btn.style.color = 'var(--color-cyan)';
+                btn.style.borderColor = 'var(--color-cyan)';
+                btn.classList.add('active');
+            } else {
+                btn.style.color = 'var(--text-muted)';
+                btn.style.borderColor = 'var(--border-subtle)';
+                btn.classList.remove('active');
+            }
+        }
+    };
+
+    // Restablecer ángulo y vista original del cerebro 3D
+    window.app.resetBrainView = () => {
+        try { playSound('click'); } catch(e) {}
+        brainState.targetRotX = 0.2;
+        brainState.targetRotY = -0.4;
+        window.app.focusBrainLobe('all');
+    };
+
+    // Disparar pulso sináptico concéntrico
+    window.app.triggerBrainPulse = () => {
+        try { playSound('streak'); } catch(e) {}
+        brainState.pulseRadius = 0;
+        const panel = document.getElementById('brain-telemetry-panel');
+        if (panel) {
+            panel.style.boxShadow = '0 0 25px rgba(34, 211, 238, 0.6)';
+            setTimeout(() => { panel.style.boxShadow = 'none'; }, 600);
+        }
+    };
+
+    // Enfocar lóbulo cerebral específico e iluminar sus conexiones
+    window.app.focusBrainLobe = (lobeKey) => {
+        try { playSound('click'); } catch(e) {}
+        brainState.activeLobe = lobeKey;
+
+        // Actualizar estado activo en botones
+        const buttons = document.querySelectorAll('.brain-lobe-btn');
+        buttons.forEach(btn => {
+            if (btn.getAttribute('data-lobe') === lobeKey) btn.classList.add('active');
+            else btn.classList.remove('active');
+        });
+
+        // Orientar el cerebro 3D hacia el ángulo óptimo para observar el lóbulo
+        if (lobeKey === 'all') {
+            brainState.targetRotX = 0.2;
+            brainState.targetRotY = -0.4;
+        } else if (lobeKey === 'frontal') {
+            brainState.targetRotX = 0.05;
+            brainState.targetRotY = 0.0; // Vista frontal
+        } else if (lobeKey === 'parietal') {
+            brainState.targetRotX = 0.72; // Vista superior
+            brainState.targetRotY = -0.2;
+        } else if (lobeKey === 'temporal') {
+            brainState.targetRotX = 0.1;
+            brainState.targetRotY = 1.5; // Vista lateral
+        } else if (lobeKey === 'occipital') {
+            brainState.targetRotX = 0.2;
+            brainState.targetRotY = Math.PI; // Vista posterior
+        } else if (lobeKey === 'cerebelo') {
+            brainState.targetRotX = -0.45; // Vista inferior posterior
+            brainState.targetRotY = 2.8;
+        }
+
+        // Consultar progreso real del usuario para la telemetría dinámica
+        const bestFormativa = window.EvaluationStorageService ? EvaluationStorageService.getBestAttempt('formativa') : null;
+        const bestDidactica = window.EvaluationStorageService ? EvaluationStorageService.getBestAttempt('didactica') : null;
+        const bestAndragogia = window.EvaluationStorageService ? EvaluationStorageService.getBestAttempt('andragogia') : null;
+        const bestPedagogia = window.EvaluationStorageService ? EvaluationStorageService.getBestAttempt('pedagogia') : null;
+        const unlockedBadges = gameState.unlockedBadges || [];
+
+        const telemetryData = {
+            all: {
+                icon: 'ph-brain',
+                color: '#22D3EE',
+                title: 'Visión Global del Conectoma',
+                subtitle: 'Integración Holística de Competencias Docentes (4 Verticales)',
+                tag: 'Conectividad Sináptica Óptima',
+                status: `${gameState.xp || 0} XP • Nivel ${gameState.level || 'Explorador'}`
+            },
+            frontal: {
+                icon: 'ph-cpu',
+                color: '#22D3EE',
+                title: 'Lóbulo Frontal // Funciones Ejecutivas & DUA',
+                subtitle: 'Planificación curricular, autorregulación y accesibilidad universal.',
+                tag: (unlockedBadges.includes('neuroeducador') || unlockedBadges.includes('diseno_instruccional'))
+                    ? 'Maestría DUA Verificada' 
+                    : 'En Desarrollo • ' + (gameState.xp || 0) + ' XP',
+                status: 'Neuroeducación y Diseño Instruccional'
+            },
+            parietal: {
+                icon: 'ph-presentation-chart',
+                color: '#38BDF8',
+                title: 'Lóbulo Parietal // Didáctica Activa & Métodos',
+                subtitle: 'Estructuración de secuencias didácticas y metodologías activas.',
+                tag: bestDidactica && bestDidactica.passed 
+                    ? `Estratega Aprobado (${bestDidactica.score}/100)` 
+                    : (bestDidactica ? `Puntaje: ${bestDidactica.score}/100 • Requiere Práctica` : 'Evaluación de Didáctica Disponible'),
+                status: bestDidactica && bestDidactica.passed ? 'Competencia Demostrada' : 'Recomendado: 40 Preguntas de Didáctica'
+            },
+            temporal: {
+                icon: 'ph-users-four',
+                color: '#C084FC',
+                title: 'Lóbulo Temporal // Andragogía & Aprendizaje Adulto',
+                subtitle: 'Facilitación experiencial, comunicación asertiva y mediación pedagógica.',
+                tag: bestAndragogia && bestAndragogia.passed 
+                    ? `Mentor Certificado (${bestAndragogia.score}/100)` 
+                    : (bestAndragogia ? `Puntaje: ${bestAndragogia.score}/100` : 'Ruta Train the Trainer'),
+                status: unlockedBadges.includes('comunicacion') ? 'Comunicación Asertiva Desbloqueada' : 'En Consolidación'
+            },
+            occipital: {
+                icon: 'ph-pencil-line',
+                color: '#F59E0B',
+                title: 'Lóbulo Occipital // Evaluación Formativa & Rúbricas',
+                subtitle: 'Retroalimentación continua, diseño de rúbricas y analítica del aprendizaje.',
+                tag: bestFormativa && bestFormativa.passed 
+                    ? `Maestro de Evaluación (${bestFormativa.score}/100)` 
+                    : (bestFormativa ? `Puntaje: ${bestFormativa.score}/100` : 'Instrumento Diagnóstico Listo'),
+                status: bestFormativa && bestFormativa.passed ? 'Aprobado con 80+' : 'Pendiente de Validación'
+            },
+            cerebelo: {
+                icon: 'ph-game-controller',
+                color: '#34D399',
+                title: 'Cerebelo & Tronco // Lúdica, Gamificación & Dinamismo',
+                subtitle: 'Coordinación metodológica, aprendizaje basado en juegos y simulación.',
+                tag: `${(gameState.diagnosticResults || []).length} Diagnósticos Situacionales Completados`,
+                status: `${gameState.testsCompleted || 0} Evaluaciones Realizadas • Dinamismo Alto`
+            }
+        };
+
+        const tInfo = telemetryData[lobeKey] || telemetryData.all;
+        const panel = document.getElementById('brain-telemetry-panel');
+        if (panel) {
+            panel.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <div style="width: 38px; height: 38px; border-radius: 10px; background: rgba(255,255,255,0.06); display: flex; align-items: center; justify-content: center; font-size: 20px; color: ${tInfo.color}; border: 1px solid ${tInfo.color}40;">
+                        <i class="ph-bold ${tInfo.icon}"></i>
+                    </div>
+                    <div>
+                        <strong style="color: #fff; font-family: var(--font-tech); font-size: 14px;">${tInfo.title}</strong>
+                        <div style="color: var(--text-secondary); font-size: 12px; margin-top: 2px;">${tInfo.subtitle}</div>
+                    </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                    <small style="color: var(--text-muted); font-size: 11px;">${tInfo.status}</small>
+                    <span class="telemetry-tag" style="color: ${tInfo.color}; background: ${tInfo.color}15; padding: 4px 10px; border-radius: 8px; border: 1px solid ${tInfo.color}40;">
+                        ${tInfo.tag}
+                    </span>
+                </div>
+            `;
+        }
+    };
+
+    // Filtros interactivos para la matriz de insignias y medallas
+    window.app.filterBadges = (filterKey) => {
+        try { playSound('click'); } catch(e) {}
+        const btns = document.querySelectorAll('.badge-filter-btn');
+        btns.forEach(b => {
+            if (b.getAttribute('data-filter') === filterKey) b.classList.add('active');
+            else b.classList.remove('active');
+        });
+
+        const cards = document.querySelectorAll('.neuro-badge-card');
+        cards.forEach(card => {
+            const isUnlocked = card.getAttribute('data-unlocked') === 'true';
+            const isEval = card.getAttribute('data-eval') === 'true';
+            let show = false;
+            if (filterKey === 'all') show = true;
+            else if (filterKey === 'unlocked') show = isUnlocked;
+            else if (filterKey === 'locked') show = !isUnlocked;
+            else if (filterKey === 'eval') show = isEval;
+            card.style.display = show ? 'flex' : 'none';
+        });
     };
 
     // Inicialización del Motor de Red Neuronal Reactiva (Canvas 2D)
@@ -2353,13 +3246,18 @@ Puedo guiarte en el desarrollo de competencias educativas, liderazgo, empleabili
         }
     };
 
-    // Asegurar disponibilidad global de métodos del chatbot y diagnósticos
+    // Asegurar disponibilidad global de métodos del chatbot, diagnósticos y consola 3D
     Object.assign(window.app, {
         toggleChatbot: window.app.toggleChatbot,
         sendChatMessage: window.app.sendChatMessage,
         toggleTutorMode: window.app.toggleTutorMode,
         openKnowledgeAdmin: window.app.openKnowledgeAdmin,
-        startDiagnosticTest: window.app.startDiagnosticTest
+        startDiagnosticTest: window.app.startDiagnosticTest,
+        toggleBrainAutoRotate: window.app.toggleBrainAutoRotate,
+        resetBrainView: window.app.resetBrainView,
+        triggerBrainPulse: window.app.triggerBrainPulse,
+        focusBrainLobe: window.app.focusBrainLobe,
+        filterBadges: window.app.filterBadges
     });
 });
 

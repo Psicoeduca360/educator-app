@@ -1554,6 +1554,230 @@ a, button, .card, .nav-link, .search-item, .user-profile, .module-item, .quiz-op
         width: calc(100vw - 40px);
         height: 70vh;
     }
+/* ==========================================================================
+   APARTADO MI DESARROLLO PERSONAL — NEURO DIGITAL EXPERIENCE // 3D BRAIN MAP
+   ========================================================================== */
+
+.profile-neuro-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.35fr;
+    gap: 24px;
+    margin-bottom: 30px;
+}
+
+@media (max-width: 1024px) {
+    .profile-neuro-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.profile-id-card {
+    background: linear-gradient(180deg, rgba(20, 33, 59, 0.9) 0%, rgba(16, 27, 50, 0.95) 100%);
+    border: 1px solid var(--border-subtle);
+    border-radius: 24px;
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+    position: relative;
+    overflow: hidden;
+}
+
+.profile-id-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--color-cyan), var(--primary), var(--success));
+}
+
+.profile-brain-card {
+    background: linear-gradient(180deg, rgba(16, 27, 50, 0.95) 0%, rgba(8, 13, 27, 0.98) 100%);
+    border: 1px solid var(--border-glow);
+    border-radius: 24px;
+    padding: 26px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.6), inset 0 0 25px rgba(34, 211, 238, 0.08);
+    position: relative;
+    overflow: hidden;
+}
+
+.brain-console-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.brain-canvas-container {
+    position: relative;
+    width: 100%;
+    height: 320px;
+    background: radial-gradient(circle at center, rgba(34, 211, 238, 0.06) 0%, rgba(8, 13, 27, 0.8) 75%);
+    border-radius: 18px;
+    border: 1px solid var(--border-subtle);
+    overflow: hidden;
+    cursor: grab;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.brain-canvas-container:active {
+    cursor: grabbing;
+}
+
+#brain-3d-canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+.brain-3d-hint {
+    position: absolute;
+    bottom: 10px;
+    right: 14px;
+    font-size: 11px;
+    color: var(--text-muted);
+    font-family: var(--font-tech);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    pointer-events: none;
+    background: rgba(8, 13, 27, 0.75);
+    padding: 4px 10px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.brain-lobes-selector {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 14px;
+}
+
+.brain-lobe-btn {
+    background: rgba(20, 33, 59, 0.7);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-secondary);
+    padding: 7px 13px;
+    border-radius: 10px;
+    font-size: 11.5px;
+    font-family: var(--font-tech);
+    font-weight: 700;
+    cursor: pointer;
+    transition: var(--transition);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.brain-lobe-btn:hover,
+.brain-lobe-btn.active {
+    background: rgba(34, 211, 238, 0.15);
+    border-color: var(--color-cyan);
+    color: var(--color-cyan);
+    box-shadow: 0 0 12px rgba(34, 211, 238, 0.3);
+}
+
+.brain-telemetry-readout {
+    margin-top: 14px;
+    background: rgba(8, 13, 27, 0.65);
+    border: 1px solid var(--border-subtle);
+    border-radius: 14px;
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 13px;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.telemetry-tag {
+    color: var(--color-cyan);
+    font-weight: 700;
+    font-family: var(--font-tech);
+}
+
+/* Insignias con estilo Neurotech */
+.badge-filter-pills {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 6px;
+    margin-bottom: 20px;
+}
+
+.badge-filter-btn {
+    background: rgba(16, 27, 50, 0.6);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-secondary);
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 12.5px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: var(--transition);
+    font-family: var(--font-tech);
+    white-space: nowrap;
+}
+
+.badge-filter-btn:hover,
+.badge-filter-btn.active {
+    background: var(--color-cyan);
+    color: #000;
+    border-color: var(--color-cyan);
+    box-shadow: 0 0 15px rgba(34, 211, 238, 0.35);
+}
+
+.neuro-badge-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: 18px;
+    padding: 20px 16px;
+    text-align: center;
+    transition: var(--transition);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.neuro-badge-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--color-cyan);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45), 0 0 18px rgba(34, 211, 238, 0.15);
+}
+
+.neuro-badge-card.unlocked {
+    border-color: rgba(52, 211, 153, 0.4);
+    background: linear-gradient(180deg, rgba(52, 211, 153, 0.08) 0%, rgba(20, 33, 59, 0.9) 100%);
+}
+
+.neuro-badge-card.unlocked .badge-icon-box {
+    background: rgba(52, 211, 153, 0.18);
+    color: var(--success);
+    border: 1px solid rgba(52, 211, 153, 0.4);
+    box-shadow: 0 0 15px rgba(52, 211, 153, 0.35);
+}
+
+.neuro-badge-card.locked {
+    opacity: 0.65;
+    filter: grayscale(0.5);
+}
+
+.neuro-badge-card.locked:hover {
+    opacity: 0.9;
+    filter: none;
 }
 
 /* --- Accesibilidad & Reducción de Movimiento --- */
